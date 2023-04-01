@@ -63,7 +63,7 @@ namespace TheOtherRoles.Patches {
 
                 if ((witchDiesWithExiledLover || exiledIsWitch) && Witch.witchVoteSavesTargets) Witch.futureSpelled = new List<PlayerControl>();
                 foreach (PlayerControl target in Witch.futureSpelled) {
-                    if (target != null && !target.Data.IsDead && Helpers.checkMuderAttempt(Witch.witch, target, true) == MurderAttemptResult.PerformKill)
+                    if (target != null && !target.Data.IsDead && Helpers.checkMurderAttempt(Witch.witch, target, true) == MurderAttemptResult.PerformKill)
                     {
                         if (exiled != null && Lawyer.lawyer != null && (target == Lawyer.lawyer || target == Lovers.otherLover(Lawyer.lawyer)) && Lawyer.target != null && Lawyer.isProsecutor && Lawyer.target.PlayerId == exiled.PlayerId)
                             continue;

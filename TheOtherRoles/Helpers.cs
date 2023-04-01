@@ -33,6 +33,46 @@ namespace TheOtherRoles {
 
         public static Dictionary<string, Sprite> CachedSprites = new();
 
+
+        public static PlayerControl setTarget(bool onlyCrewmates = false, bool targetPlayersInVents = false, List<PlayerControl> untargetablePlayers = null, PlayerControl targetingPlayer = null) {
+            PlayerControl result = null;
+            float num = AmongUs.GameOptions.GameOptionsData.KillDistances[Mathf.Clamp(GameOptionsManager.Instance.currentNormalGameOptions.KillDistance, 0, 2)];
+            if (!MapUtilities.CachedShipStatus) return result;
+            if (targetingPlayer == null) targetingPlayer = CachedPlayer.LocalPlayer.PlayerControl;
+            if (targetingPlayer.Data.IsDead) return result;
+
+            Vector2 truePosition = targetingPlayer.GetTruePosition();
+            foreach (var playerInfo in GameData.Instance.AllPlayers.GetFastEnumerator())
+            {
+                if (!playerInfo.Disconnected && playerInfo.PlayerId != targetingPlayer.PlayerId && !playerInfo.IsDead && (!onlyCrewmates || !playerInfo.Role.IsImpostor)) {
+                    PlayerControl @object = playerInfo.Object;
+                    if (untargetablePlayers != null && untargetablePlayers.Any(x => x == @object)) {
+                        // if that player is not targetable: skip check
+                        continue;
+                    }
+
+                    if (@object && (!@object.inVent || targetPlayersInVents)) {
+                        Vector2 vector = @object.GetTruePosition() - truePosition;
+                        float magnitude = vector.magnitude;
+                        if (magnitude <= num && !PhysicsHelpers.AnyNonTriggersBetween(truePosition, vector.normalized, magnitude, Constants.ShipAndObjectsMask)) {
+                            result = @object;
+                            num = magnitude;
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        public static void setPlayerOutline(PlayerControl target, Color color) {
+            if (target == null || target.cosmetics?.currentBodySprite?.BodySprite == null) return;
+
+            color = color.SetAlpha(Chameleon.visibility(target.PlayerId));
+
+            target.cosmetics.currentBodySprite.BodySprite.material.SetFloat("_Outline", 1f);
+            target.cosmetics.currentBodySprite.BodySprite.material.SetColor("_OutlineColor", color);
+        }
+
         public static Sprite loadSpriteFromResources(string path, float pixelsPerUnit) {
             try
             {
@@ -81,7 +121,7 @@ namespace TheOtherRoles {
         }
 
         public static AudioClip loadAudioClipFromResources(string path, string clipName = "UNNAMED_TOR_AUDIO_CLIP") {
-            // must be "raw (headerless) 2-channel signed 32 bit pcm (le)" (can e.g. use Audacity® to export)
+            // must be "raw (headerless) 2-channel signed 32 bit pcm (le)" (can e.g. use Audacityï¿½ to export)
             try {
                 Assembly assembly = Assembly.GetExecutingAssembly();
                 Stream stream = assembly.GetManifestResourceStream(path);
@@ -370,7 +410,7 @@ namespace TheOtherRoles {
             return roleCouldUse;
         }
 
-        public static MurderAttemptResult checkMuderAttempt(PlayerControl killer, PlayerControl target, bool blockRewind = false, bool ignoreBlank = false, bool ignoreIfKillerIsDead = false) {
+        public static MurderAttemptResult checkMurderAttempt(PlayerControl killer, PlayerControl target, bool blockRewind = false, bool ignoreBlank = false, bool ignoreIfKillerIsDead = false) {
             var targetRole = RoleInfo.getRoleInfoForPlayer(target, false).FirstOrDefault();
 
             // Modified vanilla checks
@@ -439,7 +479,7 @@ namespace TheOtherRoles {
             // The local player checks for the validity of the kill and performs it afterwards (different to vanilla, where the host performs all the checks)
             // The kill attempt will be shared using a custom RPC, hence combining modded and unmodded versions is impossible
 
-            MurderAttemptResult murder = checkMuderAttempt(killer, target, isMeetingStart, ignoreBlank, ignoreIfKillerIsDead);
+            MurderAttemptResult murder = checkMurderAttempt(killer, target, isMeetingStart, ignoreBlank, ignoreIfKillerIsDead);
             if (murder == MurderAttemptResult.PerformKill) {
                 MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UncheckedMurderPlayer, Hazel.SendOption.Reliable, -1);
                 writer.Write(killer.PlayerId);

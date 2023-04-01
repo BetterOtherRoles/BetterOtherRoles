@@ -14,10 +14,12 @@ $@"<size=130%><color=#ff351f>TheOtherRoles</color></size> v{TheOtherRolesPlugin.
 public static string fullCredentials =
 $@"<size=60%>Modded by <color=#FCCE03FF>Eisbison</color>, <color=#FCCE03FF>EndOfFile</color>
 <color=#FCCE03FF>Thunderstorm584</color>, <color=#FCCE03FF>Mallöris</color> & <color=#FCCE03FF>Gendelo</color>
+Updated by <color=#FCCE03FF>Brybry</color>, <color=#FCCE03FF>Dadoum</color> & <color=#FCCE03FF>Thilladon</color>
 Design by <color=#FCCE03FF>Bavari</color></size>";
 
     public static string mainMenuCredentials = 
 $@"Modded by <color=#FCCE03FF>Eisbison</color>, <color=#FCCE03FF>Thunderstorm584</color>, <color=#FCCE03FF>EndOfFile</color>, <color=#FCCE03FF>Mallöris</color> & <color=#FCCE03FF>Gendelo</color>
+Updated by <color=#FCCE03FF>Brybry</color>, <color=#FCCE03FF>Dadoum</color> & <color=#FCCE03FF>Thilladon</color>
 Design by <color=#FCCE03FF>Bavari</color>";
 
         public static string contributorsCredentials =
@@ -31,7 +33,7 @@ $@"<size=60%> <color=#FCCE03FF>Special thanks to K3ndo & Smeggy</color></size>";
                 if (amongUsLogo == null) return;
 
                 var credentials = UnityEngine.Object.Instantiate<TMPro.TextMeshPro>(__instance.text);
-                credentials.transform.position = new Vector3(0, 0, 0);
+                credentials.transform.position = new Vector3(0, 0.08f, 0);
                 credentials.SetText($"v{TheOtherRolesPlugin.Version.ToString() + (TheOtherRolesPlugin.betaDays > 0 ? "-BETA" : "")}\n<size=30f%>\n</size>{mainMenuCredentials}\n<size=30%>\n</size>{contributorsCredentials}");
                 credentials.alignment = TMPro.TextAlignmentOptions.Center;
                 credentials.fontSize *= 0.75f;
@@ -64,7 +66,7 @@ $@"<size=60%> <color=#FCCE03FF>Special thanks to K3ndo & Smeggy</color></size>";
                     if (HideNSeek.isHideNSeekGM) gameModeText = $"Hide 'N Seek";
                     else if (HandleGuesser.isGuesserGm) gameModeText = $"Guesser";
                     if (gameModeText != "") gameModeText = Helpers.cs(Color.yellow, gameModeText) + "\n";
-                    __instance.text.text = $"<size=130%><color=#ff351f>TheOtherRoles</color></size> v{TheOtherRolesPlugin.Version.ToString() + (TheOtherRolesPlugin.betaDays > 0 ? "-BETA" : "")}\n{gameModeText}" + __instance.text.text;
+                    __instance.text.text = $"{fullCredentialsVersion}\n{gameModeText}" + __instance.text.text;
                     if (CachedPlayer.LocalPlayer.Data.IsDead || (!(CachedPlayer.LocalPlayer.PlayerControl == null) && (CachedPlayer.LocalPlayer.PlayerControl == Lovers.lover1 || CachedPlayer.LocalPlayer.PlayerControl == Lovers.lover2))) {
                         __instance.transform.localPosition = new Vector3(3.45f, __instance.transform.localPosition.y, __instance.transform.localPosition.z);
                     } else {

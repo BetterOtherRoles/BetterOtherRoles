@@ -175,7 +175,7 @@ namespace TheOtherRoles
             Vector3 positionOffsetValue = positionOffset ?? button.PositionOffset;  // For non custom buttons, we can set these manually.
             positionOffsetValue.z = -0.1f;
             couldUse = couldUse ?? button.CouldUse;
-            CustomButton replacementHandcuffedButton = new CustomButton(() => { }, () => { return true; }, couldUse, () => { }, Deputy.getHandcuffedButtonSprite(), positionOffsetValue, button.hudManager, button.hotkey,
+            CustomButton replacementHandcuffedButton = new CustomButton(() => { }, () => { return true; }, couldUse, () => { }, Deputy.getHandcuffedButtonSprite(), positionOffsetValue, button.hudManager, button.actionName,
                 true, Deputy.handcuffDuration, () => { }, button.mirror);
             replacementHandcuffedButton.Timer = replacementHandcuffedButton.EffectDuration;
             replacementHandcuffedButton.actionButton.cooldownTimerText.color = new Color(0F, 0.8F, 0F);
@@ -319,7 +319,7 @@ namespace TheOtherRoles
                 Engineer.getButtonSprite(),
                 CustomButton.ButtonPositions.upperRowRight,
                 __instance,
-                KeyCode.F
+                "ActionQuaternary"
             );
 
             // Janitor Clean
@@ -357,13 +357,13 @@ namespace TheOtherRoles
                 Janitor.getButtonSprite(),
                 CustomButton.ButtonPositions.upperRowLeft,
                 __instance,
-                KeyCode.F
+                "ActionQuaternary"
             );
 
             // Sheriff Kill
             sheriffKillButton = new CustomButton(
                 () => {
-                    MurderAttemptResult murderAttemptResult = Helpers.checkMuderAttempt(Sheriff.sheriff, Sheriff.currentTarget);
+                    MurderAttemptResult murderAttemptResult = Helpers.checkMurderAttempt(Sheriff.sheriff, Sheriff.currentTarget);
                     if (murderAttemptResult == MurderAttemptResult.SuppressKill) return;
 
                     if (murderAttemptResult == MurderAttemptResult.PerformKill) {
@@ -395,7 +395,7 @@ namespace TheOtherRoles
                 __instance.KillButton.graphic.sprite,
                 CustomButton.ButtonPositions.upperRowRight,
                 __instance,
-                KeyCode.Q
+                "ActionSecondary"
             );
 
             // Deputy Handcuff
@@ -422,7 +422,7 @@ namespace TheOtherRoles
                 Deputy.getButtonSprite(),
                 CustomButton.ButtonPositions.lowerRowRight,
                 __instance,
-                KeyCode.F
+                "ActionQuaternary"
             );
             // Deputy Handcuff button handcuff counter
             deputyButtonHandcuffsText = GameObject.Instantiate(deputyHandcuffButton.actionButton.cooldownTimerText, deputyHandcuffButton.actionButton.cooldownTimerText.transform.parent);
@@ -449,7 +449,7 @@ namespace TheOtherRoles
                 TimeMaster.getButtonSprite(),
                 CustomButton.ButtonPositions.lowerRowRight,
                 __instance,
-                KeyCode.F, 
+                "ActionQuaternary", 
                 true,
                 TimeMaster.shieldDuration,
                 () => {
@@ -481,7 +481,7 @@ namespace TheOtherRoles
                 Medic.getButtonSprite(),
                 CustomButton.ButtonPositions.lowerRowRight,
                 __instance,
-                KeyCode.F
+                "ActionQuaternary"
             );
 
             
@@ -539,7 +539,7 @@ namespace TheOtherRoles
                 Morphling.getSampleSprite(),
                 CustomButton.ButtonPositions.upperRowLeft,
                 __instance,
-                KeyCode.F,
+                "ActionQuaternary",
                 true,
                 Morphling.duration,
                 () => {
@@ -572,7 +572,7 @@ namespace TheOtherRoles
                 Camouflager.getButtonSprite(),
                 CustomButton.ButtonPositions.upperRowLeft,
                 __instance,
-                KeyCode.F,
+                "ActionQuaternary",
                 true,
                 Camouflager.duration,
                 () => {
@@ -597,7 +597,7 @@ namespace TheOtherRoles
                 Hacker.getButtonSprite(),
                 CustomButton.ButtonPositions.upperRowRight,
                 __instance,
-                KeyCode.F,
+                "ActionQuaternary",
                 true,
                 0f,
                 () => { hackerButton.Timer = hackerButton.MaxTimer;}
@@ -627,7 +627,7 @@ namespace TheOtherRoles
                Hacker.getAdminSprite(),
                CustomButton.ButtonPositions.lowerRowRight,
                __instance,
-               KeyCode.Q,
+               "ActionSecondary",
                true,
                0f,
                () => { 
@@ -688,7 +688,7 @@ namespace TheOtherRoles
                Hacker.getVitalsSprite(),
                CustomButton.ButtonPositions.lowerRowCenter,
                __instance,
-               KeyCode.Q,
+               "ActionSecondary",
                true,
                0f,
                () => { 
@@ -725,7 +725,7 @@ namespace TheOtherRoles
                 Tracker.getButtonSprite(),
                 CustomButton.ButtonPositions.lowerRowRight,
                 __instance,
-                KeyCode.F
+                "ActionQuaternary"
             );
 
             trackerTrackCorpsesButton = new CustomButton(
@@ -741,7 +741,7 @@ namespace TheOtherRoles
                 Tracker.getTrackCorpsesButtonSprite(),
                 CustomButton.ButtonPositions.lowerRowCenter,
                 __instance,
-                KeyCode.Q,
+                "ActionSecondary",
                 true,
                 Tracker.corpsesTrackingDuration,
                 () => {
@@ -751,7 +751,7 @@ namespace TheOtherRoles
     
             vampireKillButton = new CustomButton(
                 () => {
-                    MurderAttemptResult murder = Helpers.checkMuderAttempt(Vampire.vampire, Vampire.currentTarget);
+                    MurderAttemptResult murder = Helpers.checkMurderAttempt(Vampire.vampire, Vampire.currentTarget);
                     if (murder == MurderAttemptResult.PerformKill) {
                         if (Vampire.targetNearGarlic) {
                             MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UncheckedMurderPlayer, Hazel.SendOption.Reliable, -1);
@@ -826,7 +826,7 @@ namespace TheOtherRoles
                 Vampire.getButtonSprite(),
                 CustomButton.ButtonPositions.upperRowLeft,
                 __instance,
-                KeyCode.Q,
+                "ActionSecondary",
                 false,
                 0f,
                 () => {
@@ -880,7 +880,7 @@ namespace TheOtherRoles
                 Portalmaker.getPlacePortalButtonSprite(),
                 CustomButton.ButtonPositions.lowerRowRight,
                 __instance,
-                KeyCode.F
+                "ActionQuaternary"
             );
 
             usePortalButton = new CustomButton(
@@ -931,7 +931,7 @@ namespace TheOtherRoles
                 Portalmaker.getUsePortalButtonSprite(),
                 new Vector3(0.9f, -0.06f, 0),
                 __instance,
-                KeyCode.H,
+                "UsePortal",
                 mirror: true
             );
 
@@ -971,7 +971,7 @@ namespace TheOtherRoles
                 Portalmaker.getUsePortalButtonSprite(),
                 new Vector3(0.9f, 1f, 0),
                 __instance,
-                KeyCode.J,
+                "PortalMakerTeleportation",
                 mirror: true
             );
 
@@ -1005,7 +1005,7 @@ namespace TheOtherRoles
                 Jackal.getSidekickButtonSprite(),
                 CustomButton.ButtonPositions.lowerRowCenter,
                 __instance,
-                KeyCode.F
+                "ActionQuaternary"
             );
 
             // Jackal Kill
@@ -1022,7 +1022,7 @@ namespace TheOtherRoles
                 __instance.KillButton.graphic.sprite,
                 CustomButton.ButtonPositions.upperRowRight,
                 __instance,
-                KeyCode.Q
+                "ActionSecondary"
             );
             
             // Sidekick Kill
@@ -1038,7 +1038,7 @@ namespace TheOtherRoles
                 __instance.KillButton.graphic.sprite,
                 CustomButton.ButtonPositions.upperRowRight,
                 __instance,
-                KeyCode.Q
+                "ActionSecondary"
             );
 
             // Eraser erase button
@@ -1059,7 +1059,7 @@ namespace TheOtherRoles
                 Eraser.getButtonSprite(),
                 CustomButton.ButtonPositions.upperRowLeft,
                 __instance,
-                KeyCode.F
+                "ActionQuaternary"
             );
 
             placeJackInTheBoxButton = new CustomButton(
@@ -1083,7 +1083,7 @@ namespace TheOtherRoles
                 Trickster.getPlaceBoxButtonSprite(),
                 CustomButton.ButtonPositions.upperRowLeft,
                 __instance,
-                KeyCode.F
+                "ActionQuaternary"
             );
             
             lightsOutButton = new CustomButton(
@@ -1103,7 +1103,7 @@ namespace TheOtherRoles
                 Trickster.getLightsOutButtonSprite(),
                 CustomButton.ButtonPositions.upperRowLeft,
                 __instance,
-                KeyCode.F,
+                "ActionQuaternary",
                 true,
                 Trickster.lightsOutDuration,
                 () => {
@@ -1147,7 +1147,7 @@ namespace TheOtherRoles
                 Cleaner.getButtonSprite(),
                 CustomButton.ButtonPositions.upperRowLeft,
                 __instance,
-                KeyCode.F
+                "ActionQuaternary"
             );
 
             // Warlock curse
@@ -1207,7 +1207,7 @@ namespace TheOtherRoles
                 Warlock.getCurseButtonSprite(),
                 CustomButton.ButtonPositions.upperRowLeft,
                 __instance,
-                KeyCode.F
+                "ActionQuaternary"
             );
 
             // Security Guard button
@@ -1247,7 +1247,7 @@ namespace TheOtherRoles
                 SecurityGuard.getPlaceCameraButtonSprite(),
                 CustomButton.ButtonPositions.lowerRowRight,
                 __instance,
-                KeyCode.F
+                "ActionQuaternary"
             );
             
             // Security Guard button screws counter
@@ -1302,7 +1302,7 @@ namespace TheOtherRoles
                 SecurityGuard.getCamSprite(),
                 CustomButton.ButtonPositions.lowerRowRight,
                 __instance,
-                KeyCode.Q,
+                "ActionSecondary",
                 true,
                 0f,
                 () => {
@@ -1359,7 +1359,7 @@ namespace TheOtherRoles
                 Arsonist.getDouseSprite(),
                 CustomButton.ButtonPositions.lowerRowRight,
                 __instance,
-                KeyCode.F,
+                "ActionQuaternary",
                 true,
                 Arsonist.duration,
                 () => {
@@ -1416,7 +1416,7 @@ namespace TheOtherRoles
                 Vulture.getButtonSprite(),
                 CustomButton.ButtonPositions.lowerRowCenter,
                 __instance,
-                KeyCode.F
+                "ActionQuaternary"
             );
 
             // Medium button
@@ -1445,7 +1445,7 @@ namespace TheOtherRoles
                 Medium.getQuestionSprite(),
                 CustomButton.ButtonPositions.lowerRowRight,
                 __instance,
-                KeyCode.F,
+                "ActionQuaternary",
                 true,
                 Medium.duration,
                 () => {
@@ -1525,7 +1525,7 @@ namespace TheOtherRoles
                 Pursuer.getTargetSprite(),
                 CustomButton.ButtonPositions.lowerRowRight,
                 __instance,
-                KeyCode.F
+                "ActionQuaternary"
             );
 
             // Pursuer button blanks left
@@ -1561,12 +1561,12 @@ namespace TheOtherRoles
                 Witch.getButtonSprite(),
                 CustomButton.ButtonPositions.upperRowLeft,
                 __instance,
-                KeyCode.F,
+                "ActionQuaternary",
                 true,
                 Witch.spellCastingDuration,
                 () => {
                     if (Witch.spellCastingTarget == null) return;
-                    MurderAttemptResult attempt = Helpers.checkMuderAttempt(Witch.witch, Witch.spellCastingTarget);
+                    MurderAttemptResult attempt = Helpers.checkMurderAttempt(Witch.witch, Witch.spellCastingTarget);
                     if (attempt == MurderAttemptResult.PerformKill) {
                         MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SetFutureSpelled, Hazel.SendOption.Reliable, -1);
                         writer.Write(Witch.currentTarget.PlayerId);
@@ -1595,7 +1595,7 @@ namespace TheOtherRoles
                     MessageWriter writer;
                     if (Ninja.ninjaMarked != null) {
                         // Murder attempt with teleport
-                        MurderAttemptResult attempt = Helpers.checkMuderAttempt(Ninja.ninja, Ninja.ninjaMarked);
+                        MurderAttemptResult attempt = Helpers.checkMurderAttempt(Ninja.ninja, Ninja.ninjaMarked);
                         if (attempt == MurderAttemptResult.PerformKill) {
                             // Create first trace before killing
                             var pos = CachedPlayer.LocalPlayer.transform.position;
@@ -1671,7 +1671,7 @@ namespace TheOtherRoles
                 Ninja.getMarkButtonSprite(),
                 CustomButton.ButtonPositions.upperRowLeft,
                 __instance,
-                KeyCode.F                   
+                "ActionQuaternary"                   
             );
 
             mayorMeetingButton = new CustomButton(
@@ -1701,7 +1701,7 @@ namespace TheOtherRoles
                Mayor.getMeetingSprite(),
                CustomButton.ButtonPositions.lowerRowRight,
                __instance,
-               KeyCode.F,
+               "ActionQuaternary",
                true,
                0f,
                () => {},
@@ -1736,13 +1736,13 @@ namespace TheOtherRoles
                 Trapper.getButtonSprite(),
                 CustomButton.ButtonPositions.lowerRowRight,
                 __instance,
-                KeyCode.F
+                "ActionQuaternary"
             );
 
             // Bomber button
             bomberButton = new CustomButton(
                 () => {
-                    if (Helpers.checkMuderAttempt(Bomber.bomber, Bomber.bomber) != MurderAttemptResult.BlankKill) {
+                    if (Helpers.checkMurderAttempt(Bomber.bomber, Bomber.bomber) != MurderAttemptResult.BlankKill) {
                         var pos = CachedPlayer.LocalPlayer.transform.position;
                         byte[] buff = new byte[sizeof(float) * 2];
                         Buffer.BlockCopy(BitConverter.GetBytes(pos.x), 0, buff, 0 * sizeof(float), sizeof(float));
@@ -1765,7 +1765,7 @@ namespace TheOtherRoles
                 Bomber.getButtonSprite(),
                 CustomButton.ButtonPositions.upperRowLeft,
                 __instance,
-                KeyCode.F,
+                "ActionQuaternary",
                 true,
                 Bomber.destructionTime,
                 () => {
@@ -1799,7 +1799,7 @@ namespace TheOtherRoles
                 Bomb.getDefuseSprite(),
                 new Vector3(0f, 1f, 0),
                 __instance,
-                null,
+                "defuseBomb",
                 true,
                 Bomber.defuseDuration,
                 () => {
@@ -1817,7 +1817,7 @@ namespace TheOtherRoles
                 () => {
                     PlayerControl thief = Thief.thief;
                     PlayerControl target = Thief.currentTarget;
-                    var result = Helpers.checkMuderAttempt(thief, target);
+                    var result = Helpers.checkMurderAttempt(thief, target);
                     if (result == MurderAttemptResult.BlankKill) {
                         thiefKillButton.Timer = thiefKillButton.MaxTimer;
                         return;
@@ -1857,7 +1857,7 @@ namespace TheOtherRoles
                __instance.KillButton.graphic.sprite,
                CustomButton.ButtonPositions.upperRowRight,
                __instance,
-               KeyCode.Q
+               "ActionSecondary"
                );
 
             // Trapper Charges
@@ -1880,7 +1880,7 @@ namespace TheOtherRoles
                 Helpers.loadSpriteFromResources("TheOtherRoles.Resources.MinusButton.png", 150f),  // Invisible button!
                 new Vector3(0.4f, 2.8f, 0),
                 __instance,
-                KeyCode.KeypadPlus
+                "ZoomOut"
                 );
             zoomOutButton.Timer = 0f;
 
@@ -1905,7 +1905,7 @@ namespace TheOtherRoles
                 Hunter.getLightSprite(),
                 CustomButton.ButtonPositions.upperRowFarLeft,
                 __instance,
-                KeyCode.F,
+                "ActionQuaternary",
                 true,
                 Hunter.lightDuration,
                 () => {
@@ -1940,7 +1940,7 @@ namespace TheOtherRoles
                Hacker.getAdminSprite(),
                CustomButton.ButtonPositions.lowerRowCenter,
                __instance,
-               KeyCode.G,
+               "HunterAdmin",
                true,
                Hunter.AdminDuration,
                () => {
@@ -1971,7 +1971,7 @@ namespace TheOtherRoles
                 Hunter.getArrowSprite(),
                 CustomButton.ButtonPositions.upperRowLeft,
                 __instance,
-                KeyCode.R,
+                "HunterArrow",
                 true,
                 Hunter.ArrowDuration,
                 () => {
@@ -2004,7 +2004,7 @@ namespace TheOtherRoles
                 TimeMaster.getButtonSprite(),
                 CustomButton.ButtonPositions.lowerRowRight,
                 __instance,
-                KeyCode.F,
+                "ActionQuaternary",
                 true,
                 Hunted.shieldDuration,
                 () => {

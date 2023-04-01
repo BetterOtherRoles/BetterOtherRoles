@@ -2,6 +2,7 @@ using HarmonyLib;
 using System;
 using Hazel;
 using UnityEngine;
+using PowerTools;
 using System.Linq;
 using static TheOtherRoles.TheOtherRoles;
 using static TheOtherRoles.GameHistory;
@@ -15,6 +16,31 @@ using Reactor.Utilities.Extensions;
 using AmongUs.GameOptions;
 
 namespace TheOtherRoles.Patches {
+    // HACK ¯\_(ツ)_/¯ but it works !
+    [HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.Awake))]
+    public static class VentStartPatch
+    {
+        public class VentKeybind: MonoBehaviour
+        {
+            private void Update()
+            {
+                if (FastDestroyableSingleton<HudManager>.Instance.ImpostorVentButton.enabled && Rewired.ReInput.players.GetPlayer(0).GetButtonDown("UseVent"))
+                {
+                    FastDestroyableSingleton<HudManager>.Instance.ImpostorVentButton.DoClick();
+                }
+            }
+        }
+
+        static VentStartPatch()
+        {
+            ClassInjector.RegisterTypeInIl2Cpp<VentKeybind>();
+        }
+        
+        public static void Postfix()
+        {
+            new GameObject().AddComponent<VentKeybind>();
+        }
+    }
 
     [HarmonyPatch(typeof(Vent), nameof(Vent.CanUse))]
     public static class VentCanUsePatch
@@ -133,6 +159,79 @@ namespace TheOtherRoles.Patches {
             }
             __instance.SetButtons(isEnter && canMoveInVents);
             return false;
+        }
+    }
+
+    internal class VisibleVentPatches
+    {
+        public static int ShipAndObjectsMask = LayerMask.GetMask(new string[]
+        {
+            "Ship",
+            "Objects"
+        });
+        
+        [HarmonyPatch(typeof(Vent), nameof(Vent.EnterVent))] //EnterVent
+        public static class EnterVentPatch
+        {
+            public static bool Prefix(Vent __instance, PlayerControl pc)
+            {
+                if (!__instance.EnterVentAnim)
+                {
+                    return false;
+                }
+                
+                var truePosition = PlayerControl.LocalPlayer.GetTruePosition();
+                
+                Vector2 vector = pc.GetTruePosition() - truePosition;
+                var magnitude = vector.magnitude;
+                if (pc.AmOwner || magnitude < CachedPlayer.LocalPlayer.PlayerControl.lightSource.viewDistance &&
+                    !PhysicsHelpers.AnyNonTriggersBetween(truePosition, vector.normalized, magnitude,
+                        ShipAndObjectsMask))
+                {
+                    __instance.GetComponent<SpriteAnim>().Play(__instance.EnterVentAnim, 1f);
+                }
+                
+                if (pc.AmOwner && Constants.ShouldPlaySfx()) //ShouldPlaySfx
+                {
+                    SoundManager.Instance.StopSound(ShipStatus.Instance.VentEnterSound);
+                    SoundManager.Instance.PlaySound(ShipStatus.Instance.VentEnterSound, false, 1f).pitch =
+                        UnityEngine.Random.Range(0.8f, 1.2f);
+                }
+                
+                return false;
+            }
+        }
+    
+        [HarmonyPatch(typeof(Vent), nameof(Vent.ExitVent))] //ExitVent
+        public static class ExitVentPatch
+        {
+            public static bool Prefix(Vent __instance, PlayerControl pc)
+            {
+                if (!__instance.ExitVentAnim)
+                {
+                    return false;
+                }
+        
+                var truePosition = PlayerControl.LocalPlayer.GetTruePosition();
+        
+                Vector2 vector = pc.GetTruePosition() - truePosition;
+                var magnitude = vector.magnitude;
+                if (pc.AmOwner || magnitude < CachedPlayer.LocalPlayer.PlayerControl.lightSource.viewDistance &&
+                    !PhysicsHelpers.AnyNonTriggersBetween(truePosition, vector.normalized, magnitude,
+                        ShipAndObjectsMask))
+                {
+                    __instance.GetComponent<SpriteAnim>().Play(__instance.ExitVentAnim, 1f);
+                }
+        
+                if (pc.AmOwner && Constants.ShouldPlaySfx()) //ShouldPlaySfx
+                {
+                    SoundManager.Instance.StopSound(ShipStatus.Instance.VentEnterSound);
+                    SoundManager.Instance.PlaySound(ShipStatus.Instance.VentEnterSound, false, 1f).pitch =
+                        UnityEngine.Random.Range(0.8f, 1.2f);
+                }
+        
+                return false;
+            }
         }
     }
 
@@ -360,6 +459,7 @@ namespace TheOtherRoles.Patches {
     [HarmonyPatch]
     class AdminPanelPatch {
         static Dictionary<SystemTypes, List<Color>> players = new Dictionary<SystemTypes, System.Collections.Generic.List<Color>>();
+
         [HarmonyPatch(typeof(MapCountOverlay), nameof(MapCountOverlay.Update))]
         class MapCountOverlayUpdatePatch {
             static bool Prefix(MapCountOverlay __instance) {
@@ -536,7 +636,7 @@ namespace TheOtherRoles.Patches {
                     update = true;
                     timer = 0f;
                     page = (page + 1) % numberOfPages;
-                } else if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A)) {
+                } else if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.Q)) {
                     page = (page + numberOfPages - 1) % numberOfPages;
                     update = true;
                     timer = 0f;
@@ -570,7 +670,7 @@ namespace TheOtherRoles.Patches {
             public static void Postfix(PlanetSurveillanceMinigame __instance) {
                 if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
                     __instance.NextCamera(1);
-                if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
+                if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.Q))
                     __instance.NextCamera(-1);
 
                 nightVisionUpdate(SwitchCamsMinigame: __instance);
