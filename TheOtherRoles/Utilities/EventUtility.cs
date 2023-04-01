@@ -66,7 +66,19 @@ namespace TheOtherRoles.Utilities {
         public static bool isEventDate => DateTime.Today.Date == enabled;
 
         public static bool canBeEnabled => DateTime.Today.Date > enabled && DateTime.Today.Date <= enabled.AddDays(7); // One Week after the EVENT
-        public static bool isEnabled => isEventDate || canBeEnabled && CustomOptionHolder.enableCodenameHorsemode != null && CustomOptionHolder.enableCodenameHorsemode.getBool();
+
+        public static bool isEnabled
+        {
+            get
+            {
+                return false;
+                // Disable event date
+                /*
+                return isEventDate || canBeEnabled && CustomOptionHolder.enableCodenameHorsemode != null &&
+                    CustomOptionHolder.enableCodenameHorsemode.getBool();
+                */
+            }
+        }
 
         public static void AddToQueue(EventTypes newEvent) {
             if (!isEnabled || eventQueue == null || eventQueue.Contains(newEvent)) return;
