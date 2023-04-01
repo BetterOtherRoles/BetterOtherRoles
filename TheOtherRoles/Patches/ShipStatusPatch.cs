@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using HarmonyLib;
 using TheOtherRoles.Utilities;
@@ -159,6 +158,11 @@ namespace TheOtherRoles.Patches
             [HarmonyPatch]
             public static void Prefix(ShipStatus __instance)
             {
+                IsAdjustmentsDone = false;
+                IsObjectsFetched = false;
+                IsRoomsFetched = false;
+                IsVentsFetched = false;
+
                 if(CustomOptionHolder.enableBetterPolus.getBool())
                     ApplyChanges(__instance);
 
@@ -190,13 +194,6 @@ namespace TheOtherRoles.Patches
                     ApplyChanges(__instance);
                 }
             }
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(LogicGameFlowNormal), nameof(LogicGameFlowNormal.IsGameOverDueToDeath))]
-        public static void Postfix2(ShipStatus __instance, ref bool __result)
-        {
-            __result = false;
         }
 
         [HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.Begin))]
@@ -282,7 +279,7 @@ namespace TheOtherRoles.Patches
         }
         
         // --------------------
-        // - UnityEngine.Objects Fetching -
+        // - Objects Fetching -
         // --------------------
 
         public static void FindVents()
@@ -291,7 +288,7 @@ namespace TheOtherRoles.Patches
             if (IsVentsFetched)
                 return;
             
-            var ventsList = UnityEngine.Object.FindObjectsOfType<Vent>().ToList();
+            var ventsList = Object.FindObjectsOfType<Vent>().ToList();
             
             ElectricBuildingVent = ventsList.Find(vent => vent.gameObject.name == "ElectricBuildingVent");
             ElectricalVent = ventsList.Find(vent => vent.gameObject.name == "ElectricalVent");
@@ -306,7 +303,7 @@ namespace TheOtherRoles.Patches
             if (IsRoomsFetched)
                 return;
 
-            var roomList = UnityEngine.Object.FindObjectsOfType<GameObject>().ToList();
+            var roomList = Object.FindObjectsOfType<GameObject>().ToList();
             
             Comms = roomList.Find(o => o.name == "Comms");
             DropShip = roomList.Find(o => o.name == "Dropship");
@@ -321,22 +318,22 @@ namespace TheOtherRoles.Patches
             if (IsObjectsFetched)
                 return;
 
-            var objectList = UnityEngine.Object.FindObjectsOfType<Console>().ToList();
+            var objectList = Object.FindObjectsOfType<Console>().ToList();
 
             WifiConsole = objectList.Find(console => console.name == "panel_wifi");
             NavConsole = objectList.Find(console => console.name == "panel_nav");
             TempCold = objectList.Find(console => console.name == "panel_tempcold");
 
-            Vitals = UnityEngine.Object.FindObjectsOfType<SystemConsole>().ToList()
+            Vitals = Object.FindObjectsOfType<SystemConsole>().ToList()
                     .Find(console => console.name == "panel_vitals");
             
                 
-            GameObject DvdScreenAdmin = UnityEngine.Object.FindObjectsOfType<GameObject>().ToList()
+            GameObject DvdScreenAdmin = Object.FindObjectsOfType<GameObject>().ToList()
                     .Find(o => o.name == "dvdscreen");
 
             if (DvdScreenAdmin != null)
             {
-                DvdScreenOffice = UnityEngine.Object.Instantiate(DvdScreenAdmin);
+                DvdScreenOffice = Object.Instantiate(DvdScreenAdmin);
             }
             
             IsObjectsFetched = WifiConsole != null && NavConsole != null && Vitals != null && DvdScreenOffice != null && TempCold != null;
@@ -358,7 +355,7 @@ namespace TheOtherRoles.Patches
             }
             else
             {
-                TheOtherRolesPlugin.Logger.LogError("Couldn't adjust Vents as not all UnityEngine.objects have been fetched.");
+                TheOtherRolesPlugin.Logger.LogError("Couldn't adjust Vents as not all objects have been fetched.");
             }
         }
 
