@@ -14,12 +14,12 @@ $@"<size=130%><color=#ff351f>TheOtherRoles</color></size> v{TheOtherRolesPlugin.
 public static string fullCredentials =
 $@"<size=60%>Modded by <color=#FCCE03FF>Eisbison</color>, <color=#FCCE03FF>EndOfFile</color>
 <color=#FCCE03FF>Thunderstorm584</color>, <color=#FCCE03FF>Mallöris</color> & <color=#FCCE03FF>Gendelo</color>
-Updated by <color=#FCCE03FF>Brybry</color>, <color=#FCCE03FF>Dadoum</color> & <color=#FCCE03FF>Thilladon</color>
+Updated by <color=#FCCE03FF>Brybry</color>, <color=#FCCE03FF>Dadoum</color>, <color=#FCCE03FF>Thilladon</color> & <color=#FCCE03FF>Eno</color>
 Design by <color=#FCCE03FF>Bavari</color></size>";
 
     public static string mainMenuCredentials = 
 $@"Modded by <color=#FCCE03FF>Eisbison</color>, <color=#FCCE03FF>Thunderstorm584</color>, <color=#FCCE03FF>EndOfFile</color>, <color=#FCCE03FF>Mallöris</color> & <color=#FCCE03FF>Gendelo</color>
-Updated by <color=#FCCE03FF>Brybry</color>, <color=#FCCE03FF>Dadoum</color> & <color=#FCCE03FF>Thilladon</color>
+Updated by <color=#FCCE03FF>Brybry</color>, <color=#FCCE03FF>Dadoum</color>, <color=#FCCE03FF>Thilladon</color> & <color=#FCCE03FF>Eno</color>
 Design by <color=#FCCE03FF>Bavari</color>";
 
         public static string contributorsCredentials =

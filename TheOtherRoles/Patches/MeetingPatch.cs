@@ -6,6 +6,7 @@ using static TheOtherRoles.TheOtherRoles;
 using static TheOtherRoles.TORMapOptions;
 using TheOtherRoles.Objects;
 using System;
+using TheOtherRoles.Modules;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using UnityEngine;
@@ -280,7 +281,7 @@ namespace TheOtherRoles.Patches {
                     renderers[A].color = Color.green;
                 } else if (renderers[A] != null) {
                     renderers[A].color = Color.gray;
-                    }
+                }
                 if (swapperButtonList[A] != null) swapperButtonList[A].OnClick.RemoveAllListeners();  // Swap buttons can't be clicked / changed anymore
             }
             if (firstPlayer != null && secondPlayer != null) {
@@ -585,7 +586,26 @@ namespace TheOtherRoles.Patches {
         class MeetingServerStartPatch {
             static void Postfix(MeetingHud __instance)
             {
+                System.Console.WriteLine("MeetingServerStartPatch postfix");
                 populateButtonsPostfix(__instance);
+            }
+        }
+        
+        [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.Start))]
+        public static class MeetingHudStartPatch
+        {
+            public static void Prefix(MeetingHud __instance)
+            {
+                System.Console.WriteLine($"MeetingHudStartPatch Prefix {__instance.playerStates.Length} {__instance.PlayerColoredParts.Length}");
+                RandomSeed.UpdateSeed();
+                RandomSeed.PlayerMeetingData.SetPlayerMeetingData(__instance);
+                RandomSeed.PlayerMeetingData.RandomizePlayersList(__instance);
+            }
+            
+            public static void Postfix(MeetingHud __instance)
+            {
+                System.Console.WriteLine("MeetingHudStartPatch Postfix");
+                RandomSeed.PlayerMeetingData.RandomizePlayersList(__instance);
             }
         }
 
@@ -731,6 +751,8 @@ namespace TheOtherRoles.Patches {
                     // Remove first kill shield
                     TORMapOptions.firstKillPlayer = null;
                 }
+
+                RandomSeed.PlayerMeetingData.RandomizePlayersList(__instance);
             }
         }
 
