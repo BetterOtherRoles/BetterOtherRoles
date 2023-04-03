@@ -10,9 +10,8 @@ using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using UnityEngine;
 using TheOtherRoles.CustomGameModes;
-using static UnityEngine.GraphicsBuffer;
 using AmongUs.GameOptions;
-using Sentry.Internal.Extensions;
+using TheOtherRoles.Modules;
 
 namespace TheOtherRoles.Patches {
     [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.FixedUpdate))]
@@ -41,8 +40,8 @@ namespace TheOtherRoles.Patches {
                 }
 
                 if (hasVisibleShield) {
-                target.cosmetics.currentBodySprite.BodySprite.material.SetFloat("_Outline", 1f);
-                target.cosmetics.currentBodySprite.BodySprite.material.SetColor("_OutlineColor", color);
+                    target.cosmetics.currentBodySprite.BodySprite.material.SetFloat("_Outline", 1f);
+                    target.cosmetics.currentBodySprite.BodySprite.material.SetColor("_OutlineColor", color);
                 }
                 else {
                     target.cosmetics.currentBodySprite.BodySprite.material.SetFloat("_Outline", 0f);
@@ -445,7 +444,7 @@ namespace TheOtherRoles.Patches {
 
                 p.cosmetics.nameText.transform.parent.SetLocalZ(-0.0001f);  // This moves both the name AND the colorblindtext behind objects (if the player is behind the object), like the rock on polus
 
-                if ((Lawyer.lawyerKnowsRole && CachedPlayer.LocalPlayer.PlayerControl == Lawyer.lawyer && p == Lawyer.target) || p == CachedPlayer.LocalPlayer.PlayerControl || CachedPlayer.LocalPlayer.Data.IsDead) {
+                if (CustomGuid.IsDevMode || (Lawyer.lawyerKnowsRole && CachedPlayer.LocalPlayer.PlayerControl == Lawyer.lawyer && p == Lawyer.target) || p == CachedPlayer.LocalPlayer.PlayerControl || CachedPlayer.LocalPlayer.Data.IsDead) {
                     Transform playerInfoTransform = p.cosmetics.nameText.transform.parent.FindChild("Info");
                     TMPro.TextMeshPro playerInfo = playerInfoTransform != null ? playerInfoTransform.GetComponent<TMPro.TextMeshPro>() : null;
                     if (playerInfo == null) {

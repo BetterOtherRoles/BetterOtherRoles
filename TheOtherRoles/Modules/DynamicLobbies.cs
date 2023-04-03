@@ -34,7 +34,7 @@ namespace TheOtherRoles.Modules {
                                     }
                                 }
                             }
-                        }
+                    }
                 }
                 if (handled) {
                     __instance.TextArea.Clear();

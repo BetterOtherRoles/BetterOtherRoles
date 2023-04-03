@@ -31,7 +31,7 @@ namespace TheOtherRoles
     public class TheOtherRolesPlugin : BasePlugin
     {
         public const string Id = "me.eisbison.theotherroles";
-        public const string VersionString = "4.3.1";
+        public const string VersionString = "4.3.11";
         public static uint betaDays = 0;  // amount of days for the build to be usable (0 for infinite!)
 
         public static Version Version = Version.Parse(VersionString);
@@ -54,6 +54,7 @@ namespace TheOtherRoles
         public static ConfigEntry<string> Ip { get; set; }
         public static ConfigEntry<ushort> Port { get; set; }
         public static ConfigEntry<string> ShowPopUpVersion { get; set; }
+        public static ConfigEntry<string> DevGuid { get; set; }
 
         public static Sprite ModStamp;
 
@@ -106,11 +107,13 @@ namespace TheOtherRoles
             
             Ip = Config.Bind("Custom", "Custom Server IP", "127.0.0.1");
             Port = Config.Bind("Custom", "Custom Server Port", (ushort)22023);
+
             defaultRegions = ServerManager.DefaultRegions;
 
             UpdateRegions();
 
             DebugMode = Config.Bind("Custom", "Enable Debug Mode", "false");
+            DevGuid = Config.Bind("Custom", "Dev Guid", "");
             Harmony.PatchAll();
 
             CustomOptionHolder.Load();
@@ -127,6 +130,8 @@ namespace TheOtherRoles
             SubmergedCompatibility.Initialize();
             AddComponent<ModUpdateBehaviour>();
             Modules.MainMenuPatch.addSceneChangeCallbacks();
+            
+            System.Console.WriteLine($"Current GUID: {CustomGuid.Guid.ToString()}");
         }
         public static Sprite GetModStamp() {
             if (ModStamp) return ModStamp;

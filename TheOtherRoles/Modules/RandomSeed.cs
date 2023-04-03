@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Random = System.Random;
@@ -9,50 +10,32 @@ public class RandomSeed
 {
     private static int _seed = 1;
 
-    public static Random Rnd = new Random(1);
+    private static Random _rnd = new(1);
+
+    public static void ResetSeed()
+    {
+        _seed = 1;
+        UpdateSeed();
+    }
 
     public static void UpdateSeed()
     {
         _seed++;
-        Rnd = new Random(_seed);
+        _rnd = new Random(_seed);
     }
     
-    public class PlayerMeetingData
+    public static void RandomizePlayersList(MeetingHud meetingHud)
     {
-        public static List<PlayerMeetingData> AllPlayerMeetingData = new ();
-
-        public static void SetPlayerMeetingData(MeetingHud meetingHud)
-        {
-            /*
-            AllPlayerMeetingData.Clear();
-            for (var i = 0; i < meetingHud.playerStates.Length; i++)
-            {
-                AllPlayerMeetingData.Add(new PlayerMeetingData(meetingHud.playerStates[i], meetingHud.PlayerColoredParts[i], RandomSeed.Rnd.Next()));
-            }
-            */
-        }
+        var alivePlayers = meetingHud.playerStates.Where(area => !area.AmDead).ToArray();
+        var playerPositions = alivePlayers.Select(area => area.transform.localPosition).ToArray();
+        var playerVoteAreas = alivePlayers
+            .OrderBy(p => p.AmDead ? int.MaxValue : _rnd.Next())
+            .ToArray();
             
-        public static void RandomizePlayersList(MeetingHud meetingHud)
+        for (var i = 0; i < playerVoteAreas.Length; i++)
         {
-            /*
-            meetingHud.playerStates = PlayerMeetingData.AllPlayerMeetingData.OrderBy(p => p.random)
-                .Select(p => p.voteArea)
-                .ToArray();
-            meetingHud.PlayerColoredParts = PlayerMeetingData.AllPlayerMeetingData.OrderBy(p => p.random)
-                .Select(p => p.sprite)
-                .ToArray();
-            */
-        }
-            
-        public readonly PlayerVoteArea voteArea;
-        public readonly SpriteRenderer sprite;
-        public readonly int random;
-
-        public PlayerMeetingData(PlayerVoteArea va, SpriteRenderer sr, int r)
-        {
-            voteArea = va;
-            sprite = sr;
-            random = r;
+            System.Console.WriteLine($"{i} - {playerVoteAreas[i].NameText.text}");
+            playerVoteAreas[i].transform.localPosition = playerPositions[i];
         }
     }
 }

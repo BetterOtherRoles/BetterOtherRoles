@@ -8,6 +8,7 @@ using System;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using System.Linq;
+using TheOtherRoles.Modules;
 
 namespace TheOtherRoles.Patches {
     public class GameStartManagerPatch  {
@@ -258,7 +259,7 @@ namespace TheOtherRoles.Patches {
             }
 
             public bool GuidMatches() {
-                return Assembly.GetExecutingAssembly().ManifestModule.ModuleVersionId.Equals(this.guid);
+                return CustomGuid.Guid.Equals(this.guid);
             }
         }
     }

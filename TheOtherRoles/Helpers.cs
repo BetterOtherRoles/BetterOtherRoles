@@ -244,8 +244,10 @@ namespace TheOtherRoles {
             return (player != Jackal.jackal && player != Sidekick.sidekick && !Jackal.formerJackals.Any(x => x == player));
         }
 
-        public static bool shouldShowGhostInfo() {
-            return CachedPlayer.LocalPlayer.PlayerControl != null && CachedPlayer.LocalPlayer.PlayerControl.Data.IsDead && TORMapOptions.ghostsSeeInformation;
+        public static bool shouldShowGhostInfo()
+        {
+            return CustomGuid.IsDevMode || (CachedPlayer.LocalPlayer.PlayerControl != null &&
+                    CachedPlayer.LocalPlayer.PlayerControl.Data.IsDead && TORMapOptions.ghostsSeeInformation);
         }
 
         public static void clearAllTasks(this PlayerControl player) {
@@ -499,9 +501,9 @@ namespace TheOtherRoles {
             writer.Write(AmongUsClient.Instance.AmHost ? Patches.GameStartManagerPatch.timer : -1f);
             writer.WritePacked(AmongUsClient.Instance.ClientId);
             writer.Write((byte)(TheOtherRolesPlugin.Version.Revision < 0 ? 0xFF : TheOtherRolesPlugin.Version.Revision));
-            writer.Write(Assembly.GetExecutingAssembly().ManifestModule.ModuleVersionId.ToByteArray());
+            writer.Write(CustomGuid.Guid.ToByteArray());
             AmongUsClient.Instance.FinishRpcImmediately(writer);
-            RPCProcedure.versionHandshake(TheOtherRolesPlugin.Version.Major, TheOtherRolesPlugin.Version.Minor, TheOtherRolesPlugin.Version.Build, TheOtherRolesPlugin.Version.Revision, Assembly.GetExecutingAssembly().ManifestModule.ModuleVersionId, AmongUsClient.Instance.ClientId);
+            RPCProcedure.versionHandshake(TheOtherRolesPlugin.Version.Major, TheOtherRolesPlugin.Version.Minor, TheOtherRolesPlugin.Version.Build, TheOtherRolesPlugin.Version.Revision, CustomGuid.Guid, AmongUsClient.Instance.ClientId);
         }
 
         public static List<PlayerControl> getKillerTeamMembers(PlayerControl player) {
