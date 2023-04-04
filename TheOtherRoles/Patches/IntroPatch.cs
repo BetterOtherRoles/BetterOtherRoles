@@ -139,8 +139,6 @@ namespace TheOtherRoles.Patches {
                 GameOptionsManager.Instance.currentNormalGameOptions.CrewLightMod = CustomOptionHolder.hideNSeekHuntedVision.getFloat();
                 GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown = CustomOptionHolder.hideNSeekKillCooldown.getFloat();
             }
-            // Reset RandomSeed
-            RandomSeed.ResetSeed();
         }
     }
 
@@ -237,6 +235,8 @@ namespace TheOtherRoles.Patches {
                 }
             }
             public static bool Prefix(IntroCutscene __instance) {
+                // Reset RandomSeed
+                RandomSeed.ResetSeed();
                 if (!CustomOptionHolder.activateRoles.getBool()) return true;
                 seed = rnd.Next(5000);
                 FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(1f, new Action<float>((p) => {
