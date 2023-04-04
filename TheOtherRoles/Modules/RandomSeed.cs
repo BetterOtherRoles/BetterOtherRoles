@@ -26,6 +26,7 @@ public class RandomSeed
     
     public static void RandomizePlayersList(MeetingHud meetingHud)
     {
+        if (!CustomOptionHolder.randomizePlayersInMeeting.getBool()) return;
         var alivePlayers = meetingHud.playerStates.Where(area => !area.AmDead).ToArray();
         var playerPositions = alivePlayers.Select(area => area.transform.localPosition).ToArray();
         var playerVoteAreas = alivePlayers
