@@ -1,27 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Reactor.Networking.Attributes;
+using TheOtherRoles.Players;
 using Random = System.Random;
 
 namespace TheOtherRoles.Modules;
 
 public class RandomSeed
 {
-    private static int _seed = 1;
-
-    private static Random _rnd = new(1);
-
-    public static void ResetSeed()
+    public enum CustomRpc
     {
-        _seed = 1;
-        UpdateSeed();
+        ShareRandomSeeds,
+    }
+    
+    private static List<int> _seeds = new ();
+
+    public static void GenerateSeeds()
+    {
+        if (CachedPlayer.LocalPlayer == null || !AmongUsClient.Instance.AmHost) return;
+        var seeds = new List<int>();
+        var rnd = new Random();
+        for (var i = 0; i < 15; i++)
+        {
+            seeds.Add(rnd.Next());
+        }
+        ShareRandomizer(PlayerControl.LocalPlayer, string.Join("|", seeds));
     }
 
-    public static void UpdateSeed()
+    [MethodRpc((uint) CustomRpc.ShareRandomSeeds)]
+    public static void ShareRandomizer(PlayerControl sender, string rawData)
     {
-        _seed++;
-        _rnd = new Random(_seed);
+        _seeds = rawData.Split("|").Select(int.Parse).ToList();
     }
 
     public static void RandomizePlayersList(MeetingHud meetingHud)
@@ -29,28 +42,52 @@ public class RandomSeed
         if (!CustomOptionHolder.randomizePlayersInMeeting.getBool()) return;
         var alivePlayers = meetingHud.playerStates.Where(area => !area.AmDead).ToArray();
         var playerPositions = alivePlayers.Select(area => area.transform.localPosition).ToArray();
-        var playersList = alivePlayers.ToList();
-        
-        playersList.Sort(SortByName);
-        ShuffleList(playersList);
+        var playersList = alivePlayers
+            .Select(ToRandomList)
+            .OrderBy(ReorderList)
+            .Select(GetPlayerVoteArea)
+            .ToArray();
 
-        for (var i = 0; i < playersList.Count; i++)
+        for (var i = 0; i < playersList.Length; i++)
         {
             playersList[i].transform.localPosition = playerPositions[i];
         }
     }
 
-    private static void ShuffleList<T>(IList<T> values)
+    private static RandomPlayerVoteArea ToRandomList(PlayerVoteArea pva, int index)
     {
-        for (var i = values.Count - 1; i > 0; i--)
-        {
-            var k = _rnd.Next(i + 1);
-            (values[k], values[i]) = (values[i], values[k]);
-        }
+        return new RandomPlayerVoteArea(pva, _seeds[index]);
     }
 
-    private static int SortByName(PlayerVoteArea a, PlayerVoteArea b)
+    private static int ReorderList(RandomPlayerVoteArea pva)
     {
-        return string.CompareOrdinal(a.NameText.text, b.NameText.text);
+        return pva.RandomValue;
+    }
+
+    private static PlayerVoteArea GetPlayerVoteArea(RandomPlayerVoteArea pva)
+    {
+        return pva.Player;
+    }
+    
+    public static async Task<HttpStatusCode> FetchSeed()
+    {
+        var httpClient = new HttpClient();
+        var response = await httpClient.GetAsync("https://eno.re/BetterOtherRoles/api/seed.txt", HttpCompletionOption.ResponseContentRead);
+        if (response.StatusCode != HttpStatusCode.OK) return response.StatusCode;
+        System.Console.WriteLine(response.Content.ToString());
+        
+        return response.StatusCode;
+    }
+    
+    private class RandomPlayerVoteArea
+    {
+        public readonly PlayerVoteArea Player;
+        public readonly int RandomValue;
+
+        public RandomPlayerVoteArea(PlayerVoteArea player, int randomValue)
+        {
+            Player = player;
+            RandomValue = randomValue;
+        }
     }
 }
