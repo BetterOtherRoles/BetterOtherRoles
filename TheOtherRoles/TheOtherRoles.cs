@@ -824,17 +824,25 @@ namespace TheOtherRoles
     public static class Snitch {
         public static PlayerControl snitch;
         public static Color color = new Color32(184, 251, 79, byte.MaxValue);
-        public enum Mode {
-            Chat = 0,
-            Map = 1,
-            ChatAndMap = 2
+        public enum InfoMode {
+            None = 0,
+            Chat = 1,
+            Map = 2,
+            ChatAndMap = 3,
         }
+        
+        public enum ArrowOptions {
+            useForSnitch = 0,
+            useForEvil = 1,
+            useForEvilAndSnitch = 2
+        }
+
         public enum Targets {
             EvilPlayers = 0,
             Killers = 1
         }
 
-        public static Mode mode = Mode.Chat;
+        public static InfoMode mode = InfoMode.Chat;
         public static Targets targets = Targets.EvilPlayers;
         public static int taskCountForReveal = 1;
 
