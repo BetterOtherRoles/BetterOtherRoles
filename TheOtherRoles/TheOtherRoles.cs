@@ -824,11 +824,19 @@ namespace TheOtherRoles
     public static class Snitch {
         public static PlayerControl snitch;
         public static Color color = new Color32(184, 251, 79, byte.MaxValue);
+        public static List<Arrow> localArrows = new List<Arrow>();
         public enum InfoMode {
             None = 0,
             Chat = 1,
             Map = 2,
             ChatAndMap = 3,
+        }
+
+        public enum TargetDisplay {
+            None = 0,
+            Text = 1,
+            Arrow = 2,
+            TextAndArrow = 3
         }
         
         public enum ArrowOptions {
@@ -842,7 +850,9 @@ namespace TheOtherRoles
             Killers = 1
         }
 
-        public static InfoMode mode = InfoMode.Chat;
+        public static InfoMode infoMode = InfoMode.Chat;
+        public static ArrowOptions arrowOptions = ArrowOptions.useForEvilAndSnitch;
+        public static TargetDisplay targetDisplay = TargetDisplay.Text;
         public static Targets targets = Targets.EvilPlayers;
         public static int taskCountForReveal = 1;
 
@@ -852,6 +862,13 @@ namespace TheOtherRoles
         public static bool needsUpdate = true;
 
         public static void clearAndReload() {
+            if (localArrows != null) {
+                foreach (Arrow arrow in localArrows)
+                    if (arrow?.arrow != null)
+                    UnityEngine.Object.Destroy(arrow.arrow);
+            }
+            localArrows = new List<Arrow>();
+            
             taskCountForReveal = Mathf.RoundToInt(CustomOptionHolder.snitchLeftTasksForReveal.getFloat());
             snitch = null;
             isRevealed = false;
@@ -859,8 +876,10 @@ namespace TheOtherRoles
             if (text != null) UnityEngine.Object.Destroy(text);
             text = null;
             needsUpdate = true;
-            mode = (Mode) CustomOptionHolder.snitchMode.getSelection();
+            infoMode = (InfoMode) CustomOptionHolder.snitchMode.getSelection();
             targets = (Targets) CustomOptionHolder.snitchTargets.getSelection();
+            arrowOptions = (ArrowOptions) CustomOptionHolder.snitchArrowOptions.getSelection();
+            targetDisplay = (TargetDisplay) CustomOptionHolder.snitchTargetDisplay.getSelection();
         }
     }
 

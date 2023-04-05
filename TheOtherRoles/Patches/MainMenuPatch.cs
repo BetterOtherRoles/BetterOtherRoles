@@ -108,6 +108,17 @@ namespace TheOtherRoles.Modules {
                 creditsAnnouncement.SubTitle = "";
                 creditsAnnouncement.PinState = false;
                 creditsAnnouncement.Date = "03.07.2020";
+                string creditsString = @$"<align=""center"">Github Contributors:
+Alex2911    amsyarasyiq    MaximeGillot
+Psynomit    probablyadnf    JustASysAdmin
+
+Discord Moderators:
+Streamblox    Draco Cordraconis
+Thanks to all our discord helpers!
+
+Thanks to miniduikboot & GD for hosting modded servers
+
+";
                 creditsString += $@"<size=60%> Other Credits & Resources:
 OxygenFilter - For the versions v2.3.0 to v2.6.1, we were using the OxygenFilter for automatic deobfuscation.
 Reactor - The framework used for all versions before v2.0.0, and again since 4.2.0.

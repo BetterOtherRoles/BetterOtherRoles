@@ -561,11 +561,43 @@ namespace TheOtherRoles.Patches {
             var (playerCompleted, playerTotal) = TasksHandler.taskInfo(Snitch.snitch.Data);
 
             if (playerTotal == 0) return;
+            
             PlayerControl local = CachedPlayer.LocalPlayer.PlayerControl;
 
             int numberOfTasks = playerTotal - playerCompleted;
+
+            if (Snitch.isRevealed && Snitch.targetDisplay != Snitch.TargetDisplay.Text)
+            {
+                if (Snitch.arrowOptions != Snitch.ArrowOptions.useForSnitch && ((Snitch.targets == Snitch.Targets.EvilPlayers && Helpers.isEvil(local)) || (Snitch.targets == Snitch.Targets.Killers && Helpers.isKiller(local))))
+                {
+                    if (Snitch.localArrows.Count == 0) Snitch.localArrows.Add(new Arrow(Color.blue));
+                    
+                    if (Snitch.localArrows.Count != 0 && Snitch.localArrows[0] != null) {
+                        Snitch.localArrows[0].arrow.SetActive(true);
+                        Snitch.localArrows[0].Update(Snitch.snitch.transform.position);
+                   }
+                } else if (Snitch.arrowOptions != Snitch.ArrowOptions.useForEvil && !snitchIsDead && CachedPlayer.LocalPlayer.PlayerControl == Snitch.snitch && (playerTotal - playerCompleted) == 0)
+                {
+                    int arrowIndex = 0;
+
+                    foreach (PlayerControl p in CachedPlayer.AllPlayers)
+                    {
+                        if (!p.Data.IsDead && ((Snitch.targets == Snitch.Targets.EvilPlayers && Helpers.isEvil(p)) || (Snitch.targets == Snitch.Targets.Killers && Helpers.isKiller(p)))) {
+                            if (arrowIndex >= Snitch.localArrows.Count) {
+                                Snitch.localArrows.Add(new Arrow(Palette.ImpostorRed));
+                            }
+                            if (arrowIndex < Snitch.localArrows.Count && Snitch.localArrows[arrowIndex] != null) {
+                                Snitch.localArrows[arrowIndex].arrow.SetActive(true);
+                                Snitch.localArrows[arrowIndex].Update(p.transform.position, Palette.ImpostorRed);
+                                // Snitch.localArrows[arrowIndex].Update(p.transform.position, (arrowForTeamJackal && Snitch.teamJackalUseDifferentArrowColor ? Jackal.color : Palette.ImpostorRed));
+                            }
+                            arrowIndex++;
+                        }
+                    }
+                }           
+            }
             
-            if (Snitch.isRevealed && ((Snitch.targets == Snitch.Targets.EvilPlayers && Helpers.isEvil(local)) || (Snitch.targets == Snitch.Targets.Killers && Helpers.isKiller(local)))) {
+            if (Snitch.isRevealed && Snitch.targetDisplay != Snitch.TargetDisplay.Arrow && ((Snitch.targets == Snitch.Targets.EvilPlayers && Helpers.isEvil(local)) || (Snitch.targets == Snitch.Targets.Killers && Helpers.isKiller(local)))) {
                 if (Snitch.text == null) {
                     Snitch.text = GameObject.Instantiate(FastDestroyableSingleton<HudManager>.Instance.KillButton.cooldownTimerText, FastDestroyableSingleton<HudManager>.Instance.transform);
                     Snitch.text.enableWordWrapping = false;
