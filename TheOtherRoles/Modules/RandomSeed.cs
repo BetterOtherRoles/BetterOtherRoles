@@ -40,18 +40,25 @@ public class RandomSeed
     public static void RandomizePlayersList(MeetingHud meetingHud)
     {
         if (!CustomOptionHolder.randomizePlayersInMeeting.getBool()) return;
-        var alivePlayers = meetingHud.playerStates.Where(area => !area.AmDead).ToArray();
-        var playerPositions = alivePlayers.Select(area => area.transform.localPosition).ToArray();
+        var alivePlayers = meetingHud.playerStates
+            .Where(area => !area.AmDead).ToList();
+        alivePlayers.Sort(SortListByNames);
+        var playerPositions = alivePlayers.Select(area => area.transform.localPosition).ToList();
         var playersList = alivePlayers
             .Select(ToRandomList)
             .OrderBy(ReorderList)
             .Select(GetPlayerVoteArea)
-            .ToArray();
+            .ToList();
 
-        for (var i = 0; i < playersList.Length; i++)
+        for (var i = 0; i < playersList.Count; i++)
         {
             playersList[i].transform.localPosition = playerPositions[i];
         }
+    }
+
+    private static int SortListByNames(PlayerVoteArea a, PlayerVoteArea b)
+    {
+        return string.CompareOrdinal(a.NameText.text, b.NameText.text);
     }
 
     private static RandomPlayerVoteArea ToRandomList(PlayerVoteArea pva, int index)
