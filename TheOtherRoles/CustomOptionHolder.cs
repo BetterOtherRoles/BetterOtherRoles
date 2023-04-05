@@ -306,6 +306,7 @@ namespace TheOtherRoles {
         public static CustomOption enableBetterPolus;
         public static CustomOption betterPolusReactorDuration;
         public static CustomOption enableBetterSkeld;
+        public static CustomOption randomizePlayersInMeeting;
         public static CustomOption noVoteIsSelfVote;
         public static CustomOption hidePlayerNames;
         public static CustomOption allowParallelMedBayScans;
@@ -386,6 +387,7 @@ namespace TheOtherRoles {
             enableBetterPolus = CustomOption.Create(2, Types.General, "Enable Better Polus Plugin", false);
             betterPolusReactorDuration = CustomOption.Create(3, Types.General, "Reactor Duration On Polus In Sec", 5f, 1f, 60f, 1f, enableBetterPolus);
             enableBetterSkeld = CustomOption.Create(4, Types.General, "Enable Better Skeld Plugin", false);
+            randomizePlayersInMeeting = CustomOption.Create(128, Types.General, "Randomize players in meeting", false);
             maxNumberOfMeetings = CustomOption.Create(5, Types.General, "Number Of Meetings (excluding Mayor meeting)", 10, 0, 15, 1, null, true);
             blockSkippingInEmergencyMeetings = CustomOption.Create(6, Types.General, "Block Skipping In Emergency Meetings", false);
             noVoteIsSelfVote = CustomOption.Create(7, Types.General, "No Vote Is Self Vote", false, blockSkippingInEmergencyMeetings);

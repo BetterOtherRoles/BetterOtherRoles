@@ -11,6 +11,5 @@ public static class CustomGuid
 
     private static Guid CurrentGuid => Assembly.GetExecutingAssembly().ManifestModule.ModuleVersionId;
 
-    public static bool IsDevMode => TheOtherRolesPlugin.DevGuid.Value != "" &&
-                                    Guid.Parse(TheOtherRolesPlugin.DevGuid.Value).Equals(CurrentGuid);
+    public const bool IsDevMode = false;
 }

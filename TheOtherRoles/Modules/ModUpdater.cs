@@ -110,7 +110,7 @@ namespace TheOtherRoles.Modules
             passiveButton.OnMouseOut.AddListener((Action)(() => buttonSprite.color = text.color = Color.red));
 
             var isSubmerged = TORUpdate == null;
-            var announcement = $"<size=150%>A new {(isSubmerged ? "Submerged" : "THE OTHER ROLES")} update to {(isSubmerged ? SubmergedUpdate.Tag : TORUpdate.Tag)} is available</size>\n{(isSubmerged ? SubmergedUpdate.Content : TORUpdate.Content)}";
+            var announcement = $"<size=150%>A new {(isSubmerged ? "Submerged" : "BetterOtherRoles")} update to {(isSubmerged ? SubmergedUpdate.Tag : TORUpdate.Tag)} is available</size>\n{(isSubmerged ? SubmergedUpdate.Content : TORUpdate.Content)}";
             var mgr = FindObjectOfType<MainMenuManager>(true);
 
             if (!isSubmerged) {
@@ -130,7 +130,7 @@ namespace TheOtherRoles.Modules
             }
             
             if (isSubmerged && !SubmergedCompatibility.Loaded) showPopUp = false;
-            if (showPopUp) mgr.StartCoroutine(CoShowAnnouncement(announcement, shortTitle: isSubmerged ? "Submerged Update" : "TOR Update", date: isSubmerged ? SubmergedUpdate.TimeString : TORUpdate.TimeString));
+            if (showPopUp) mgr.StartCoroutine(CoShowAnnouncement(announcement, shortTitle: isSubmerged ? "Submerged Update" : "BOR Update", date: isSubmerged ? SubmergedUpdate.TimeString : TORUpdate.TimeString));
             showPopUp = false;
         }
         

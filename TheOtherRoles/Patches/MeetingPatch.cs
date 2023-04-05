@@ -594,7 +594,7 @@ namespace TheOtherRoles.Patches {
         [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.Start))]
         public static class MeetingHudStartPatch
         {
-            public static void Prefix(MeetingHud __instance)
+            public static void Postfix(MeetingHud __instance)
             {
                 RandomSeed.UpdateSeed();
                 RandomSeed.RandomizePlayersList(__instance);
