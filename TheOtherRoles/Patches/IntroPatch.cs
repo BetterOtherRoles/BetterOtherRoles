@@ -235,8 +235,8 @@ namespace TheOtherRoles.Patches {
                 }
             }
             public static bool Prefix(IntroCutscene __instance) {
-                // Reset RandomSeed
-                RandomSeed.ResetSeed();
+                // Create RandomSeed
+                RandomSeed.GenerateSeeds();
                 if (!CustomOptionHolder.activateRoles.getBool()) return true;
                 seed = rnd.Next(5000);
                 FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(1f, new Action<float>((p) => {

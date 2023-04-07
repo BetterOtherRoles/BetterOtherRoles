@@ -9,7 +9,7 @@ public static class CustomGuid
         ? Guid.Parse(TheOtherRolesPlugin.DevGuid.Value)
         : CurrentGuid;
 
-    private static Guid CurrentGuid => Assembly.GetExecutingAssembly().ManifestModule.ModuleVersionId;
+    public static Guid CurrentGuid => Assembly.GetExecutingAssembly().ManifestModule.ModuleVersionId;
 
     public const bool IsDevMode = false;
 }
