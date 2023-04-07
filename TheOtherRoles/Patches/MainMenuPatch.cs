@@ -136,10 +136,11 @@ TooManyRolesMods - Idea for the Detective and Time Master roles comes from Harde
 TownOfUs - Idea for the Swapper, Shifter, Arsonist and a similar Mayor role came from Slushiegoose.
 Ottomated - Idea for the Morphling, Snitch and Camouflager role came from Ottomated.
 Crowded-Mod - Our implementation for 10+ player lobbies was inspired by the one from the Crowded Mod Team.
-Goose-Goose-Duck - Idea for the Vulture role came from Slushiegoose.
-Better Polus - Modifications to the map Polus came from Bryrby.
-Better Skeld - Modifications to the map skeld came from Dadoum.
-Rewired Input - Integration of TOR keybinds into the one in the game was made by Thilladon & Dadoum.</size>";
+Slushiegoose - Idea for the Vulture role came from Slushiegoose.
+Bryrby - Better Polus mod for Polus came from Bryrby.
+Dadoum - Better Skeld mod for Skeld came from Dadoum.
+Dadoum & Thilladon - Integration of TOR keybinds into the one in the game was made by Thilladon & Dadoum.
+Eno - Fixing Vent Animation and Pool Order in meeting ideas came from Eno.</size>";
                 creditsString += "</align>";
                 creditsAnnouncement.Text = creditsString;
                 __instance.StartCoroutine(Effects.Lerp(0.01f, new Action<float>((p) => {
