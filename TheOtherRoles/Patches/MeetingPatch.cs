@@ -685,7 +685,7 @@ namespace TheOtherRoles.Patches {
                 // Add Snitch info
                 string output = "";
 
-                if (Snitch.snitch != null && Snitch.infoMode != Snitch.InfoMode.Map && Snitch.targetDisplay != Snitch.TargetDisplay.Arrow && (CachedPlayer.LocalPlayer.PlayerControl == Snitch.snitch || Helpers.shouldShowGhostInfo()) && !Snitch.snitch.Data.IsDead) {
+                if (Snitch.snitch != null && Snitch.infoMode != Snitch.InfoMode.Map && (CachedPlayer.LocalPlayer.PlayerControl == Snitch.snitch || Helpers.shouldShowGhostInfo()) && !Snitch.snitch.Data.IsDead) {
                     var (playerCompleted, playerTotal) = TasksHandler.taskInfo(Snitch.snitch.Data);
                     int numberOfTasks = playerTotal - playerCompleted;
                     if (numberOfTasks == 0) {

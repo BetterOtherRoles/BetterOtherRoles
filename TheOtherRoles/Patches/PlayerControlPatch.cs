@@ -566,9 +566,9 @@ namespace TheOtherRoles.Patches {
 
             int numberOfTasks = playerTotal - playerCompleted;
 
-            if (Snitch.isRevealed && Snitch.targetDisplay != Snitch.TargetDisplay.Text)
+            if (Snitch.isRevealed && Snitch.arrowTargets != Snitch.ArrowTargets.None)
             {
-                if (Snitch.arrowOptions != Snitch.ArrowOptions.useForSnitch && ((Snitch.targets == Snitch.Targets.EvilPlayers && Helpers.isEvil(local)) || (Snitch.targets == Snitch.Targets.Killers && Helpers.isKiller(local))))
+                if (Snitch.arrowTargets != Snitch.ArrowTargets.Evil && ((Snitch.targets == Snitch.Targets.EvilPlayers && Helpers.isEvil(local)) || (Snitch.targets == Snitch.Targets.Killers && Helpers.isKiller(local))))
                 {
                     if (Snitch.localArrows.Count == 0) Snitch.localArrows.Add(new Arrow(Color.blue));
                     
@@ -576,7 +576,7 @@ namespace TheOtherRoles.Patches {
                         Snitch.localArrows[0].arrow.SetActive(true);
                         Snitch.localArrows[0].Update(Snitch.snitch.transform.position);
                    }
-                } else if (Snitch.arrowOptions != Snitch.ArrowOptions.useForEvil && !snitchIsDead && CachedPlayer.LocalPlayer.PlayerControl == Snitch.snitch && (playerTotal - playerCompleted) == 0)
+                } else if (Snitch.arrowTargets != Snitch.ArrowTargets.Snitch && !snitchIsDead && CachedPlayer.LocalPlayer.PlayerControl == Snitch.snitch && (playerTotal - playerCompleted) == 0)
                 {
                     int arrowIndex = 0;
 
@@ -597,7 +597,7 @@ namespace TheOtherRoles.Patches {
                 }           
             }
             
-            if (Snitch.isRevealed && Snitch.targetDisplay != Snitch.TargetDisplay.Arrow && ((Snitch.targets == Snitch.Targets.EvilPlayers && Helpers.isEvil(local)) || (Snitch.targets == Snitch.Targets.Killers && Helpers.isKiller(local)))) {
+            if (Snitch.isRevealed && ((Snitch.targets == Snitch.Targets.EvilPlayers && Helpers.isEvil(local)) || (Snitch.targets == Snitch.Targets.Killers && Helpers.isKiller(local)))) {
                 if (Snitch.text == null) {
                     Snitch.text = GameObject.Instantiate(FastDestroyableSingleton<HudManager>.Instance.KillButton.cooldownTimerText, FastDestroyableSingleton<HudManager>.Instance.transform);
                     Snitch.text.enableWordWrapping = false;

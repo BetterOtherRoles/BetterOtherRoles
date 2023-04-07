@@ -831,18 +831,12 @@ namespace TheOtherRoles
             Map = 2,
             ChatAndMap = 3,
         }
-
-        public enum TargetDisplay {
-            None = 0,
-            Text = 1,
-            Arrow = 2,
-            TextAndArrow = 3
-        }
         
-        public enum ArrowOptions {
-            useForSnitch = 0,
-            useForEvil = 1,
-            useForEvilAndSnitch = 2
+        public enum ArrowTargets { // Or none ?
+            None = 0,
+            Evil = 1,
+            Snitch = 2,
+            EvilAndSnitch = 3
         }
 
         public enum Targets {
@@ -851,8 +845,7 @@ namespace TheOtherRoles
         }
 
         public static InfoMode infoMode = InfoMode.Chat;
-        public static ArrowOptions arrowOptions = ArrowOptions.useForEvilAndSnitch;
-        public static TargetDisplay targetDisplay = TargetDisplay.Text;
+        public static ArrowTargets arrowTargets = ArrowTargets.None;
         public static Targets targets = Targets.EvilPlayers;
         public static int taskCountForReveal = 1;
 
@@ -876,10 +869,9 @@ namespace TheOtherRoles
             if (text != null) UnityEngine.Object.Destroy(text);
             text = null;
             needsUpdate = true;
-            infoMode = (InfoMode) CustomOptionHolder.snitchMode.getSelection();
+            infoMode = (InfoMode) CustomOptionHolder.snitchInfoMode.getSelection();
             targets = (Targets) CustomOptionHolder.snitchTargets.getSelection();
-            arrowOptions = (ArrowOptions) CustomOptionHolder.snitchArrowOptions.getSelection();
-            targetDisplay = (TargetDisplay) CustomOptionHolder.snitchTargetDisplay.getSelection();
+            arrowTargets = (ArrowTargets) CustomOptionHolder.snitchArrowTargets.getSelection();
         }
     }
 
