@@ -236,7 +236,7 @@ namespace TheOtherRoles.Patches {
     }
 
     [HarmonyPatch(typeof(Vent), nameof(Vent.TryMoveToVent))]
-    public static class MoveToVentPatch {
+    public static class TryMoveToVentPatch {
         public static bool Prefix(Vent otherVent) {
             return !Trapper.playersOnMap.Contains(CachedPlayer.LocalPlayer.PlayerControl);
         }
@@ -272,6 +272,7 @@ namespace TheOtherRoles.Patches {
         public static void Postfix(out bool __result)
         {
             __result = true;
+            TheOtherRolesPlugin.Logger.LogMessage($"PlayerPurchasesData");
         }
     }
 

@@ -832,7 +832,7 @@ namespace TheOtherRoles
             ChatAndMap = 3,
         }
         
-        public enum ArrowTargets { // Or none ?
+        public enum ArrowTargets {
             None = 0,
             Evil = 1,
             Snitch = 2,

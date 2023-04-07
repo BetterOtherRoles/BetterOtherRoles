@@ -382,25 +382,8 @@ namespace TheOtherRoles {
 
             // Role Options
             presetSelection = CustomOption.Create(0, Types.General, cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Preset"), presets, null, true);
-            activateRoles = CustomOption.Create(1, Types.General, cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Enable Mod Roles And Block Vanilla Roles"), true, null, true);
-            enableBetterPolus = CustomOption.Create(2, Types.General, "Enable Better Polus Plugin", false);
-            betterPolusReactorDuration = CustomOption.Create(3, Types.General, "Reactor Duration On Polus In Sec", 5f, 1f, 60f, 1f, enableBetterPolus);
-            enableBetterSkeld = CustomOption.Create(4, Types.General, "Enable Better Skeld Plugin", false);
-            randomizePlayersInMeeting = CustomOption.Create(128, Types.General, "Randomize players in meeting", false);
-            maxNumberOfMeetings = CustomOption.Create(5, Types.General, "Number Of Meetings (excluding Mayor meeting)", 10, 0, 15, 1, null, true);
-            blockSkippingInEmergencyMeetings = CustomOption.Create(6, Types.General, "Block Skipping In Emergency Meetings", false);
-            noVoteIsSelfVote = CustomOption.Create(7, Types.General, "No Vote Is Self Vote", false, blockSkippingInEmergencyMeetings);
-            hidePlayerNames = CustomOption.Create(8, Types.General, "Hide Player Names", false);
-            allowParallelMedBayScans = CustomOption.Create(9, Types.General, "Allow Parallel MedBay Scans", false);
-            shieldFirstKill = CustomOption.Create(10, Types.General, "Shield Last Game First Kill", false);
-            finishTasksBeforeHauntingOrZoomingOut = CustomOption.Create(11, Types.General, "Finish Tasks Before Haunting Or Zooming Out", true);
-            camsNightVision = CustomOption.Create(12, Types.General, "Cams Switch To Night Vision If Lights Are Off", false, null, true);
-            camsNoNightVisionIfImpVision = CustomOption.Create(13, Types.General, "Impostor Vision Ignores Night Vision Cams", false, camsNightVision, false);
+            activateRoles = CustomOption.Create(5000, Types.General, cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Enable Mod Roles And Block Vanilla Roles"), true, null, true);
 
-            if (Utilities.EventUtility.canBeEnabled) enableCodenameHorsemode = CustomOption.Create(10423, Types.General, cs(Color.green, "Enable Codename Horsemode"), true, null, true);
-            if (Utilities.EventUtility.canBeEnabled) enableCodenameDisableHorses = CustomOption.Create(10424, Types.General, cs(Color.green, "Disable Horses"), false, enableCodenameHorsemode, false);
-
-            // Using new id's for the options to not break compatibilty with older versions
             crewmateRolesCountMin = CustomOption.Create(300, Types.General, cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Minimum Crewmate Roles"), 15f, 0f, 15f, 1f, null, true);
             crewmateRolesCountMax = CustomOption.Create(301, Types.General, cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Maximum Crewmate Roles"), 15f, 0f, 15f, 1f);
             crewmateRolesFill = CustomOption.Create(308, Types.General, cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Fill Crewmate Roles\n(Ignores Min/Max)"), false);
@@ -410,6 +393,26 @@ namespace TheOtherRoles {
             impostorRolesCountMax = CustomOption.Create(305, Types.General, cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Maximum Impostor Roles"), 15f, 0f, 15f, 1f);
             modifiersCountMin = CustomOption.Create(306, Types.General, cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Minimum Modifiers"), 15f, 0f, 15f, 1f);
             modifiersCountMax = CustomOption.Create(307, Types.General, cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Maximum Modifiers"), 15f, 0f, 15f, 1f);
+            
+            enableBetterPolus = CustomOption.Create(5001, Types.General, "Enable Better Polus Plugin", false);
+            betterPolusReactorDuration = CustomOption.Create(5002, Types.General, "Reactor Duration On Polus In Sec", 5f, 1f, 60f, 1f, enableBetterPolus);
+            enableBetterSkeld = CustomOption.Create(5003, Types.General, "Enable Better Skeld Plugin", false);
+            randomizePlayersInMeeting = CustomOption.Create(5004, Types.General, "Randomize players in meeting", false);
+
+            maxNumberOfMeetings = CustomOption.Create(3, Types.General, "Number Of Meetings (excluding Mayor meeting)", 10, 0, 15, 1, null, true);
+            blockSkippingInEmergencyMeetings = CustomOption.Create(4, Types.General, "Block Skipping In Emergency Meetings", false);
+            noVoteIsSelfVote = CustomOption.Create(5, Types.General, "No Vote Is Self Vote", false, blockSkippingInEmergencyMeetings);
+            hidePlayerNames = CustomOption.Create(6, Types.General, "Hide Player Names", false);
+            allowParallelMedBayScans = CustomOption.Create(7, Types.General, "Allow Parallel MedBay Scans", false);
+            shieldFirstKill = CustomOption.Create(8, Types.General, "Shield Last Game First Kill", false);
+            finishTasksBeforeHauntingOrZoomingOut = CustomOption.Create(9, Types.General, "Finish Tasks Before Haunting Or Zooming Out", true);
+            camsNightVision = CustomOption.Create(11, Types.General, "Cams Switch To Night Vision If Lights Are Off", false, null, true);
+            camsNoNightVisionIfImpVision = CustomOption.Create(12, Types.General, "Impostor Vision Ignores Night Vision Cams", false, camsNightVision, false);
+
+            
+
+            // Using new id's for the options to not break compatibilty with older versions
+            
 
             mafiaSpawnRate = CustomOption.Create(18, Types.Impostor, cs(Janitor.color, "Mafia"), rates, null, true);
             janitorCooldown = CustomOption.Create(19, Types.Impostor, "Janitor Cooldown", 30f, 10f, 60f, 2.5f, mafiaSpawnRate);
