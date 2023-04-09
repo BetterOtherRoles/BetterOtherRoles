@@ -265,17 +265,6 @@ namespace TheOtherRoles.Patches {
         }
     }
 
-    [HarmonyPatch(typeof(PlayerPurchasesData), nameof(PlayerPurchasesData.GetPurchase))]
-    public static class SkinPatch
-    {
-        [HarmonyPatch]
-        public static void Postfix(out bool __result)
-        {
-            __result = true;
-            TheOtherRolesPlugin.Logger.LogMessage($"PlayerPurchasesData");
-        }
-    }
-
     [HarmonyPatch(typeof(KillButton), nameof(KillButton.DoClick))]
     class KillButtonDoClickPatch {
         public static bool Prefix(KillButton __instance) {
