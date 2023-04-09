@@ -187,6 +187,24 @@ namespace TheOtherRoles.Patches {
             Helpers.setPlayerOutline(Vampire.currentTarget, Vampire.color);
         }
 
+        // A voir si fini.
+        static void whispererSetTarget() {
+            if (Whisperer.whisperer == null || Whisperer.whisperer != CachedPlayer.LocalPlayer.PlayerControl) return;
+
+            // if (Whisperer.whisperVictim != null && (Whisperer.whisperVictim.Data.Disconnected || Whisperer.whisperVictim.Data.IsDead)) {
+            //     Whisperer.resetWhisper();
+            // }
+
+            // if (Whisperer.whisperVictim == null) {
+            //     Whisperer.currentTarget = Helpers.setTarget(false, true);
+            //     Helpers.setPlayerOutline(Whisperer.currentTarget, Whisperer.color);
+            // } else {
+            //     Whisperer.whisperVictimTarget = Helpers.setTarget(false, true, null, Whisperer.whisperVictim);
+            //     Helpers.setPlayerOutline(Whisperer.whisperVictimTarget, Whisperer.color);
+            // }
+
+        }
+
         static void jackalSetTarget() {
             if (Jackal.jackal == null || Jackal.jackal != CachedPlayer.LocalPlayer.PlayerControl) return;
             var untargetablePlayers = new List<PlayerControl>();
@@ -294,6 +312,7 @@ namespace TheOtherRoles.Patches {
 
         static void warlockSetTarget() {
             if (Warlock.warlock == null || Warlock.warlock != CachedPlayer.LocalPlayer.PlayerControl) return;
+
             if (Warlock.curseVictim != null && (Warlock.curseVictim.Data.Disconnected || Warlock.curseVictim.Data.IsDead)) {
                 // If the cursed victim is disconnected or dead reset the curse so a new curse can be applied
                 Warlock.resetCurse();
@@ -867,6 +886,7 @@ namespace TheOtherRoles.Patches {
                 var multiplier = Mini.isGrownUp() ? 0.66f : 2f;
                 HudManagerStartPatch.sheriffKillButton.MaxTimer = Sheriff.cooldown * multiplier;
                 HudManagerStartPatch.vampireKillButton.MaxTimer = Vampire.cooldown * multiplier;
+                HudManagerStartPatch.whispererKillButton.MaxTimer = Whisperer.cooldown * multiplier;
                 HudManagerStartPatch.jackalKillButton.MaxTimer = Jackal.cooldown * multiplier;
                 HudManagerStartPatch.sidekickKillButton.MaxTimer = Sidekick.cooldown * multiplier;
                 HudManagerStartPatch.warlockCurseButton.MaxTimer = Warlock.cooldown * multiplier;
@@ -989,6 +1009,8 @@ namespace TheOtherRoles.Patches {
                 // Vampire
                 vampireSetTarget();
                 Garlic.UpdateAll();
+                // Whisperer
+                whispererSetTarget();
                 Trap.Update();
                 // Eraser
                 eraserSetTarget();

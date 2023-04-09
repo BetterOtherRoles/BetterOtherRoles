@@ -62,6 +62,7 @@ namespace TheOtherRoles
         Ninja,
         Thief,
         Bomber,
+        Whisperer,
         Crewmate,
         Impostor,
         // Modifier ---
@@ -365,8 +366,11 @@ namespace TheOtherRoles
                     case RoleId.Bomber:
                         Bomber.bomber = player;
                         break;
+                        case RoleId.Whisperer:
+                            Whisperer.whisperer = player;
+                            break;
                     }
-        }
+            }
         }
 
         public static void setModifier(byte modifierId, byte playerId, byte flag) {
@@ -713,6 +717,7 @@ namespace TheOtherRoles
             if (player == Mafioso.mafioso) Mafioso.clearAndReload();
             if (player == Janitor.janitor) Janitor.clearAndReload();
             if (player == Vampire.vampire) Vampire.clearAndReload();
+            if (player == Whisperer.whisperer) Whisperer.clearAndReload();
             if (player == Eraser.eraser) Eraser.clearAndReload();
             if (player == Trickster.trickster) Trickster.clearAndReload();
             if (player == Cleaner.cleaner) Cleaner.clearAndReload();
@@ -1027,6 +1032,7 @@ namespace TheOtherRoles
             if (target == Morphling.morphling) Morphling.morphling = thief;
             if (target == Camouflager.camouflager) Camouflager.camouflager = thief;
             if (target == Vampire.vampire) Vampire.vampire = thief;
+            if (target == Whisperer.whisperer) Whisperer.whisperer = thief;
             if (target == Eraser.eraser) Eraser.eraser = thief;
             if (target == Trickster.trickster) Trickster.trickster = thief;
             if (target == Cleaner.cleaner) Cleaner.cleaner = thief;

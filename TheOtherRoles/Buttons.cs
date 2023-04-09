@@ -35,6 +35,7 @@ namespace TheOtherRoles
         private static CustomButton trackerTrackPlayerButton;
         private static CustomButton trackerTrackCorpsesButton;
         public static CustomButton vampireKillButton;
+        public static CustomButton whispererKillButton;
         public static CustomButton garlicButton;
         public static CustomButton jackalKillButton;
         public static CustomButton sidekickKillButton;
@@ -103,6 +104,7 @@ namespace TheOtherRoles
             hackerVitalsButton.MaxTimer = Hacker.cooldown;
             hackerAdminTableButton.MaxTimer = Hacker.cooldown;
             vampireKillButton.MaxTimer = Vampire.cooldown;
+            whispererKillButton.MaxTimer = Whisperer.cooldown;
             trackerTrackPlayerButton.MaxTimer = 0f;
             garlicButton.MaxTimer = 0f;
             jackalKillButton.MaxTimer = Jackal.cooldown;
@@ -138,6 +140,7 @@ namespace TheOtherRoles
             hackerVitalsButton.EffectDuration = Hacker.duration;
             hackerAdminTableButton.EffectDuration = Hacker.duration;
             vampireKillButton.EffectDuration = Vampire.delay;
+            whispererKillButton.EffectDuration = Whisperer.delay;
             camouflagerButton.EffectDuration = Camouflager.duration;
             morphlingButton.EffectDuration = Morphling.duration;
             lightsOutButton.EffectDuration = Trickster.lightsOutDuration;
@@ -748,7 +751,63 @@ namespace TheOtherRoles
                     trackerTrackCorpsesButton.Timer = trackerTrackCorpsesButton.MaxTimer;
                 }
             );
-    
+
+            whispererKillButton = new CustomButton(
+                () => {
+                    MurderAttemptResult murder = Helpers.checkMurderAttempt(Whisperer.whisperer, Whisperer.currentTarget);
+                    if (murder == MurderAttemptResult.PerformKill) {
+                        
+                        // Whisperer.whisperVictim = Whisperer.currentTarget;
+
+                        // MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.WhispererSetVictim, Hazel.SendOption.Reliable, -1);
+                        // writer.Write(Whisperer.whisperVictim.PlayerId);
+                        // writer.Write((byte)0);
+                        // AmongUsClient.Instance.FinishRpcImmediately(writer);
+                        // RPCProcedure.whispererSetVictim(Whisperer.whisperVictim.PlayerId, 0);
+
+                        byte lastTimer = (byte)Whisperer.delay;
+                        FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Whisperer.delay, new Action<float>((p) => { // Delayed action
+                        
+                        })));
+                        
+                        // SoundEffectsManager.play("vampireBite");
+
+                        whispererKillButton.HasEffect = true; // Trigger effect on this click
+
+                    } else if (murder == MurderAttemptResult.BlankKill) {
+                        whispererKillButton.Timer = whispererKillButton.MaxTimer;
+                        Whisperer.whisperer.killTimer = GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown;
+                        whispererKillButton.HasEffect = false;
+                    } else {
+                        whispererKillButton.HasEffect = false;
+                    }
+                },
+                () => { return Whisperer.whisperer != null && Whisperer.whisperer == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
+                () => {
+                    
+                    whispererKillButton.actionButton.graphic.sprite = Whisperer.getButtonSprite();
+                    whispererKillButton.showButtonText = false;
+                    
+                    return (Whisperer.currentTarget != null && Whisperer.whisperVictim == null) && CachedPlayer.LocalPlayer.PlayerControl.CanMove;
+                },
+                () => {
+                    whispererKillButton.Timer = whispererKillButton.MaxTimer;
+                    whispererKillButton.isEffectActive = false;
+                    whispererKillButton.actionButton.cooldownTimerText.color = Palette.EnabledColor;
+                    Whisperer.whisperVictim = null;
+                    Whisperer.whisperVictimTarget = null;
+                },
+                Whisperer.getButtonSprite(),
+                CustomButton.ButtonPositions.upperRowLeft,
+                __instance,
+                "ActionSecondary",
+                false,
+                0f,
+                () => {
+                    whispererKillButton.Timer = whispererKillButton.MaxTimer;
+                }
+            );
+             
             vampireKillButton = new CustomButton(
                 () => {
                     MurderAttemptResult murder = Helpers.checkMurderAttempt(Vampire.vampire, Vampire.currentTarget);

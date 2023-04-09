@@ -20,6 +20,7 @@ namespace TheOtherRoles.Modules {
         //private static Sprite horseModeOnSprite = null;
         private static GameObject bottomTemplate;
         private static AnnouncementPopUp popUp;
+        private static JoinGameButton cosmeticsPopUp;
 
         private static void Prefix(MainMenuManager __instance) {
             CustomHatLoader.LaunchHatFetcher();
@@ -46,6 +47,11 @@ namespace TheOtherRoles.Modules {
                 buttonSpriteDiscord.color = textDiscord.color = discordColor;
             });
 
+            GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>() ;
+            allObjects = allObjects.OrderBy(obj => obj.ToString()).ToArray();
+
+            foreach(GameObject obj in allObjects)
+                TheOtherRolesPlugin.Logger.LogMessage($"Name : {obj.ToString()}");
 
             bottomTemplate = GameObject.Find("InventoryButton");
             /*
@@ -161,7 +167,23 @@ Eno - Fixing Vent Animation and Pool Order in meeting ideas came from Eno.</size
                     }
                 })));
             });
-            
+
+            var cosmeticsButton = Object.Instantiate(bottomTemplate, bottomTemplate.transform.parent);
+            var passiveCosmeticsButton = cosmeticsButton.GetComponent<PassiveButton>();
+            var spriteCosmeticsButton = cosmeticsButton.GetComponent<SpriteRenderer>();
+
+            spriteCosmeticsButton.sprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.CreditsButton.png", 75f);
+
+            passiveCosmeticsButton.OnClick = new ButtonClickedEvent();
+
+            passiveCosmeticsButton.OnClick.AddListener((System.Action)delegate {
+                if (cosmeticsPopUp != null) Object.Destroy(cosmeticsPopUp);
+
+                cosmeticsPopUp = Object.Instantiate(Object.FindObjectOfType<JoinGameButton>(true));
+                cosmeticsPopUp.gameObject.SetActive(true);
+                
+            });
+    
         }
 
         public static void Postfix(MainMenuManager __instance) {
