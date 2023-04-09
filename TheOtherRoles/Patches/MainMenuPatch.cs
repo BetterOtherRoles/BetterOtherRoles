@@ -1,23 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
+using AmongUs.Data;
+using Assets.InnerNet;
 using HarmonyLib;
+using Il2CppSystem.Collections.Generic;
+using TheOtherRoles.Modules;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using static UnityEngine.UI.Button;
 using Object = UnityEngine.Object;
-using TheOtherRoles.Patches;
-using UnityEngine.SceneManagement;
-using TheOtherRoles.Utilities;
-using AmongUs.Data;
-using Assets.InnerNet;
-using System.Linq;
 
-namespace TheOtherRoles.Modules {
+namespace TheOtherRoles.Patches {
     [HarmonyPatch(typeof(MainMenuManager), nameof(MainMenuManager.Start))]
     public class MainMenuPatch {
-        private static bool horseButtonState = TORMapOptions.enableHorseMode;
-        //private static Sprite horseModeOffSprite = null;
-        //private static Sprite horseModeOnSprite = null;
         private static GameObject bottomTemplate;
         private static AnnouncementPopUp popUp;
 
@@ -26,8 +22,10 @@ namespace TheOtherRoles.Modules {
             var template = GameObject.Find("ExitGameButton");
             if (template == null) return;
 
-            var buttonDiscord = UnityEngine.Object.Instantiate(template, null);
-            buttonDiscord.transform.localPosition = new Vector3(buttonDiscord.transform.localPosition.x, buttonDiscord.transform.localPosition.y + 0.6f, buttonDiscord.transform.localPosition.z);
+            var buttonDiscord = Object.Instantiate(template, null);
+            var localPosition = buttonDiscord.transform.localPosition;
+            localPosition = new Vector3(localPosition.x, localPosition.y + 0.6f, localPosition.z);
+            buttonDiscord.transform.localPosition = localPosition;
 
             var textDiscord = buttonDiscord.transform.GetChild(0).GetComponent<TMPro.TMP_Text>();
             __instance.StartCoroutine(Effects.Lerp(0.1f, new System.Action<float>((p) => {
@@ -48,40 +46,6 @@ namespace TheOtherRoles.Modules {
 
 
             bottomTemplate = GameObject.Find("InventoryButton");
-            /*
-            // Horse mode stuff
-            var horseModeSelectionBehavior = new ClientOptionsPatch.SelectionBehaviour("Enable Horse Mode", () => TORMapOptions.enableHorseMode = TheOtherRolesPlugin.EnableHorseMode.Value = !TheOtherRolesPlugin.EnableHorseMode.Value, TheOtherRolesPlugin.EnableHorseMode.Value);
-
-            
-            if (bottomTemplate == null) return;
-            var horseButton = Object.Instantiate(bottomTemplate, bottomTemplate.transform.parent);
-            var passiveHorseButton = horseButton.GetComponent<PassiveButton>();
-            var spriteHorseButton = horseButton.GetComponent<SpriteRenderer>();
-
-            horseModeOffSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.HorseModeButtonOff.png", 75f);
-            horseModeOnSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.HorseModeButtonOn.png", 75f);
-
-            spriteHorseButton.sprite = horseButtonState ? horseModeOnSprite : horseModeOffSprite;
-
-            passiveHorseButton.OnClick = new ButtonClickedEvent();
-
-            passiveHorseButton.OnClick.AddListener((System.Action)delegate {
-                horseButtonState = horseModeSelectionBehavior.OnClick();
-                if (horseButtonState) {
-                    if (horseModeOnSprite == null) horseModeOnSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.HorseModeButtonOn.png", 75f);
-                    spriteHorseButton.sprite = horseModeOnSprite;
-                } else {
-                    if (horseModeOffSprite == null) horseModeOffSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.HorseModeButtonOff.png", 75f);
-                    spriteHorseButton.sprite = horseModeOffSprite;
-                }
-                CredentialsPatch.LogoPatch.updateSprite();
-                // Avoid wrong Player Particles floating around in the background
-                var particles = GameObject.FindObjectOfType<PlayerParticles>();
-                if (particles != null) {
-                    particles.pool.ReclaimAll();
-                    particles.Start();
-                }
-            });*/
 
             // TOR credits button
             if (bottomTemplate == null) return;
@@ -93,84 +57,43 @@ namespace TheOtherRoles.Modules {
 
             passiveCreditsButton.OnClick = new ButtonClickedEvent();
 
-            passiveCreditsButton.OnClick.AddListener((System.Action)delegate {
+            passiveCreditsButton.OnClick.AddListener((Action)delegate {
                 // do stuff
                 if (popUp != null) Object.Destroy(popUp);
                 popUp = Object.Instantiate(Object.FindObjectOfType<AnnouncementPopUp>(true));
                 popUp.gameObject.SetActive(true);
-
-                Assets.InnerNet.Announcement creditsAnnouncement = new Assets.InnerNet.Announcement();
-                creditsAnnouncement.Id = "torCredits";
-                creditsAnnouncement.Language = 0;
-                creditsAnnouncement.Number = 500;
-                creditsAnnouncement.Title = "The Other Roles Credits & Resources";
-                creditsAnnouncement.ShortTitle = "TOR Credits";
-                creditsAnnouncement.SubTitle = "";
-                creditsAnnouncement.PinState = false;
-                creditsAnnouncement.Date = "03.07.2020";
-                string creditsString = @$"<align=""center"">Github Contributors:
-Alex2911    amsyarasyiq    MaximeGillot
-Psynomit    probablyadnf    JustASysAdmin
-
-Discord Moderators:
-Streamblox    Draco Cordraconis
-Thanks to all our discord helpers!
-
-Thanks to miniduikboot & GD for hosting modded servers
-
-";
-                creditsString += $@"<size=60%> Other Credits & Resources:
-OxygenFilter - For the versions v2.3.0 to v2.6.1, we were using the OxygenFilter for automatic deobfuscation.
-Reactor - The framework used for all versions before v2.0.0, and again since 4.2.0.
-BepInEx - Used to hook game functions.
-Essentials - Custom game options by DorCoMaNdO:
-Before v1.6: We used the default Essentials release.
-v1.6-v1.8: We slightly changed the default Essentials.
-v2.0.0 and later: As we were not using Reactor anymore, we are using our own implementation, inspired by the one from DorCoMaNdO.
-Jackal and Sidekick - Original idea for the Jackal and Sidekick came from Dhalucard.
-Among-Us-Love-Couple-Mod - Idea for the Lovers modifier comes from Woodi-dev.
-Jester - Idea for the Jester role came from Maartii.
-ExtraRolesAmongUs - Idea for the Engineer and Medic role came from NotHunter101. Also some code snippets from their implementation were used.
-Among-Us-Sheriff-Mod - Idea for the Sheriff role came from Woodi-dev.
-TooManyRolesMods - Idea for the Detective and Time Master roles comes from Hardel-DW. Also some code snippets from their implementation were used.
-TownOfUs - Idea for the Swapper, Shifter, Arsonist and a similar Mayor role came from Slushiegoose.
-Ottomated - Idea for the Morphling, Snitch and Camouflager role came from Ottomated.
-Crowded-Mod - Our implementation for 10+ player lobbies was inspired by the one from the Crowded Mod Team.
-Slushiegoose - Idea for the Vulture role came from Slushiegoose.
-Bryrby - Better Polus mod for Polus came from Bryrby.
-Dadoum - Better Skeld mod for Skeld came from Dadoum.
-Dadoum & Thilladon - Integration of TOR keybinds into the one in the game was made by Thilladon & Dadoum.
-Eno - Fixing Vent Animation and Pool Order in meeting ideas came from Eno.</size>";
-                creditsString += "</align>";
-                creditsAnnouncement.Text = creditsString;
-                __instance.StartCoroutine(Effects.Lerp(0.01f, new Action<float>((p) => {
-                    if (p == 1) {
-                        var backup = DataManager.Player.Announcements.allAnnouncements;
-                        popUp.Init(false);
-                        DataManager.Player.Announcements.allAnnouncements = new();
-                        DataManager.Player.Announcements.allAnnouncements.Insert(0, creditsAnnouncement);
-                        foreach (var item in popUp.visibleAnnouncements) Object.Destroy(item);
-                        foreach (var item in Object.FindObjectsOfType<AnnouncementPanel>()) {
-                            if (item != popUp.ErrorPanel) Object.Destroy(item.gameObject);
-                        }
-                        popUp.CreateAnnouncementList();
-                        popUp.visibleAnnouncements[0].PassiveButton.OnClick.RemoveAllListeners();
-                        DataManager.Player.Announcements.allAnnouncements = backup;
-                        var titleText = GameObject.Find("Title_Text").GetComponent<TMPro.TextMeshPro>();
-                        if (titleText != null) titleText.text = "";
+                
+                __instance.StartCoroutine(Effects.Lerp(0.01f, new Action<float>((p) =>
+                {
+                    if (p != 1) return;
+                    var backup = DataManager.Player.Announcements.allAnnouncements;
+                    popUp.Init(false);
+                    DataManager.Player.Announcements.allAnnouncements = new List<Announcement>();
+                    DataManager.Player.Announcements.allAnnouncements.Insert(0, ModCredits.GetBetterOtherRolesCredits());
+                    foreach (var item in popUp.visibleAnnouncements) Object.Destroy(item);
+                    foreach (var item in Object.FindObjectsOfType<AnnouncementPanel>()) {
+                        if (item != popUp.ErrorPanel) Object.Destroy(item.gameObject);
                     }
+                    popUp.CreateAnnouncementList();
+                    popUp.visibleAnnouncements[0].PassiveButton.OnClick.RemoveAllListeners();
+                    DataManager.Player.Announcements.allAnnouncements = backup;
+                    var titleText = GameObject.Find("Title_Text").GetComponent<TMPro.TextMeshPro>();
+                    if (titleText != null) titleText.text = "";
                 })));
             });
             
         }
 
         public static void Postfix(MainMenuManager __instance) {
-            __instance.StartCoroutine(Effects.Lerp(0.01f, new Action<float>((p) => {
-                if (p == 1) {
-                    bottomTemplate = GameObject.Find("InventoryButton");
-                    foreach (Transform tf in bottomTemplate.transform.parent.GetComponentsInChildren<Transform>()) {
-                        tf.localPosition = new Vector2(tf.localPosition.x * 0.8f, tf.localPosition.y);
-                    }
+            __instance.StartCoroutine(Effects.Lerp(0.01f, new Action<float>((p) =>
+            {
+                if (p != 1) return;
+                bottomTemplate = GameObject.Find("InventoryButton");
+                foreach (Transform tf in bottomTemplate.transform.parent.GetComponentsInChildren<Transform>())
+                {
+                    var localPosition = tf.localPosition;
+                    localPosition = new Vector2(localPosition.x * 0.8f, localPosition.y);
+                    tf.localPosition = localPosition;
                 }
             })));
 
@@ -197,37 +120,22 @@ Eno - Fixing Vent Animation and Pool Order in meeting ideas came from Eno.</size
                     template.OnClick();
                 }));
 
-                var HideNSeekButton = GameObject.Instantiate<Transform>(gameButton, gameButton.parent);
-                HideNSeekButton.transform.localPosition += new Vector3(1.7f, -0.5f);
-                var HideNSeekButtonText = HideNSeekButton.GetComponentInChildren<TMPro.TextMeshPro>();
-                var HideNSeekButtonPassiveButton = HideNSeekButton.GetComponentInChildren<PassiveButton>();
+                var hideNSeekButton = GameObject.Instantiate(gameButton, gameButton.parent);
+                hideNSeekButton.transform.localPosition += new Vector3(1.7f, -0.5f);
+                var hideNSeekButtonText = hideNSeekButton.GetComponentInChildren<TMPro.TextMeshPro>();
+                var hideNSeekButtonPassiveButton = hideNSeekButton.GetComponentInChildren<PassiveButton>();
                 
-                HideNSeekButtonPassiveButton.OnClick = new Button.ButtonClickedEvent();
-                HideNSeekButtonPassiveButton.OnClick.AddListener((System.Action)(() => {
+                hideNSeekButtonPassiveButton.OnClick = new Button.ButtonClickedEvent();
+                hideNSeekButtonPassiveButton.OnClick.AddListener((System.Action)(() => {
                     TORMapOptions.gameMode = CustomGamemodes.HideNSeek;
                     template.OnClick();
                 }));
 
-                template.StartCoroutine(Effects.Lerp(0.1f, new System.Action<float>((p) => {
+                template.StartCoroutine(Effects.Lerp(0.1f, new Action<float>(_ => {
                     guesserButtonText.SetText("TOR Guesser");
-                    HideNSeekButtonText.SetText("TOR Hide N Seek");
+                    hideNSeekButtonText.SetText("TOR Hide N Seek");
                  })));
             }));
         }
     }
-
-    /*[HarmonyPatch(typeof(AnnouncementPopUp), nameof(AnnouncementPopUp.UpdateAnnounceText))]
-    public static class Announcement
-    {
-        public static ModUpdateBehaviour.UpdateData updateData = null;
-        public static bool Prefix(AnnouncementPopUp __instance)
-        {
-            if (ModUpdateBehaviour.showPopUp || updateData == null) return true;
-
-            var text = __instance.AnnounceTextMeshPro;            
-            text.text = $"<size=150%><color=#FC0303>THE OTHER ROLES </color> {(updateData.Tag)}\n{(updateData.Content)}";
-
-            return false;
-        }
-    }*/
 }

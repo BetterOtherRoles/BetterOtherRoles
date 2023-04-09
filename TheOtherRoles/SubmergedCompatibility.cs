@@ -125,8 +125,8 @@ namespace TheOtherRoles
                 Assembly = Plugin!.GetType().Assembly;
             }
 
-            CredentialsPatch.PingTrackerPatch.modStamp = new GameObject();
-            Object.DontDestroyOnLoad(CredentialsPatch.PingTrackerPatch.modStamp);
+            CredentialsPatch.PingTrackerPatch.ModStamp = new GameObject();
+            Object.DontDestroyOnLoad(CredentialsPatch.PingTrackerPatch.ModStamp);
             
             Types = AccessTools.GetTypesFromAssembly(Assembly);
             
