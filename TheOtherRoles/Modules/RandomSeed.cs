@@ -1,40 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Reactor.Networking.Attributes;
 using TheOtherRoles.Players;
 using Random = System.Random;
 
 namespace TheOtherRoles.Modules;
 
-public class RandomSeed
+public static class RandomSeed
 {
     public enum CustomRpc
     {
         ShareRandomSeeds,
     }
     
-    private static List<int> _seeds = new ();
+    private static List<int> seeds = new ();
 
     public static void GenerateSeeds()
     {
         if (CachedPlayer.LocalPlayer == null || !AmongUsClient.Instance.AmHost) return;
-        var seeds = new List<int>();
+        var seedsList = new List<int>();
         var rnd = new Random();
         for (var i = 0; i < 15; i++)
         {
-            seeds.Add(rnd.Next());
+            seedsList.Add(rnd.Next());
         }
-        ShareRandomizer(PlayerControl.LocalPlayer, string.Join("|", seeds));
+        ShareRandomizer(PlayerControl.LocalPlayer, string.Join("|", seedsList));
     }
 
     [MethodRpc((uint) CustomRpc.ShareRandomSeeds)]
-    public static void ShareRandomizer(PlayerControl sender, string rawData)
+    private static void ShareRandomizer(PlayerControl sender, string rawData)
     {
-        _seeds = rawData.Split("|").Select(int.Parse).ToList();
+        seeds = rawData.Split("|").Select(int.Parse).ToList();
     }
 
     public static void RandomizePlayersList(MeetingHud meetingHud)
@@ -63,7 +59,7 @@ public class RandomSeed
 
     private static RandomPlayerVoteArea ToRandomList(PlayerVoteArea pva, int index)
     {
-        return new RandomPlayerVoteArea(pva, _seeds[index]);
+        return new RandomPlayerVoteArea(pva, seeds[index]);
     }
 
     private static int ReorderList(RandomPlayerVoteArea pva)
@@ -75,17 +71,7 @@ public class RandomSeed
     {
         return pva.Player;
     }
-    
-    public static async Task<HttpStatusCode> FetchSeed()
-    {
-        var httpClient = new HttpClient();
-        var response = await httpClient.GetAsync("https://eno.re/BetterOtherRoles/api/seed.txt", HttpCompletionOption.ResponseContentRead);
-        if (response.StatusCode != HttpStatusCode.OK) return response.StatusCode;
-        System.Console.WriteLine(response.Content.ToString());
-        
-        return response.StatusCode;
-    }
-    
+
     private class RandomPlayerVoteArea
     {
         public readonly PlayerVoteArea Player;
