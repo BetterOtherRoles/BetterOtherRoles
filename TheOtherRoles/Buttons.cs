@@ -757,7 +757,7 @@ namespace TheOtherRoles
                     MurderAttemptResult murder = Helpers.checkMurderAttempt(Whisperer.whisperer, Whisperer.currentTarget);
                     if (murder == MurderAttemptResult.PerformKill) {
                         
-                        // Whisperer.whisperVictim = Whisperer.currentTarget;
+                        Whisperer.whisperVictim = Whisperer.currentTarget;
 
                         // MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.WhispererSetVictim, Hazel.SendOption.Reliable, -1);
                         // writer.Write(Whisperer.whisperVictim.PlayerId);
@@ -767,7 +767,8 @@ namespace TheOtherRoles
 
                         byte lastTimer = (byte)Whisperer.delay;
                         FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Whisperer.delay, new Action<float>((p) => { // Delayed action
-                        
+                            TheOtherRolesPlugin.Logger.LogWarning($"Whisperer victim : {(Whisperer.whisperVictim != null ? Whisperer.whisperVictim.CurrentOutfit.PlayerName : "")}");
+                            TheOtherRolesPlugin.Logger.LogWarning($"Whisperer victim Target : {(Whisperer.whisperVictimTarget != null ? Whisperer.whisperVictimTarget.CurrentOutfit.PlayerName : "")}");
                         })));
                         
                         // SoundEffectsManager.play("vampireBite");
