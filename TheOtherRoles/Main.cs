@@ -21,6 +21,7 @@ using Il2CppSystem.Security.Cryptography;
 using Il2CppSystem.Text;
 using Reactor.Networking.Attributes;
 using AmongUs.Data;
+using TheOtherRoles.Patches;
 
 namespace TheOtherRoles
 {
@@ -31,7 +32,7 @@ namespace TheOtherRoles
     public class TheOtherRolesPlugin : BasePlugin
     {
         public const string Id = "me.eisbison.theotherroles";
-        public const string VersionString = "4.3.15";
+        public const string VersionString = "1.0.0";
         public static uint betaDays = 0;  // amount of days for the build to be usable (0 for infinite!)
 
         public static Version Version = Version.Parse(VersionString);
@@ -129,7 +130,7 @@ namespace TheOtherRoles
 
             SubmergedCompatibility.Initialize();
             AddComponent<ModUpdateBehaviour>();
-            Modules.MainMenuPatch.addSceneChangeCallbacks();
+            MainMenuPatch.addSceneChangeCallbacks();
             
             System.Console.WriteLine($"Current GUID: {CustomGuid.CurrentGuid.ToString()}");
         }
