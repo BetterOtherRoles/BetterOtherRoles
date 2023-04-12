@@ -61,6 +61,7 @@ namespace TheOtherRoles
             Thief.clearAndReload();
             Trapper.clearAndReload();
             Bomber.clearAndReload();
+            Whisperer.clearAndReload();
 
             // Modifier
             Bait.clearAndReload();
@@ -780,6 +781,45 @@ namespace TheOtherRoles
         }
     }
 
+    public static class Whisperer
+    {
+        public static PlayerControl whisperer;
+        public static Color color = Palette.ImpostorRed;
+
+
+        public static float cooldown = 30f;
+        public static float delay = 5f;
+        private static Sprite buttonSprite;
+
+        public static PlayerControl currentTarget; // Current target from Whisper ?
+        public static PlayerControl whisperVictim; // Cursed player.
+        public static PlayerControl whisperVictimTarget; // for ghost.
+
+        public static Sprite getButtonSprite() {
+            if (buttonSprite) return buttonSprite;
+            buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.CurseButton.png", 115f);
+            return buttonSprite;
+        }
+
+        public static void resetWhisper() {
+            HudManagerStartPatch.whispererKillButton.Timer = HudManagerStartPatch.whispererKillButton.MaxTimer;
+            HudManagerStartPatch.whispererKillButton.Sprite = Whisperer.getButtonSprite();
+            HudManagerStartPatch.whispererKillButton.actionButton.cooldownTimerText.color = Palette.EnabledColor;
+            currentTarget = null;
+            whisperVictim = null;
+            whisperVictimTarget = null;
+        }
+
+        public static void clearAndReload() {
+            whisperer = null;
+            currentTarget = null;
+            whisperVictim = null;
+            whisperVictimTarget = null;
+            cooldown = CustomOptionHolder.whispererCooldown.getFloat();
+            delay = CustomOptionHolder.whispererDelay.getFloat();
+        }
+    }
+
     public static class Vampire {
         public static PlayerControl vampire;
         public static Color color = Palette.ImpostorRed;
@@ -824,7 +864,9 @@ namespace TheOtherRoles
     public static class Snitch {
         public static PlayerControl snitch;
         public static Color color = new Color32(184, 251, 79, byte.MaxValue);
+
         public static List<Arrow> localArrows = new List<Arrow>();
+
         public enum InfoMode {
             None = 0,
             Chat = 1,

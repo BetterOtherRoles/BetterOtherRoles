@@ -10,7 +10,7 @@ public class CustomKeyBind
         new("HunterArrow", "Arrow button. (Hunter).", KeyboardKeyCode.T),
         new("UsePortal", "Use a portal.", KeyboardKeyCode.H),
         new("PortalMakerTp", "Teleport to a portal. (PortalMaker).", KeyboardKeyCode.J),
-        new("DefuseBomb", "Defuse button for bomb. (if Bomber).", KeyboardKeyCode.C),
+        new("DefuseBomb", "Defuse button for the bomb (if there is a Bomber).", KeyboardKeyCode.C),
         new("ZoomOut", "Zoom Out", KeyboardKeyCode.KeypadPlus),
     };
 

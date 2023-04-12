@@ -14,7 +14,6 @@ using TheOtherRoles.Objects;
 using TheOtherRoles.CustomGameModes;
 using Reactor.Utilities.Extensions;
 using AmongUs.GameOptions;
-using TheOtherRoles.Modules;
 
 namespace TheOtherRoles.Patches {
     // HACK ¯\_(ツ)_/¯ but it works !
@@ -265,18 +264,6 @@ namespace TheOtherRoles.Patches {
             }
         }
     }
-    
-    /*
-    [HarmonyPatch(typeof(PlayerPurchasesData), nameof(PlayerPurchasesData.GetPurchase))]
-    public static class SkinPatch
-    {
-        [HarmonyPatch]
-        public static void Postfix(out bool __result)
-        {
-            __result = FeaturesCodes.UnlockAllCosmetics;
-        }
-    }
-    */
 
     [HarmonyPatch(typeof(KillButton), nameof(KillButton.DoClick))]
     class KillButtonDoClickPatch {

@@ -41,6 +41,7 @@ namespace TheOtherRoles
         public static RoleInfo morphling = new RoleInfo("Morphling", Morphling.color, "Change your look to not get caught", "Change your look", RoleId.Morphling);
         public static RoleInfo camouflager = new RoleInfo("Camouflager", Camouflager.color, "Camouflage and kill the Crewmates", "Hide among others", RoleId.Camouflager);
         public static RoleInfo vampire = new RoleInfo("Vampire", Vampire.color, "Kill the Crewmates with your bites", "Bite your enemies", RoleId.Vampire);
+        public static RoleInfo whisperer = new RoleInfo("Whisperer", Whisperer.color, "Kill the Crewmates by whispering to him", "Order ur target to die or to kill someone.", RoleId.Whisperer);
         public static RoleInfo eraser = new RoleInfo("Eraser", Eraser.color, "Kill the Crewmates and erase their roles", "Erase the roles of your enemies", RoleId.Eraser);
         public static RoleInfo trickster = new RoleInfo("Trickster", Trickster.color, "Use your jack-in-the-boxes to surprise others", "Surprise your enemies", RoleId.Trickster);
         public static RoleInfo cleaner = new RoleInfo("Cleaner", Cleaner.color, "Kill everyone and leave no traces", "Clean up dead bodies", RoleId.Cleaner);
@@ -101,6 +102,7 @@ namespace TheOtherRoles
             morphling,
             camouflager,
             vampire,
+            whisperer,
             eraser,
             trickster,
             cleaner,
@@ -191,6 +193,7 @@ namespace TheOtherRoles
             if (p == Morphling.morphling) infos.Add(morphling);
             if (p == Camouflager.camouflager) infos.Add(camouflager);
             if (p == Vampire.vampire) infos.Add(vampire);
+            if (p == Whisperer.whisperer) infos.Add(whisperer);
             if (p == Eraser.eraser) infos.Add(eraser);
             if (p == Trickster.trickster) infos.Add(trickster);
             if (p == Cleaner.cleaner) infos.Add(cleaner);
@@ -249,7 +252,7 @@ namespace TheOtherRoles
                     if (Eraser.futureErased.Contains(p))
                         roleName = Helpers.cs(Color.gray, "(erased) ") + roleName;
                     if (Vampire.vampire != null && !Vampire.vampire.Data.IsDead && Vampire.bitten == p && !p.Data.IsDead)
-                        roleName = Helpers.cs(Vampire.color, $"(bitten {(int)HudManagerStartPatch.vampireKillButton.Timer + 1}) ") + roleName;
+                        roleName = Helpers.cs(Vampire.color, $"(bitten : {(int)HudManagerStartPatch.vampireKillButton.Timer + 1}) ") + roleName;
                     if (Deputy.handcuffedPlayers.Contains(p.PlayerId))
                         roleName = Helpers.cs(Color.gray, "(cuffed) ") + roleName;
                     if (Deputy.handcuffedKnows.ContainsKey(p.PlayerId))  // Active cuff
