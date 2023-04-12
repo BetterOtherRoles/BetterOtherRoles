@@ -191,17 +191,17 @@ namespace TheOtherRoles.Patches {
         static void whispererSetTarget() {
             if (Whisperer.whisperer == null || Whisperer.whisperer != CachedPlayer.LocalPlayer.PlayerControl) return;
 
-            // if (Whisperer.whisperVictim != null && (Whisperer.whisperVictim.Data.Disconnected || Whisperer.whisperVictim.Data.IsDead)) {
-            //     Whisperer.resetWhisper();
-            // }
+            if (Whisperer.whisperVictim != null && (Whisperer.whisperVictim.Data.Disconnected || Whisperer.whisperVictim.Data.IsDead)) {
+                Whisperer.resetWhisper();
+            }
 
-            // if (Whisperer.whisperVictim == null) {
-            //     Whisperer.currentTarget = Helpers.setTarget(false, true);
-            //     Helpers.setPlayerOutline(Whisperer.currentTarget, Whisperer.color);
-            // } else {
-            //     Whisperer.whisperVictimTarget = Helpers.setTarget(false, true, null, Whisperer.whisperVictim);
-            //     Helpers.setPlayerOutline(Whisperer.whisperVictimTarget, Whisperer.color);
-            // }
+            if (Whisperer.whisperVictim == null) {
+                Whisperer.currentTarget = Helpers.setTarget(false, true);
+                Helpers.setPlayerOutline(Whisperer.currentTarget, Whisperer.color);
+            } else {
+                Whisperer.whisperVictimTarget = Helpers.setTarget(false, true, null, Whisperer.whisperVictim);
+                Helpers.setPlayerOutline(Whisperer.whisperVictimTarget, Whisperer.color);
+            }
 
         }
 

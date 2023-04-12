@@ -758,6 +758,7 @@ namespace TheOtherRoles
                     if (murder == MurderAttemptResult.PerformKill) {
                         
                         Whisperer.whisperVictim = Whisperer.currentTarget;
+                        PlayerControl _localTarget;
 
                         // MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.WhispererSetVictim, Hazel.SendOption.Reliable, -1);
                         // writer.Write(Whisperer.whisperVictim.PlayerId);
@@ -769,11 +770,50 @@ namespace TheOtherRoles
                         FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Whisperer.delay, new Action<float>((p) => { // Delayed action
                             TheOtherRolesPlugin.Logger.LogWarning($"Whisperer victim : {(Whisperer.whisperVictim != null ? Whisperer.whisperVictim.CurrentOutfit.PlayerName : "")}");
                             TheOtherRolesPlugin.Logger.LogWarning($"Whisperer victim Target : {(Whisperer.whisperVictimTarget != null ? Whisperer.whisperVictimTarget.CurrentOutfit.PlayerName : "")}");
+
+                            PlayerControl _localTarget = Whisperer.whisperVictimTarget;
+
+                            if (p <= 1f) {
+                                    byte timer = (byte)whispererKillButton.Timer;
+                                    if (timer != lastTimer) {
+                                        lastTimer = timer;
+
+                                        TheOtherRolesPlugin.Logger.LogWarning($"time left : {timer + 1}");
+                                        
+                                        // MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareGhostInfo, Hazel.SendOption.Reliable, -1);
+                                        // writer.Write(CachedPlayer.LocalPlayer.PlayerId);
+                                        // writer.Write((byte)RPCProcedure.GhostInfoTypes.VampireTimer);
+                                        // writer.Write(timer);
+                                        // AmongUsClient.Instance.FinishRpcImmediately(writer);
+                                    }
+                                }
+                            if (p == 1f) {
+                                // Perform kill if possible and reset bitten (regardless whether the kill was successful or not)
+                                
+                                if (_localTarget != null) Helpers.checkMurderAttemptAndKill(Whisperer.whisperer, _localTarget, showAnimation: false);
+                                else Helpers.checkMurderAttemptAndKill(Whisperer.whisperer, Whisperer.whisperVictim, showAnimation: false);
+
+                                // or reset.
+
+                                
+                                Whisperer.whisperVictim = null;
+                                Whisperer.whisperVictimTarget = null;
+                                
+                                whispererKillButton.Timer = whispererKillButton.MaxTimer;
+
+                                // Helpers.checkMurderAttemptAndKill(Vampire.vampire, Vampire.bitten, showAnimation: false);
+                                // MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.VampireSetBitten, Hazel.SendOption.Reliable, -1);
+                                // writer.Write(byte.MaxValue);
+                                // writer.Write(byte.MaxValue);
+                                // AmongUsClient.Instance.FinishRpcImmediately(writer);
+                                // RPCProcedure.vampireSetBitten(byte.MaxValue, byte.MaxValue);
+                            }
                         })));
                         
                         // SoundEffectsManager.play("vampireBite");
 
                         whispererKillButton.HasEffect = true; // Trigger effect on this click
+                        Whisperer.whisperer.killTimer = GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown;
 
                     } else if (murder == MurderAttemptResult.BlankKill) {
                         whispererKillButton.Timer = whispererKillButton.MaxTimer;

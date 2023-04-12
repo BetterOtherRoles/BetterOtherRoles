@@ -53,9 +53,9 @@ public static class ModCredits
 
     public static readonly string[] BOROtherCredits =
     {
-        "Bryrby - Better Polus map modifications.",
-        "Dadoum - Better Skeld map modifications & keys bindings fix.",
-        "Thilladon - Snitch update & keys bindings fix.",
+        "Brybry - Better Polus map modifications.",
+        "Dadoum - Better Skeld map modifications & keybindings fix.",
+        "Thilladon - Better Skeld map modifications, keybindings fix, updating snitch informations methods.",
         "Eno - Fixing vents animations, pool order of players in meeting, code refactoring.",
     };
 

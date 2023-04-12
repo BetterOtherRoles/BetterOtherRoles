@@ -88,21 +88,23 @@ namespace TheOtherRoles.Patches {
                 })));
             });
 
-            var cosmeticsButton = Object.Instantiate(bottomTemplate, bottomTemplate.transform.parent);
-            var passiveCosmeticsButton = cosmeticsButton.GetComponent<PassiveButton>();
-            var spriteCosmeticsButton = cosmeticsButton.GetComponent<SpriteRenderer>();
+            // var cosmeticsButton = Object.Instantiate(bottomTemplate, bottomTemplate.transform.parent);
+            // var passiveCosmeticsButton = cosmeticsButton.GetComponent<PassiveButton>();
+            // var spriteCosmeticsButton = cosmeticsButton.GetComponent<SpriteRenderer>();
 
-            spriteCosmeticsButton.sprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.CreditsButton.png", 75f);
+            // spriteCosmeticsButton.sprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.CreditsButton.png", 75f);
 
-            passiveCosmeticsButton.OnClick = new ButtonClickedEvent();
+            // passiveCosmeticsButton.OnClick = new ButtonClickedEvent();
 
-            passiveCosmeticsButton.OnClick.AddListener((System.Action)delegate {
-                if (cosmeticsPopUp != null) Object.Destroy(cosmeticsPopUp);
+            // passiveCosmeticsButton.OnClick.AddListener((System.Action)delegate {
+            //     if (cosmeticsPopUp != null) Object.Destroy(cosmeticsPopUp);
 
-                cosmeticsPopUp = Object.Instantiate(Object.FindObjectOfType<JoinGameButton>(true));
-                cosmeticsPopUp.gameObject.SetActive(true);
+            //     cosmeticsPopUp = Object.Instantiate(Object.FindObjectOfType<JoinGameButton>(true));
+            //     cosmeticsPopUp.gameObject.SetActive(true);
+
+            //     cosmeticsPopUp.Init(false);
                 
-            });
+            // });
     
         }
 
