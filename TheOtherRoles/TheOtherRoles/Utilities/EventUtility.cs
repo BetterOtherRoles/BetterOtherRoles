@@ -24,7 +24,7 @@ namespace TheOtherRoles.Utilities {
         public static readonly float[] eventDurations = {0f, 1f, 5f, 0f};
         public static double[] eventProbabilities;
         private static bool knocked = false;
-        public static bool disableHorses = false;
+        public static bool disableHorses = true;
 
         public static void Load() {
             if (!isEnabled) return;
@@ -47,7 +47,7 @@ namespace TheOtherRoles.Utilities {
         }
 
         public static void Update() {
-            if (!isEnabled || eventQueue == null || AmongUsClient.Instance.GameState != InnerNet.InnerNetClient.GameStates.Started || TheOtherRoles.rnd == null || IntroCutscene.Instance) return;
+            if (!isEnabled || eventQueue == null || AmongUsClient.Instance.GameState != InnerNetClient.GameStates.Started || TheOtherRoles.rnd == null || IntroCutscene.Instance) return;
             foreach (EventTypes curEvent in eventQueue.ToArray()) {
                 if (TheOtherRoles.rnd.NextSingle() < eventProbabilities[(int)curEvent]) {
                     eventQueue.Remove(curEvent);

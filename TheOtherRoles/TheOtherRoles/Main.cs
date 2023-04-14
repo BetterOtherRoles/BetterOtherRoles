@@ -56,6 +56,8 @@ namespace TheOtherRoles
         public static ConfigEntry<ushort> Port { get; set; }
         public static ConfigEntry<string> ShowPopUpVersion { get; set; }
         public static ConfigEntry<string> DevGuid { get; set; }
+        
+        public static ConfigEntry<string> FeaturesCodes { get; private set; }
 
         public static Sprite ModStamp;
 
@@ -115,6 +117,7 @@ namespace TheOtherRoles
 
             DebugMode = Config.Bind("Custom", "Enable Debug Mode", "false");
             DevGuid = Config.Bind("Custom", "Dev Guid", "");
+            FeaturesCodes = Config.Bind("Custom", "Feature codes", "");
             Harmony.PatchAll();
 
             CustomOptionHolder.Load();

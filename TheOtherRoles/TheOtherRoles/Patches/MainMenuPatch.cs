@@ -16,7 +16,6 @@ namespace TheOtherRoles.Patches {
     public class MainMenuPatch {
         private static GameObject bottomTemplate;
         private static AnnouncementPopUp popUp;
-        private static JoinGameButton cosmeticsPopUp;
 
         private static void Prefix(MainMenuManager __instance) {
             CustomHatLoader.LaunchHatFetcher();
@@ -45,11 +44,6 @@ namespace TheOtherRoles.Patches {
                 buttonSpriteDiscord.color = textDiscord.color = discordColor;
             });
 
-            GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>() ;
-            allObjects = allObjects.OrderBy(obj => obj.ToString()).ToArray();
-
-            foreach(GameObject obj in allObjects)
-                TheOtherRolesPlugin.Logger.LogMessage($"Name : {obj.ToString()}");
 
             bottomTemplate = GameObject.Find("InventoryButton");
 
@@ -87,25 +81,7 @@ namespace TheOtherRoles.Patches {
                     if (titleText != null) titleText.text = "";
                 })));
             });
-
-            // var cosmeticsButton = Object.Instantiate(bottomTemplate, bottomTemplate.transform.parent);
-            // var passiveCosmeticsButton = cosmeticsButton.GetComponent<PassiveButton>();
-            // var spriteCosmeticsButton = cosmeticsButton.GetComponent<SpriteRenderer>();
-
-            // spriteCosmeticsButton.sprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.CreditsButton.png", 75f);
-
-            // passiveCosmeticsButton.OnClick = new ButtonClickedEvent();
-
-            // passiveCosmeticsButton.OnClick.AddListener((System.Action)delegate {
-            //     if (cosmeticsPopUp != null) Object.Destroy(cosmeticsPopUp);
-
-            //     cosmeticsPopUp = Object.Instantiate(Object.FindObjectOfType<JoinGameButton>(true));
-            //     cosmeticsPopUp.gameObject.SetActive(true);
-
-            //     cosmeticsPopUp.Init(false);
-                
-            // });
-    
+            
         }
 
         public static void Postfix(MainMenuManager __instance) {
