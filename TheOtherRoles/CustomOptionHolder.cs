@@ -752,12 +752,13 @@ namespace TheOtherRoles {
             dynamicMapEnableSubmerged = CustomOption.Create(506, Types.General, "Submerged", 0f, 0f, 100f, 1f, dynamicMap, false);
             dynamicMapSeparateSettings = CustomOption.Create(509, Types.General, "Use Random Map Setting Presets", false, dynamicMap, false);
 
-            blockedRolePairings.Add((byte)RoleId.Vampire, new [] { (byte)RoleId.Warlock, (byte)RoleId.Whisperer});
-            blockedRolePairings.Add((byte)RoleId.Warlock, new [] { (byte)RoleId.Vampire, (byte)RoleId.Whisperer});
-            blockedRolePairings.Add((byte)RoleId.Spy, new [] { (byte)RoleId.Mini});
-            blockedRolePairings.Add((byte)RoleId.Mini, new [] { (byte)RoleId.Spy});
-            blockedRolePairings.Add((byte)RoleId.Vulture, new [] { (byte)RoleId.Cleaner});
-            blockedRolePairings.Add((byte)RoleId.Cleaner, new [] { (byte)RoleId.Vulture});
+            blockedRolePairings.Add((byte)RoleId.Vampire, new [] { (byte)RoleId.Warlock, (byte)RoleId.Whisperer });
+            blockedRolePairings.Add((byte)RoleId.Warlock, new [] { (byte)RoleId.Vampire, (byte)RoleId.Whisperer });
+            blockedRolePairings.Add((byte)RoleId.Whisperer, new [] { (byte)RoleId.Warlock, (byte)RoleId.Vampire });
+            blockedRolePairings.Add((byte)RoleId.Spy, new [] { (byte)RoleId.Mini });
+            blockedRolePairings.Add((byte)RoleId.Mini, new [] { (byte)RoleId.Spy });
+            blockedRolePairings.Add((byte)RoleId.Vulture, new [] { (byte)RoleId.Cleaner });
+            blockedRolePairings.Add((byte)RoleId.Cleaner, new [] { (byte)RoleId.Vulture });
             
         }
     }

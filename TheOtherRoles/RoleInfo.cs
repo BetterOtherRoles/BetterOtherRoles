@@ -252,7 +252,11 @@ namespace TheOtherRoles
                     if (Eraser.futureErased.Contains(p))
                         roleName = Helpers.cs(Color.gray, "(erased) ") + roleName;
                     if (Vampire.vampire != null && !Vampire.vampire.Data.IsDead && Vampire.bitten == p && !p.Data.IsDead)
-                        roleName = Helpers.cs(Vampire.color, $"(bitten : {(int)HudManagerStartPatch.vampireKillButton.Timer + 1}) ") + roleName;
+                        roleName = Helpers.cs(Vampire.color, $"(bitten : {(int)HudManagerStartPatch.vampireKillButton.Timer + 1}s) ") + roleName;
+                    if (Whisperer.whisperVictim)
+                        roleName = Helpers.cs(Whisperer.color, $"(whsp) ") + roleName;
+                    if (Whisperer.whisperVictimToKill)
+                        roleName = Helpers.cs(Whisperer.color, $"(whsp kill : {(int)HudManagerStartPatch.whispererKillButton.Timer + 1}s) ") + roleName;
                     if (Deputy.handcuffedPlayers.Contains(p.PlayerId))
                         roleName = Helpers.cs(Color.gray, "(cuffed) ") + roleName;
                     if (Deputy.handcuffedKnows.ContainsKey(p.PlayerId))  // Active cuff

@@ -758,59 +758,43 @@ namespace TheOtherRoles
                     if (murder == MurderAttemptResult.PerformKill) {
                         
                         Whisperer.whisperVictim = Whisperer.currentTarget;
-                        PlayerControl _localTarget;
-
-                        // MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.WhispererSetVictim, Hazel.SendOption.Reliable, -1);
-                        // writer.Write(Whisperer.whisperVictim.PlayerId);
-                        // writer.Write((byte)0);
-                        // AmongUsClient.Instance.FinishRpcImmediately(writer);
-                        // RPCProcedure.whispererSetVictim(Whisperer.whisperVictim.PlayerId, 0);
+                        
+                        SoundEffectsManager.play("warlockCurse");
 
                         byte lastTimer = (byte)Whisperer.delay;
                         FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Whisperer.delay, new Action<float>((p) => { // Delayed action
-                            TheOtherRolesPlugin.Logger.LogWarning($"Whisperer victim : {(Whisperer.whisperVictim != null ? Whisperer.whisperVictim.CurrentOutfit.PlayerName : "")}");
-                            TheOtherRolesPlugin.Logger.LogWarning($"Whisperer victim Target : {(Whisperer.whisperVictimTarget != null ? Whisperer.whisperVictimTarget.CurrentOutfit.PlayerName : "")}");
-
-                            PlayerControl _localTarget = Whisperer.whisperVictimTarget;
+                            
+                            Whisperer.whisperVictimToKill = Whisperer.whisperVictimTarget != null ? Whisperer.whisperVictimTarget : Whisperer.whisperVictim;
 
                             if (p <= 1f) {
                                     byte timer = (byte)whispererKillButton.Timer;
                                     if (timer != lastTimer) {
                                         lastTimer = timer;
-
-                                        TheOtherRolesPlugin.Logger.LogWarning($"time left : {timer + 1}");
                                         
-                                        // MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareGhostInfo, Hazel.SendOption.Reliable, -1);
-                                        // writer.Write(CachedPlayer.LocalPlayer.PlayerId);
-                                        // writer.Write((byte)RPCProcedure.GhostInfoTypes.VampireTimer);
-                                        // writer.Write(timer);
-                                        // AmongUsClient.Instance.FinishRpcImmediately(writer);
+                                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareGhostInfo, Hazel.SendOption.Reliable, -1);
+                                        writer.Write(CachedPlayer.LocalPlayer.PlayerId);
+                                        writer.Write((byte)RPCProcedure.GhostInfoTypes.WhispererTimerAndTarget);
+                                        writer.Write(Whisperer.whisperVictim);
+                                        writer.Write(Whisperer.whisperVictimToKill);
+                                        writer.Write(timer);
+                                        AmongUsClient.Instance.FinishRpcImmediately(writer);
                                     }
                                 }
                             if (p == 1f) {
                                 // Perform kill if possible and reset bitten (regardless whether the kill was successful or not)
                                 
-                                if (_localTarget != null) Helpers.checkMurderAttemptAndKill(Whisperer.whisperer, _localTarget, showAnimation: false);
+                                if (Whisperer.whisperVictimToKill != null && Whisperer.whisperVictimToKill != Medic.shielded && (!TORMapOptions.shieldFirstKill || Whisperer.whisperVictimToKill != TORMapOptions.firstKillPlayer)) Helpers.checkMurderAttemptAndKill(Whisperer.whisperer, Whisperer.whisperVictimToKill, showAnimation: false);
                                 else Helpers.checkMurderAttemptAndKill(Whisperer.whisperer, Whisperer.whisperVictim, showAnimation: false);
 
-                                // or reset.
-
+                                // & reset anyway.
                                 
                                 Whisperer.whisperVictim = null;
                                 Whisperer.whisperVictimTarget = null;
                                 
                                 whispererKillButton.Timer = whispererKillButton.MaxTimer;
 
-                                // Helpers.checkMurderAttemptAndKill(Vampire.vampire, Vampire.bitten, showAnimation: false);
-                                // MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.VampireSetBitten, Hazel.SendOption.Reliable, -1);
-                                // writer.Write(byte.MaxValue);
-                                // writer.Write(byte.MaxValue);
-                                // AmongUsClient.Instance.FinishRpcImmediately(writer);
-                                // RPCProcedure.vampireSetBitten(byte.MaxValue, byte.MaxValue);
                             }
                         })));
-                        
-                        // SoundEffectsManager.play("vampireBite");
 
                         whispererKillButton.HasEffect = true; // Trigger effect on this click
                         Whisperer.whisperer.killTimer = GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown;

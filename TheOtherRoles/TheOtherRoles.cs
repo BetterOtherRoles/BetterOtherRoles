@@ -794,6 +794,7 @@ namespace TheOtherRoles
         public static PlayerControl currentTarget; // Current target from Whisper ?
         public static PlayerControl whisperVictim; // Cursed player.
         public static PlayerControl whisperVictimTarget; // for ghost.
+        public static PlayerControl whisperVictimToKill;
 
         public static Sprite getButtonSprite() {
             if (buttonSprite) return buttonSprite;
@@ -808,6 +809,7 @@ namespace TheOtherRoles
             currentTarget = null;
             whisperVictim = null;
             whisperVictimTarget = null;
+            whisperVictimToKill = null;
         }
 
         public static void clearAndReload() {
@@ -815,6 +817,7 @@ namespace TheOtherRoles
             currentTarget = null;
             whisperVictim = null;
             whisperVictimTarget = null;
+            whisperVictimToKill = null;
             cooldown = CustomOptionHolder.whispererCooldown.getFloat();
             delay = CustomOptionHolder.whispererDelay.getFloat();
         }
