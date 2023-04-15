@@ -823,6 +823,32 @@ namespace TheOtherRoles
         }
     }
 
+    public static class Undertaker {
+        public static PlayerControl undertaker;
+        public static Color color = Palette.ImpostorRed;
+
+        public static float dragSpeed;
+        public static float abilityCooldown;
+
+        public static PlayerControl currentDeadTarget;
+        public static PlayerControl draggingTarget;
+
+        private static Sprite buttonSprite;
+        public static Sprite getButtonSprite() {
+            if (buttonSprite) return buttonSprite;
+            buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.VampireButton.png", 115f);
+            return buttonSprite;
+        }
+
+        public static void clearAndReload() {
+            undertaker = null;
+            currentDeadTarget = null;
+            draggingTarget = null;
+            dragSpeed = CustomOptionHolder.undertakerDragSpeed.getFloat();
+            abilityCooldown = CustomOptionHolder.undertakerAbilityCooldown.getFloat();
+        }
+    }
+
     public static class Vampire {
         public static PlayerControl vampire;
         public static Color color = Palette.ImpostorRed;

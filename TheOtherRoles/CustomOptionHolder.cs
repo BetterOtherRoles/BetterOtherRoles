@@ -44,6 +44,10 @@ namespace TheOtherRoles {
         public static CustomOption whispererCooldown;
         public static CustomOption whispererDelay;
 
+        public static CustomOption undertakerSpawnRate;
+        public static CustomOption undertakerDragSpeed;
+        public static CustomOption undertakerAbilityCooldown;
+
         public static CustomOption eraserSpawnRate;
         public static CustomOption eraserCooldown;
         public static CustomOption eraserCanEraseAnyone;
@@ -437,6 +441,10 @@ namespace TheOtherRoles {
             whispererSpawnRate = CustomOption.Create(8000, Types.Impostor, cs(Whisperer.color, "Whisperer"), rates, null, true);
             whispererCooldown = CustomOption.Create(8001, Types.Impostor, "Ability Cooldown", 20f, 10f, 60f, 2.5f, whispererSpawnRate);
             whispererDelay = CustomOption.Create(8002, Types.Impostor, "Ability Effect Delay", 5f, 3f, 15f, 1f, whispererSpawnRate);
+            
+            undertakerSpawnRate = CustomOption.Create(8010, Types.Impostor, cs(Undertaker.color, "Undertaker"), rates, null, true);
+            undertakerAbilityCooldown = CustomOption.Create(8011, Types.Impostor, "Ability Cooldown", 20f, 10f, 60f, 2.5f, undertakerSpawnRate);
+            undertakerDragSpeed = CustomOption.Create(8012, Types.Impostor, "Speed Modifier While Dragging", 0.75f, 0.25f, 2.5f, 0.25f, undertakerSpawnRate);
 
             eraserSpawnRate = CustomOption.Create(230, Types.Impostor, cs(Eraser.color, "Eraser"), rates, null, true);
             eraserCooldown = CustomOption.Create(231, Types.Impostor, "Eraser Cooldown", 30f, 10f, 120f, 5f, eraserSpawnRate);

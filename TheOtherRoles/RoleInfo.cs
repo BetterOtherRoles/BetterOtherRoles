@@ -37,11 +37,12 @@ namespace TheOtherRoles
         public static RoleInfo lighter = new RoleInfo("Lighter", Lighter.color, "Your light never goes out", "Your light never goes out", RoleId.Lighter);
         public static RoleInfo godfather = new RoleInfo("Godfather", Godfather.color, "Kill all Crewmates", "Kill all Crewmates", RoleId.Godfather);
         public static RoleInfo mafioso = new RoleInfo("Mafioso", Mafioso.color, "Work with the <color=#FF1919FF>Mafia</color> to kill the Crewmates", "Kill all Crewmates", RoleId.Mafioso);
-        public static RoleInfo janitor = new RoleInfo("Janitor", Janitor.color, "Work with the <color=#FF1919FF>Mafia</color> by hiding dead bodies", "Hide dead bodies", RoleId.Janitor);
+        public static RoleInfo janitor = new RoleInfo("Janitor", Janitor.color, "Work with the <color=#FF1919FF>Mafia</color> by making dead bodies disappear", "Vanish dead bodies", RoleId.Janitor);
         public static RoleInfo morphling = new RoleInfo("Morphling", Morphling.color, "Change your look to not get caught", "Change your look", RoleId.Morphling);
         public static RoleInfo camouflager = new RoleInfo("Camouflager", Camouflager.color, "Camouflage and kill the Crewmates", "Hide among others", RoleId.Camouflager);
         public static RoleInfo vampire = new RoleInfo("Vampire", Vampire.color, "Kill the Crewmates with your bites", "Bite your enemies", RoleId.Vampire);
-        public static RoleInfo whisperer = new RoleInfo("Whisperer", Whisperer.color, "Kill the Crewmates by whispering to him", "Order ur target to die or to kill someone.", RoleId.Whisperer);
+        public static RoleInfo whisperer = new RoleInfo("Whisperer", Whisperer.color, "Kill the Crewmates by whispering to him", "Order someone to die or kill someone.", RoleId.Whisperer);
+        public static RoleInfo undertaker = new RoleInfo("Undertaker", Undertaker.color, "Hide Dead Bodies by Dragging them to a secret location", "Drag dead bodies away.", RoleId.Whisperer);
         public static RoleInfo eraser = new RoleInfo("Eraser", Eraser.color, "Kill the Crewmates and erase their roles", "Erase the roles of your enemies", RoleId.Eraser);
         public static RoleInfo trickster = new RoleInfo("Trickster", Trickster.color, "Use your jack-in-the-boxes to surprise others", "Surprise your enemies", RoleId.Trickster);
         public static RoleInfo cleaner = new RoleInfo("Cleaner", Cleaner.color, "Kill everyone and leave no traces", "Clean up dead bodies", RoleId.Cleaner);
@@ -194,6 +195,7 @@ namespace TheOtherRoles
             if (p == Camouflager.camouflager) infos.Add(camouflager);
             if (p == Vampire.vampire) infos.Add(vampire);
             if (p == Whisperer.whisperer) infos.Add(whisperer);
+            if (p == Undertaker.undertaker) infos.Add(undertaker);
             if (p == Eraser.eraser) infos.Add(eraser);
             if (p == Trickster.trickster) infos.Add(trickster);
             if (p == Cleaner.cleaner) infos.Add(cleaner);
@@ -253,10 +255,12 @@ namespace TheOtherRoles
                         roleName = Helpers.cs(Color.gray, "(erased) ") + roleName;
                     if (Vampire.vampire != null && !Vampire.vampire.Data.IsDead && Vampire.bitten == p && !p.Data.IsDead)
                         roleName = Helpers.cs(Vampire.color, $"(bitten : {(int)HudManagerStartPatch.vampireKillButton.Timer + 1}s) ") + roleName;
-                    if (Whisperer.whisperVictim)
+                    if (p == Whisperer.whisperVictim)
                         roleName = Helpers.cs(Whisperer.color, $"(whsp) ") + roleName;
-                    if (Whisperer.whisperVictimToKill)
+                    if (p == Whisperer.whisperVictimToKill)
                         roleName = Helpers.cs(Whisperer.color, $"(whsp kill : {(int)HudManagerStartPatch.whispererKillButton.Timer + 1}s) ") + roleName;
+                    if (Undertaker.draggingTarget != null && p == Undertaker.undertaker)
+                        roleName = Helpers.cs(Undertaker.color, "(dragging) ") + roleName;
                     if (Deputy.handcuffedPlayers.Contains(p.PlayerId))
                         roleName = Helpers.cs(Color.gray, "(cuffed) ") + roleName;
                     if (Deputy.handcuffedKnows.ContainsKey(p.PlayerId))  // Active cuff
