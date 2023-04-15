@@ -33,7 +33,6 @@ namespace TheOtherRoles
     {
         public const string Id = "me.eisbison.theotherroles";
         public const string VersionString = "1.0.0";
-        public static uint betaDays = 0;  // amount of days for the build to be usable (0 for infinite!)
 
         public static Version Version = Version.Parse(VersionString);
         internal static BepInEx.Logging.ManualLogSource Logger;
@@ -94,8 +93,6 @@ namespace TheOtherRoles
         public override void Load() {
             Logger = Log;
             Instance = this;
-  
-            _ = Helpers.checkBeta(); // Exit if running an expired beta
 
             DebugMode = Config.Bind("Custom", "Enable Debug Mode", "false");
             GhostsSeeInformation = Config.Bind("Custom", "Ghosts See Remaining Tasks", true);
@@ -114,8 +111,7 @@ namespace TheOtherRoles
             defaultRegions = ServerManager.DefaultRegions;
 
             UpdateRegions();
-
-            DebugMode = Config.Bind("Custom", "Enable Debug Mode", "false");
+            
             DevGuid = Config.Bind("Custom", "Dev Guid", "");
             FeaturesCodes = Config.Bind("Custom", "Feature codes", "");
             Harmony.PatchAll();
