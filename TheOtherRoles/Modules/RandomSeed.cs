@@ -8,10 +8,6 @@ namespace TheOtherRoles.Modules;
 
 public static class RandomSeed
 {
-    public enum CustomRpc
-    {
-        ShareRandomSeeds,
-    }
     
     private static List<int> seeds = new ();
 
