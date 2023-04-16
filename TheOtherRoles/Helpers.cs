@@ -421,7 +421,11 @@ namespace TheOtherRoles {
             if (target == null || target.Data == null || target.Data.IsDead || target.Data.Disconnected) return MurderAttemptResult.SuppressKill; // Allow killing players in vents compared to vanilla code
 
             // Handle first kill attempt
-            if (TORMapOptions.shieldFirstKill && TORMapOptions.firstKillPlayer == target) return MurderAttemptResult.SuppressKill;
+            if (TORMapOptions.shieldFirstKill && TORMapOptions.firstKillPlayer == target)
+            {
+                MurderAttempt.ShowFailedMurderAttempt(CachedPlayer.LocalPlayer, $"{killer.PlayerId}|{target.PlayerId}");
+                return MurderAttemptResult.SuppressKill;
+            }
 
             // Handle blank shot
             if (!ignoreBlank && Pursuer.blankedList.Any(x => x.PlayerId == killer.PlayerId)) {
@@ -439,12 +443,14 @@ namespace TheOtherRoles {
                 MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)CustomRPC.ShieldedMurderAttempt, Hazel.SendOption.Reliable, -1);
                 AmongUsClient.Instance.FinishRpcImmediately(writer);
                 RPCProcedure.shieldedMurderAttempt();
+                MurderAttempt.ShowFailedMurderAttempt(CachedPlayer.LocalPlayer, $"{killer.PlayerId}|{target.PlayerId}");
                 SoundEffectsManager.play("fail");
                 return MurderAttemptResult.SuppressKill;
             }
 
             // Block impostor not fully grown mini kill
             else if (Mini.mini != null && target == Mini.mini && !Mini.isGrownUp()) {
+                MurderAttempt.ShowFailedMurderAttempt(CachedPlayer.LocalPlayer, $"{killer.PlayerId}|{target.PlayerId}");
                 return MurderAttemptResult.SuppressKill;
             }
 
@@ -554,33 +560,6 @@ namespace TheOtherRoles {
                 HudManagerStartPatch.zoomOutButton.PositionOffset = zoomOutStatus ? new Vector3(0f, 3f, 0) : new Vector3(0.4f, 2.8f, 0);
             }
             ResolutionManager.ResolutionChanged.Invoke((float)Screen.width / Screen.height); // This will move button positions to the correct position.
-        }
-
-        public static async Task checkBeta() {
-            if (TheOtherRolesPlugin.betaDays > 0) {
-                TheOtherRolesPlugin.Logger.LogMessage($"Beta check");
-                var compileTime = new DateTime(Builtin.CompileTime, DateTimeKind.Utc);  // This may show as an error, but it is not, compilation will work!
-                DateTime? now;
-                // Get time from the internet, so no-one can cheat it (so easily).
-                try {
-                    var client = new System.Net.Http.HttpClient();
-                    using var response = await client.GetAsync("http://www.google.com/");
-                    if (response.IsSuccessStatusCode)
-                        now = response.Headers.Date?.UtcDateTime;
-                    else {
-                        TheOtherRolesPlugin.Logger.LogMessage($"Could not get time from server: {response.StatusCode}");
-                        now = DateTime.UtcNow; //In case something goes wrong. 
-                    }
-                } catch (System.Net.Http.HttpRequestException) {
-                    now = DateTime.UtcNow;
-                }
-                if ((now - compileTime)?.TotalDays > TheOtherRolesPlugin.betaDays) {
-                    TheOtherRolesPlugin.Logger.LogMessage($"Beta expired!");
-                    BepInExUpdater.MessageBoxTimeout(BepInExUpdater.GetForegroundWindow(), "BETA is expired. You cannot play this version anymore.", "The Other Roles Beta", 0,0, 10000);
-                    Application.Quit();
-
-                } else TheOtherRolesPlugin.Logger.LogMessage($"Beta will remain runnable for {TheOtherRolesPlugin.betaDays - (now - compileTime)?.TotalDays} days!");
-            }
         }
 
         public static bool hasImpVision(GameData.PlayerInfo player) {
