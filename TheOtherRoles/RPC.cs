@@ -63,6 +63,7 @@ namespace TheOtherRoles
         Thief,
         Bomber,
         Whisperer,
+        Undertaker,
         Crewmate,
         Impostor,
         // Modifier ---
@@ -366,9 +367,12 @@ namespace TheOtherRoles
                     case RoleId.Bomber:
                         Bomber.bomber = player;
                         break;
-                        case RoleId.Whisperer:
-                            Whisperer.whisperer = player;
-                            break;
+                    case RoleId.Whisperer:
+                        Whisperer.whisperer = player;
+                        break;
+                    case RoleId.Undertaker:
+                        Undertaker.undertaker = player;
+                        break;
                     }
             }
         }
@@ -718,6 +722,7 @@ namespace TheOtherRoles
             if (player == Janitor.janitor) Janitor.clearAndReload();
             if (player == Vampire.vampire) Vampire.clearAndReload();
             if (player == Whisperer.whisperer) Whisperer.clearAndReload();
+            if (player == Undertaker.undertaker) Undertaker.clearAndReload();
             if (player == Eraser.eraser) Eraser.clearAndReload();
             if (player == Trickster.trickster) Trickster.clearAndReload();
             if (player == Cleaner.cleaner) Cleaner.clearAndReload();
@@ -1033,6 +1038,7 @@ namespace TheOtherRoles
             if (target == Camouflager.camouflager) Camouflager.camouflager = thief;
             if (target == Vampire.vampire) Vampire.vampire = thief;
             if (target == Whisperer.whisperer) Whisperer.whisperer = thief;
+            if (target == Undertaker.undertaker) Undertaker.undertaker = thief;
             if (target == Eraser.eraser) Eraser.eraser = thief;
             if (target == Trickster.trickster) Trickster.trickster = thief;
             if (target == Cleaner.cleaner) Cleaner.cleaner = thief;

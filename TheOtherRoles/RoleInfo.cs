@@ -104,6 +104,7 @@ namespace TheOtherRoles
             camouflager,
             vampire,
             whisperer,
+            undertaker,
             eraser,
             trickster,
             cleaner,
