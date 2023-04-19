@@ -260,7 +260,7 @@ namespace TheOtherRoles
                         roleName = Helpers.cs(Whisperer.color, $"(whsp) ") + roleName;
                     if (p == Whisperer.whisperVictimToKill)
                         roleName = Helpers.cs(Whisperer.color, $"(whsp kill : {(int)HudManagerStartPatch.whispererKillButton.Timer + 1}s) ") + roleName;
-                    if (Undertaker.draggingTarget != null && p == Undertaker.undertaker)
+                    if (Undertaker.draggedBody != null && p == Undertaker.undertaker)
                         roleName = Helpers.cs(Undertaker.color, "(dragging) ") + roleName;
                     if (Deputy.handcuffedPlayers.Contains(p.PlayerId))
                         roleName = Helpers.cs(Color.gray, "(cuffed) ") + roleName;

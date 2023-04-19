@@ -202,7 +202,72 @@ namespace TheOtherRoles.Patches {
                 Whisperer.whisperVictimTarget = Helpers.setTarget(false, true, null, Whisperer.whisperVictim);
                 Helpers.setPlayerOutline(Whisperer.whisperVictimTarget, Whisperer.color);
             }
+        }
 
+        static void undertakerSetTarget() {
+            if (!Undertaker.undertaker || Undertaker.undertaker != CachedPlayer.LocalPlayer.PlayerControl) return;
+
+            if (!Undertaker.draggedBody) {
+                Undertaker.currentDeadTarget = Helpers.setDeadTarget(0f);
+                // Helpers.setDeadPlayerOutline(Undertaker.currentDeadTarget, Undertaker.color);
+            }
+        }
+
+        static void undertakerUpdate() {
+            var @undertakerPlayer = Undertaker.undertaker;
+            DeadBody body = Undertaker.draggedBody;
+
+            if (!@undertakerPlayer || @undertakerPlayer != CachedPlayer.LocalPlayer.PlayerControl || body == null) return;
+
+            if (@undertakerPlayer.Data.IsDead)
+            {
+                if(@undertakerPlayer.AmOwner)
+                {
+                    var position = CachedPlayer.LocalPlayer.PlayerControl.transform.position;
+                        
+                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDropBody, Hazel.SendOption.Reliable, -1);
+                    writer.Write(position.x);
+                    writer.Write(position.y);
+                    writer.Write(position.z);
+                    AmongUsClient.Instance.FinishRpcImmediately(writer);
+                    // body.transform.position = position;
+
+                    Undertaker.draggedBody = null;
+                    // body.currentBodyRenderer.material.SetFloat("_Outline", 0f);
+                    // target.cosmetics.currentBodySprite.BodySprite.material.SetFloat("_Outline", 1f);
+                    
+                    Undertaker.LastDragged = DateTime.UtcNow;
+
+                }
+
+                return;
+            }
+
+            var currentPosition2D = @undertakerPlayer.GetTruePosition();
+            var currentPosition3D = @undertakerPlayer.transform.position;
+
+
+            var velocity = @undertakerPlayer.gameObject.GetComponent<Rigidbody2D>().velocity.normalized;
+            var newPos2D = ((Vector2) @undertakerPlayer.transform.position) - (velocity / 3) + body.myCollider.offset;
+            var newPos3D = new Vector3(newPos2D.x, newPos2D.y, currentPosition3D.z);
+
+            if (PhysicsHelpers.AnythingBetween(
+                currentPosition2D,
+                newPos2D,
+                Constants.ShipAndObjectsMask,
+                false
+            ))
+            {
+                body.transform.position = currentPosition3D;
+            }
+            else
+            {
+                body.transform.position = newPos3D;
+            }
+
+            if (!@undertakerPlayer.AmOwner) return;
+
+            // Helpers.setDeadPlayerOutline(body, Color.green);
         }
 
         static void jackalSetTarget() {
@@ -841,9 +906,6 @@ namespace TheOtherRoles.Patches {
             Helpers.setPlayerOutline(Thief.currentTarget, Thief.color);
         }
 
-
-
-
         static void baitUpdate() {
             if (!Bait.active.Any()) return;
 
@@ -1011,6 +1073,9 @@ namespace TheOtherRoles.Patches {
                 Garlic.UpdateAll();
                 // Whisperer
                 whispererSetTarget();
+                // Undertaker
+                undertakerSetTarget();
+                undertakerUpdate();
                 Trap.Update();
                 // Eraser
                 eraserSetTarget();

@@ -64,6 +64,46 @@ namespace TheOtherRoles {
             return result;
         }
 
+
+        public static DeadBody setDeadTarget(float maxDistance = 0f, PlayerControl targetingPlayer = null) {
+            DeadBody @result = null;
+            float closestDistance = float.MaxValue;
+
+            if (!MapUtilities.CachedShipStatus) return @result;
+            
+            if (targetingPlayer == null) targetingPlayer = CachedPlayer.LocalPlayer.PlayerControl;
+            if (maxDistance == 0f) maxDistance = AmongUs.GameOptions.GameOptionsData.KillDistances[Mathf.Clamp(GameOptionsManager.Instance.currentNormalGameOptions.KillDistance, 0, 2)];
+            if (targetingPlayer.Data.IsDead) return @result;
+
+            Vector2 truePosition = targetingPlayer.GetTruePosition();
+            
+            bool flag =  GameOptionsManager.Instance.currentNormalGameOptions.GhostsDoTasks 
+                        && (!AmongUsClient.Instance || !AmongUsClient.Instance.IsGameOver);
+
+            Collider2D[] allocs = Physics2D.OverlapCircleAll(truePosition, maxDistance,
+                LayerMask.GetMask(new[] {"Players", "Ghost"}));
+            
+            
+
+            foreach (Collider2D collider2D in allocs)
+            {
+                if (!flag || collider2D.tag != "DeadBody") continue;
+                DeadBody @component = collider2D.GetComponent<DeadBody>();
+                
+                if (!(Vector2.Distance(truePosition, @component.TruePosition) <=
+                        maxDistance)) continue;
+                
+                float distance = Vector2.Distance(truePosition, @component.TruePosition);
+                
+                if (!(distance < closestDistance)) continue;
+                
+                @result = @component;
+                closestDistance = distance;
+            }
+
+            return @result;
+        }
+
         public static void setPlayerOutline(PlayerControl target, Color color) {
             if (target == null || target.cosmetics?.currentBodySprite?.BodySprite == null) return;
 
@@ -72,6 +112,15 @@ namespace TheOtherRoles {
             target.cosmetics.currentBodySprite.BodySprite.material.SetFloat("_Outline", 1f);
             target.cosmetics.currentBodySprite.BodySprite.material.SetColor("_OutlineColor", color);
         }
+
+        // public static void setDeadPlayerOutline(DeadBody deadTarget, Color color) {
+        //     if (deadTarget == null || deadTarget.bodyRenderer == null) return;
+
+        //     color = color.SetAlpha(Chameleon.visibility(deadTarget.ParentId));
+
+        //     deadTarget.bodyRenderer.material.SetFloat("_Outline", 1f);
+        //     deadTarget.bodyRenderer.material.SetColor("_OutlineColor", color);
+        // }
 
         public static Sprite loadSpriteFromResources(string path, float pixelsPerUnit) {
             try

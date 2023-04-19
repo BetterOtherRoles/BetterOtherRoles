@@ -36,6 +36,7 @@ namespace TheOtherRoles
         private static CustomButton trackerTrackCorpsesButton;
         public static CustomButton vampireKillButton;
         public static CustomButton whispererKillButton;
+        public static CustomButton undertakerDragButton;
         public static CustomButton garlicButton;
         public static CustomButton jackalKillButton;
         public static CustomButton sidekickKillButton;
@@ -105,6 +106,7 @@ namespace TheOtherRoles
             hackerAdminTableButton.MaxTimer = Hacker.cooldown;
             vampireKillButton.MaxTimer = Vampire.cooldown;
             whispererKillButton.MaxTimer = Whisperer.cooldown;
+            undertakerDragButton.MaxTimer = Undertaker.cooldown;
             trackerTrackPlayerButton.MaxTimer = 0f;
             garlicButton.MaxTimer = 0f;
             jackalKillButton.MaxTimer = Jackal.cooldown;
@@ -771,6 +773,7 @@ namespace TheOtherRoles
                                     if (timer != lastTimer) {
                                         lastTimer = timer;
                                         
+                                        
                                         MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareGhostInfo, Hazel.SendOption.Reliable, -1);
                                         writer.Write(CachedPlayer.LocalPlayer.PlayerId);
                                         writer.Write((byte)RPCProcedure.GhostInfoTypes.WhispererTimerAndTarget);
@@ -831,6 +834,60 @@ namespace TheOtherRoles
                 () => {
                     whispererKillButton.Timer = whispererKillButton.MaxTimer;
                 }
+            );
+
+            undertakerDragButton = new CustomButton(
+                () => {
+                    DeadBody @bodyComponent = !Undertaker.currentDeadTarget ? Undertaker.currentDeadTarget : Undertaker.draggedBody;
+
+                    if (!Undertaker.draggedBody)
+                    {
+                        Undertaker.draggedBody = @bodyComponent;
+
+                        TheOtherRolesPlugin.Logger.LogMessage($"DeadBody position : \nx: {@bodyComponent.transform.position.x}, y : {@bodyComponent.transform.position.y}");
+
+                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDragBody, Hazel.SendOption.Reliable, -1);
+                        writer.Write(@bodyComponent.ParentId);
+                        AmongUsClient.Instance.FinishRpcImmediately(writer);
+                        
+                        @bodyComponent.bodyRenderers[0].material.SetFloat("_Outline", 1f);
+                        
+                    } else if (Undertaker.draggedBody)
+                    {
+                        
+                        var position = CachedPlayer.LocalPlayer.PlayerControl.transform.position;
+                        
+                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDropBody, Hazel.SendOption.Reliable, -1);
+                        writer.Write(position.x);
+                        writer.Write(position.y);
+                        writer.Write(position.z);
+                        AmongUsClient.Instance.FinishRpcImmediately(writer);
+
+                        @bodyComponent.bodyRenderers[0].material.SetFloat("_Outline", 0f);
+
+                        Undertaker.draggedBody = null;
+                        Undertaker.LastDragged = DateTime.UtcNow;
+
+                        
+                    }
+                }, // Action OnClick
+                () => { return Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; }, // Bool HasButton
+                () => { 
+                    return ((Undertaker.currentDeadTarget != null
+                            && (Vector2.Distance(Undertaker.currentDeadTarget.TruePosition, CachedPlayer.LocalPlayer.PlayerControl.GetTruePosition()) > Undertaker.dragDistance)))
+                            || (Undertaker.draggedBody != null) 
+                            && CachedPlayer.LocalPlayer.PlayerControl.CanMove; 
+                }, // Bool CouldUse
+                () => {}, // Action OnMeetingEnds
+                Undertaker.getButtonSprite(), // Sprite sprite,
+                CustomButton.ButtonPositions.upperRowLeft, // Vector3 PositionOffset
+                __instance, // HudManager hudManager
+                "ActionQuaternary", // String actionName,
+                false, // bool HasEffect
+                0f, // Float EffectDuration
+                () => { }, // Action OnEffectEnds
+                false, // Bool mirror = false
+                "" // String buttonText = ""
             );
              
             vampireKillButton = new CustomButton(
@@ -1473,7 +1530,7 @@ namespace TheOtherRoles
                 () => {
                     foreach (Collider2D collider2D in Physics2D.OverlapCircleAll(CachedPlayer.LocalPlayer.PlayerControl.GetTruePosition(), CachedPlayer.LocalPlayer.PlayerControl.MaxReportDistance, Constants.PlayersOnlyMask)) {
                         if (collider2D.tag == "DeadBody") {
-                            DeadBody component = collider2D.GetComponent<DeadBody>();
+                            DeadBody component = (DeadBody)collider2D.GetComponent<DeadBody>();
                             if (component && !component.Reported) {
                                 Vector2 truePosition = CachedPlayer.LocalPlayer.PlayerControl.GetTruePosition();
                                 Vector2 truePosition2 = component.TruePosition;

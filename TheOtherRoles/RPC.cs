@@ -115,6 +115,8 @@ namespace TheOtherRoles
         CamouflagerCamouflage,
         TrackerUsedTracker,
         VampireSetBitten,
+        UndertakerDragBody,
+        UndertakerDropBody,
         PlaceGarlic,
         DeputyUsedHandcuffs,
         DeputyPromotes,
@@ -618,6 +620,29 @@ namespace TheOtherRoles
                         Vampire.bitten = player;
                 }
             }
+        }
+
+        public static void undertakerDragBody(byte draggedBodyId)
+        {
+            if (Undertaker.undertaker == null || Undertaker.draggedBody != null) return;
+            
+            foreach (DeadBody body in UnityEngine.Object.FindObjectsOfType<DeadBody>()) {
+                if (body.ParentId == draggedBodyId) Undertaker.draggedBody = body;
+            }
+
+            // Undertaker.undertaker.MyPhysics.body.velocity = new Vector2(0.75f, 0.75f);
+        }
+
+        public static void undertakerDropBody(float vx, float vy, float vz = 0f)
+        {
+            if (Undertaker.undertaker == null || Undertaker.draggedBody == null) return;
+
+            // Vector2 @velocity = new Vector2(GameOptionsManager.Instance.currentNormalGameOptions.PlayerSpeedMod, GameOptionsManager.Instance.currentNormalGameOptions.PlayerSpeedMod);
+            
+            // Undertaker.undertaker.MyPhysics.body.velocity = @velocity;
+            Undertaker.draggedBody.transform.position = new Vector3(vx, vy, vz);
+            Undertaker.draggedBody = null;
+
         }
 
         public static void placeGarlic(byte[] buff) {
@@ -1323,6 +1348,16 @@ namespace TheOtherRoles
                     byte bittenId = reader.ReadByte();
                     byte reset = reader.ReadByte();
                     RPCProcedure.vampireSetBitten(bittenId, reset);
+                    break;
+                case (byte)CustomRPC.UndertakerDragBody:
+                    byte draggedBodyId = reader.ReadByte();
+                    RPCProcedure.undertakerDragBody(draggedBodyId);
+                    break;
+                case (byte)CustomRPC.UndertakerDropBody:
+                    var vx = reader.ReadSingle();
+                    var vy = reader.ReadSingle();
+                    var vz = reader.ReadSingle();
+                    RPCProcedure.undertakerDropBody(vx, vy, vz);
                     break;
                 case (byte)CustomRPC.PlaceGarlic:
                     RPCProcedure.placeGarlic(reader.ReadBytesAndSize());

@@ -828,10 +828,12 @@ namespace TheOtherRoles
         public static Color color = Palette.ImpostorRed;
 
         public static float dragSpeed;
-        public static float abilityCooldown;
+        public static float cooldown;
+        public static float dragDistance;
 
-        public static PlayerControl currentDeadTarget;
-        public static PlayerControl draggingTarget;
+        public static DateTime LastDragged { get; set; }
+        public static DeadBody  currentDeadTarget;
+        public static DeadBody  draggedBody;
 
         private static Sprite buttonSprite;
         public static Sprite getButtonSprite() {
@@ -840,12 +842,22 @@ namespace TheOtherRoles
             return buttonSprite;
         }
 
+        public static float dragTimer() 
+        {
+            var utcNow = DateTime.UtcNow;
+            var timeSpan = utcNow - LastDragged;
+            var num = 25f * 1000f;
+            var flag2 = num - (float) timeSpan.TotalMilliseconds < 0f;
+            if (flag2) return 0;
+            return (num - (float) timeSpan.TotalMilliseconds) / 1000f;
+        }
+
         public static void clearAndReload() {
             undertaker = null;
             currentDeadTarget = null;
-            draggingTarget = null;
+            draggedBody = null;
             dragSpeed = CustomOptionHolder.undertakerDragSpeed.getFloat();
-            abilityCooldown = CustomOptionHolder.undertakerAbilityCooldown.getFloat();
+            cooldown = CustomOptionHolder.undertakerAbilityCooldown.getFloat();
         }
     }
 
