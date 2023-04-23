@@ -19,11 +19,11 @@ namespace TheOtherRoles.Modules {
                                                                     29, 11, 2, 26, 16,
                                                                     20, 24, 9, 12, 6 };
         public static void Load() {
-            List<StringNames> longlist = Enumerable.ToList<StringNames>(Palette.ColorNames);
-            List<Color32> colorlist = Enumerable.ToList<Color32>(Palette.PlayerColors);
-            List<Color32> shadowlist = Enumerable.ToList<Color32>(Palette.ShadowColors);
+            var longList = Palette.ColorNames.ToList();
+            var colorList = Palette.PlayerColors.ToList();
+            var shadowList = Palette.ShadowColors.ToList();
 
-            List<CustomColor> colors = new List<CustomColor>();
+            var colors = new List<CustomColor>();
 
             /* Custom Colors */
             colors.Add(new CustomColor { longname = "Salmon",
@@ -77,17 +77,17 @@ namespace TheOtherRoles.Modules {
             colors.Add(new CustomColor { longname = "Signal\nOrange",
                                         color = new Color32(0xF7, 0x44, 0x17, byte.MaxValue), 
                                         shadow = new Color32(0x9B, 0x2E, 0x0F, byte.MaxValue),
-                                        isLighterColor = true });   
+                                        isLighterColor = true });
 
             colors.Add(new CustomColor { longname = "Teal",
                                         color = new Color32(0x25, 0xB8, 0xBF, byte.MaxValue), 
                                         shadow = new Color32(0x12, 0x89, 0x86, byte.MaxValue),
-                                        isLighterColor = false });   
+                                        isLighterColor = false });
 
             colors.Add(new CustomColor { longname = "Blurple",
                                         color = new Color32(0x59, 0x3C, 0xD6, byte.MaxValue), 
                                         shadow = new Color32(0x29, 0x17, 0x96, byte.MaxValue),
-                                        isLighterColor = false });   
+                                        isLighterColor = false });
 
             colors.Add(new CustomColor { longname = "Sunrise", 
                                         color = new Color32(0xFF, 0xCA, 0x19, byte.MaxValue), 
@@ -97,7 +97,7 @@ namespace TheOtherRoles.Modules {
             colors.Add(new CustomColor { longname = "Ice",
                                         color = new Color32(0xA8, 0xDF, 0xFF, byte.MaxValue), 
                                         shadow = new Color32(0x59, 0x9F, 0xC8, byte.MaxValue),
-                                        isLighterColor = true });     
+                                        isLighterColor = true });
 
             pickableColors += (uint)colors.Count; // Colors to show in Tab
             /** Hidden Colors **/     
@@ -105,17 +105,17 @@ namespace TheOtherRoles.Modules {
             /** Add Colors **/
             int id = 50000;
             foreach (CustomColor cc in colors) {
-                longlist.Add((StringNames)id);
+                longList.Add((StringNames)id);
                 CustomColors.ColorStrings[id++] = cc.longname;
-                colorlist.Add(cc.color);
-                shadowlist.Add(cc.shadow);
+                colorList.Add(cc.color);
+                shadowList.Add(cc.shadow);
                 if (cc.isLighterColor)
-                    lighterColors.Add(colorlist.Count - 1);
+                    lighterColors.Add(colorList.Count - 1);
             }
 
-            Palette.ColorNames = longlist.ToArray();
-            Palette.PlayerColors = colorlist.ToArray();
-            Palette.ShadowColors = shadowlist.ToArray();
+            Palette.ColorNames = longList.ToArray();
+            Palette.PlayerColors = colorList.ToArray();
+            Palette.ShadowColors = shadowList.ToArray();
         }
 
         protected internal struct CustomColor {

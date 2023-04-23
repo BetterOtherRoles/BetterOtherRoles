@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TheOtherRoles.Customs.Roles.Impostor;
 using TheOtherRoles.Utilities;
 using UnityEngine;
 

@@ -8,6 +8,7 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
         <PlatformTarget>x86</PlatformTarget>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>

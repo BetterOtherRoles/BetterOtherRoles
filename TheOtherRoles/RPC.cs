@@ -15,6 +15,10 @@ using TheOtherRoles.Utilities;
 using TheOtherRoles.CustomGameModes;
 using AmongUs.Data;
 using AmongUs.GameOptions;
+using TheOtherRoles.Customs.Modifiers;
+using TheOtherRoles.Customs.Roles.Crewmate;
+using TheOtherRoles.Customs.Roles.Impostor;
+using TheOtherRoles.Customs.Roles.Neutral;
 
 namespace TheOtherRoles
 {
@@ -175,7 +179,7 @@ namespace TheOtherRoles
             setCustomButtonCooldowns();
             reloadPluginOptions();
             Helpers.toggleZoom(reset : true);
-            GameStartManagerPatch.GameStartManagerUpdatePatch.startingTimer = 0;
+            GameStartManagerPatch.GameStartManagerUpdatePatch.StartingTimer = 0;
             SurveillanceMinigamePatch.nightVisionOverlays = null;
             EventUtility.clearAndReload();
         }
@@ -459,7 +463,7 @@ namespace TheOtherRoles
         }
 
         public static void setGameStarting() {
-            GameStartManagerPatch.GameStartManagerUpdatePatch.startingTimer = 5f;
+            GameStartManagerPatch.GameStartManagerUpdatePatch.StartingTimer = 5f;
         }
 
         // Role functionality

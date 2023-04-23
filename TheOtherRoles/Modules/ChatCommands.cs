@@ -1,6 +1,9 @@
 using System;
 using HarmonyLib;
 using System.Linq;
+using TheOtherRoles.Customs.Modifiers;
+using TheOtherRoles.Customs.Roles.Crewmate;
+using TheOtherRoles.Customs.Roles.Neutral;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 

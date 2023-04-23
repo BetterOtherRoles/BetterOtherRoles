@@ -13,6 +13,8 @@ using static TheOtherRoles.TheOtherRoles;
 using static TheOtherRoles.CustomOption;
 using Reactor.Utilities.Extensions;
 using AmongUs.GameOptions;
+using TheOtherRoles.Customs.Roles.Crewmate;
+using TheOtherRoles.Customs.Roles.Neutral;
 
 namespace TheOtherRoles {
     public class CustomOption {

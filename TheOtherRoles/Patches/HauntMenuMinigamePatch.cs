@@ -1,9 +1,9 @@
 ﻿using HarmonyLib;
 using AmongUs.GameOptions;
-using System.Collections.Generic;
 using System.Linq;
 using TheOtherRoles.Players;
 using System;
+using TheOtherRoles.Customs.Roles.Impostor;
 
 namespace TheOtherRoles.Patches {
     [HarmonyPatch]

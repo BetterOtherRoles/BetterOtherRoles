@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using TheOtherRoles.Customs.Roles.Impostor;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 

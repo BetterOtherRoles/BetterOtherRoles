@@ -8,6 +8,12 @@ using Hazel;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using TheOtherRoles.CustomGameModes;
+using TheOtherRoles.Customs.Modifiers;
+using TheOtherRoles.Customs.Roles.Crewmate;
+using TheOtherRoles.Customs.Roles.Impostor;
+using TheOtherRoles.Customs.Roles.Neutral;
+using TheOtherRoles.EnoFramework;
+using TheOtherRoles.EnoFramework.Kernel;
 using TheOtherRoles.Modules;
 
 namespace TheOtherRoles.Patches {
@@ -237,7 +243,7 @@ namespace TheOtherRoles.Patches {
             public static bool Prefix(IntroCutscene __instance) {
                 // Create RandomSeed
                 RandomSeed.GenerateSeeds();
-                if (!CustomOptionHolder.activateRoles.getBool()) return true;
+                if (!Singleton<CustomOptionsHolder>.Instance.EnableRoles) return true;
                 seed = rnd.Next(5000);
                 FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(1f, new Action<float>((p) => {
                     SetRoleTexts(__instance);

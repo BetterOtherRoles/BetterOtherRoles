@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using System;
+using TheOtherRoles.Customs.Modifiers;
 
 namespace TheOtherRoles.Patches {
     [HarmonyPatch]

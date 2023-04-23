@@ -21,6 +21,8 @@ using Il2CppSystem.Security.Cryptography;
 using Il2CppSystem.Text;
 using Reactor.Networking.Attributes;
 using AmongUs.Data;
+using TheOtherRoles.EnoFramework;
+using TheOtherRoles.EnoFramework.Kernel;
 using TheOtherRoles.Patches;
 
 namespace TheOtherRoles
@@ -115,6 +117,8 @@ namespace TheOtherRoles
             DevGuid = Config.Bind("Custom", "Dev Guid", "");
             FeaturesCodes = Config.Bind("Custom", "Feature codes", "");
             Harmony.PatchAll();
+            
+            Instances.Load();
 
             CustomOptionHolder.Load();
             CustomColors.Load();

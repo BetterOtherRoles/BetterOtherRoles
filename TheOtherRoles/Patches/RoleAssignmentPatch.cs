@@ -9,12 +9,17 @@ using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using static TheOtherRoles.TheOtherRoles;
 using TheOtherRoles.CustomGameModes;
+using TheOtherRoles.Customs.Modifiers;
+using TheOtherRoles.Customs.Roles.Crewmate;
+using TheOtherRoles.Customs.Roles.Neutral;
+using TheOtherRoles.EnoFramework;
+using TheOtherRoles.EnoFramework.Kernel;
 
 namespace TheOtherRoles.Patches {
     [HarmonyPatch(typeof(RoleOptionsCollectionV07), nameof(RoleOptionsCollectionV07.GetNumPerGame))]
     class RoleOptionsDataGetNumPerGamePatch{
         public static void Postfix(ref int __result) {
-            if (CustomOptionHolder.activateRoles.getBool() && GameOptionsManager.Instance.CurrentGameOptions.GameMode == GameModes.Normal) __result = 0; // Deactivate Vanilla Roles if the mod roles are active
+            if (Singleton<CustomOptionsHolder>.Instance.EnableRoles && GameOptionsManager.Instance.CurrentGameOptions.GameMode == GameModes.Normal) __result = 0; // Deactivate Vanilla Roles if the mod roles are active
         }
     }
 
@@ -50,8 +55,8 @@ namespace TheOtherRoles.Patches {
             AmongUsClient.Instance.FinishRpcImmediately(writer);
             RPCProcedure.resetVariables();
             if (TORMapOptions.gameMode == CustomGamemodes.HideNSeek || GameOptionsManager.Instance.currentGameOptions.GameMode == GameModes.HideNSeek) return; // Don't assign Roles in Hide N Seek
-            if (CustomOptionHolder.activateRoles.getBool()) // Don't assign Roles in Tutorial or if deactivated
-                assignRoles();
+            // Don't assign Roles in Tutorial or if deactivated
+            if (Singleton<CustomOptionsHolder>.Instance.EnableRoles) assignRoles();
         }
 
         private static void assignRoles() {
@@ -74,18 +79,20 @@ namespace TheOtherRoles.Patches {
             List<PlayerControl> impostors = PlayerControl.AllPlayerControls.ToArray().ToList().OrderBy(x => Guid.NewGuid()).ToList();
             impostors.RemoveAll(x => !x.Data.Role.IsImpostor);
 
-            var crewmateMin = CustomOptionHolder.crewmateRolesCountMin.getSelection();
-            var crewmateMax = CustomOptionHolder.crewmateRolesCountMax.getSelection();
-            var neutralMin = CustomOptionHolder.neutralRolesCountMin.getSelection();
-            var neutralMax = CustomOptionHolder.neutralRolesCountMax.getSelection();
-            var impostorMin = CustomOptionHolder.impostorRolesCountMin.getSelection();
-            var impostorMax = CustomOptionHolder.impostorRolesCountMax.getSelection();
+            var crewmateMin = (int)Singleton<CustomOptionsHolder>.Instance.MinCrewmateRoles;
+            var crewmateMax = (int)Singleton<CustomOptionsHolder>.Instance.MaxCrewmateRoles;
+            var neutralMin = (int)Singleton<CustomOptionsHolder>.Instance.MinNeutralRoles;
+            var neutralMax = (int)Singleton<CustomOptionsHolder>.Instance.MaxNeutralRoles;
+            var impostorMin = (int)Singleton<CustomOptionsHolder>.Instance.MinImpostorRoles;
+            var impostorMax = (int)Singleton<CustomOptionsHolder>.Instance.MaxImpostorRoles;
 
             // Automatically force everyone to get a role by setting crew Min / Max according to Neutral Settings
+            /*
             if (CustomOptionHolder.crewmateRolesFill.getBool()) {
                 crewmateMax = crewmates.Count - neutralMin;
                 crewmateMin = crewmates.Count - neutralMax;
             }
+            */
             
             // Make sure min is less or equal to max
             if (crewmateMin > crewmateMax) crewmateMin = crewmateMax;
@@ -93,19 +100,19 @@ namespace TheOtherRoles.Patches {
             if (impostorMin > impostorMax) impostorMin = impostorMax;
 
             // Get the maximum allowed count of each role type based on the minimum and maximum option
-            int crewCountSettings = rnd.Next(crewmateMin, crewmateMax + 1);
-            int neutralCountSettings = rnd.Next(neutralMin, neutralMax + 1);
-            int impCountSettings = rnd.Next(impostorMin, impostorMax + 1);
+            var crewCountSettings = rnd.Next(crewmateMin, crewmateMax + 1);
+            var neutralCountSettings = rnd.Next(neutralMin, neutralMax + 1);
+            var impCountSettings = rnd.Next(impostorMin, impostorMax + 1);
 
             // Potentially lower the actual maximum to the assignable players
-            int maxCrewmateRoles = Mathf.Min(crewmates.Count, crewCountSettings);
-            int maxNeutralRoles = Mathf.Min(crewmates.Count, neutralCountSettings);
-            int maxImpostorRoles = Mathf.Min(impostors.Count, impCountSettings);
+            var maxCrewmateRoles = Mathf.Min(crewmates.Count, crewCountSettings);
+            var maxNeutralRoles = Mathf.Min(crewmates.Count, neutralCountSettings);
+            var maxImpostorRoles = Mathf.Min(impostors.Count, impCountSettings);
 
             // Fill in the lists with the roles that should be assigned to players. Note that the special roles (like Mafia or Lovers) are NOT included in these lists
-            Dictionary<byte, int> impSettings = new Dictionary<byte, int>();
-            Dictionary<byte, int> neutralSettings = new Dictionary<byte, int>();
-            Dictionary<byte, int> crewSettings = new Dictionary<byte, int>();
+            var impSettings = new Dictionary<byte, int>();
+            var neutralSettings = new Dictionary<byte, int>();
+            var crewSettings = new Dictionary<byte, int>();
             
             impSettings.Add((byte)RoleId.Morphling, CustomOptionHolder.morphlingSpawnRate.getSelection());
             impSettings.Add((byte)RoleId.Camouflager, CustomOptionHolder.camouflagerSpawnRate.getSelection());
@@ -125,7 +132,7 @@ namespace TheOtherRoles.Patches {
             neutralSettings.Add((byte)RoleId.Vulture, CustomOptionHolder.vultureSpawnRate.getSelection());
             neutralSettings.Add((byte)RoleId.Thief, CustomOptionHolder.thiefSpawnRate.getSelection());
 
-            if ((rnd.Next(1, 101) <= CustomOptionHolder.lawyerIsProsecutorChance.getSelection() * 10)) // Lawyer or Prosecutor
+            if (rnd.Next(1, 101) <= CustomOptionHolder.lawyerIsProsecutorChance.getSelection() * 10) // Lawyer or Prosecutor
                 neutralSettings.Add((byte)RoleId.Prosecutor, CustomOptionHolder.lawyerSpawnRate.getSelection());
             else
                 neutralSettings.Add((byte)RoleId.Lawyer, CustomOptionHolder.lawyerSpawnRate.getSelection());
@@ -162,16 +169,6 @@ namespace TheOtherRoles.Patches {
             };
         }
 
-        private static void assignSpecialRoles(RoleAssignmentData data) {
-            // Assign Mafia
-            if (data.impostors.Count >= 3 && data.maxImpostorRoles >= 3 && (rnd.Next(1, 101) <= CustomOptionHolder.mafiaSpawnRate.getSelection() * 10)) {
-                setRoleToRandomPlayer((byte)RoleId.Godfather, data.impostors);
-                setRoleToRandomPlayer((byte)RoleId.Janitor, data.impostors);
-                setRoleToRandomPlayer((byte)RoleId.Mafioso, data.impostors);
-                data.maxImpostorRoles -= 3;
-            }
-        }
-
         private static void selectFactionForFactionIndependentRoles(RoleAssignmentData data) {
             if (!isGuesserGamemode) {
                 // Assign Guesser (chance to be impostor based on setting)
@@ -189,7 +186,7 @@ namespace TheOtherRoles.Patches {
             if ((CustomOptionHolder.deputySpawnRate.getSelection() > 0 &&
                 CustomOptionHolder.sheriffSpawnRate.getSelection() == 10) ||
                 CustomOptionHolder.deputySpawnRate.getSelection() == 0) 
-                    data.crewSettings.Add((byte)RoleId.Sheriff, CustomOptionHolder.sheriffSpawnRate.getSelection());
+                data.crewSettings.Add((byte)RoleId.Sheriff, CustomOptionHolder.sheriffSpawnRate.getSelection());
 
 
             crewValues = data.crewSettings.Values.ToList().Sum();

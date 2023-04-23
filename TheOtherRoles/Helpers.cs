@@ -14,6 +14,10 @@ using System.Threading.Tasks;
 using System.Net;
 using TheOtherRoles.CustomGameModes;
 using Reactor.Utilities.Extensions;
+using TheOtherRoles.Customs.Modifiers;
+using TheOtherRoles.Customs.Roles.Crewmate;
+using TheOtherRoles.Customs.Roles.Impostor;
+using TheOtherRoles.Customs.Roles.Neutral;
 
 namespace TheOtherRoles {
 
