@@ -1771,7 +1771,7 @@ namespace TheOtherRoles
         public static bool hasImpostorVision;
         public static bool canUseVents;
         public static bool canKillSheriff;
-        public static bool didStealRole = false;
+        
 
         public static void clearAndReload() {
             thief = null;
@@ -1779,7 +1779,6 @@ namespace TheOtherRoles
             currentTarget = null;
             formerThief = null;
             playerStealed = null;
-            didStealRole = false;
             stealMethod = (StealMethod) CustomOptionHolder.thiefStealMethod.getSelection();
             hasImpostorVision = CustomOptionHolder.thiefHasImpVision.getBool();
             cooldown = CustomOptionHolder.thiefCooldown.getFloat();

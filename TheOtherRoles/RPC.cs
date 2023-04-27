@@ -1090,7 +1090,6 @@ namespace TheOtherRoles
             Thief.clearAndReload();
             Thief.formerThief = thief;  // After clearAndReload, else it would get reset...
             Thief.playerStealed = target;
-            Thief.didStealRole = true;
 
         }
         
