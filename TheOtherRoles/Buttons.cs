@@ -16,19 +16,7 @@ namespace TheOtherRoles
 {
     [HarmonyPatch(typeof(HudManager), nameof(HudManager.Start))]
     static class HudManagerStartPatch
-    {        
-        static Vector3[] Vector3Array = {
-            new Vector3(0, 0, 0),
-            new Vector3(0, 1f, 0),
-            new Vector3(0, -1f, 0),
-            new Vector3(-1f, 0, 0),
-            new Vector3(1f, 0, 0),
-            new Vector3(-1f, 1f, 0),
-            new Vector3(1f, 1f, 0),
-            new Vector3(-1f, -1f, 0),
-            new Vector3(1f, -1f, 0)
-        };
-
+    {
         private static bool initialized = false;
 
         private static CustomButton engineerRepairButton;
