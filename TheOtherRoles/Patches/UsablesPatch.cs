@@ -255,7 +255,16 @@ namespace TheOtherRoles.Patches {
     [HarmonyPatch(typeof(VentButton), nameof(VentButton.SetTarget))]
     class VentButtonSetTargetPatch {
         static Sprite defaultVentSprite = null;
+
+        static bool Prefix(VentButton __instance)
+        {
+            if (Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.draggedBody != null && Undertaker.disableVentButton) return false;
+
+            return true;
+        }
+
         static void Postfix(VentButton __instance) {
+
             // Trickster render special vent button
             if (Trickster.trickster != null && Trickster.trickster == CachedPlayer.LocalPlayer.PlayerControl) {
                 if (defaultVentSprite == null) defaultVentSprite = __instance.graphic.sprite;
@@ -263,6 +272,17 @@ namespace TheOtherRoles.Patches {
                 __instance.graphic.sprite = isSpecialVent ?  Trickster.getTricksterVentButtonSprite() : defaultVentSprite;
                 __instance.buttonLabelText.enabled = !isSpecialVent;
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(KillButton), nameof(KillButton.SetTarget))]
+    class KillButtonSetTargetPatch
+    {
+        static bool Prefix(KillButton __instance)
+        {
+            if (Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.draggedBody != null) return false;
+
+            return true;
         }
     }
 
@@ -314,6 +334,7 @@ namespace TheOtherRoles.Patches {
     class ReportButtonDoClickPatch {
         public static bool Prefix(ReportButton __instance) {
             if (__instance.isActiveAndEnabled && Deputy.handcuffedPlayers.Contains(CachedPlayer.LocalPlayer.PlayerId) && __instance.graphic.color == Palette.EnabledColor) Deputy.setHandcuffedKnows();
+            if (Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.draggedBody != null && Undertaker.disableReportButton) return false;
             return !Deputy.handcuffedKnows.ContainsKey(CachedPlayer.LocalPlayer.PlayerId);
         }
     }

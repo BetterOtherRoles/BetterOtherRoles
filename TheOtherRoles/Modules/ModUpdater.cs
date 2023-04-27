@@ -131,15 +131,23 @@ namespace TheOtherRoles.Modules
 
             var button = popup.transform.GetChild(2).gameObject;
             button.SetActive(false);
+
             popup.TextAreaTMP.text = $"Updating {updateName}\nPlease wait...";
             
             var download = Task.Run(DownloadUpdate);
             while (!download.IsCompleted) yield return null;
             
-            button.SetActive(true);
-            popup.TextAreaTMP.text = download.Result ? $"{updateName}\nupdated successfully\nPlease restart the game." : "Update wasn't successful\nTry again later,\nor update manually.";
-        }
+            if (download.Result)
+            {
+                var passiveButton = button.GetComponent<PassiveButton>();
+                    passiveButton.OnClick = new Button.ButtonClickedEvent();
+                    passiveButton.OnClick.AddListener((Action) Application.Quit);
+            }
 
+            button.SetActive(true);
+            popup.TextAreaTMP.text = download.Result ? $"{updateName}\nupdated successfully\nRestart the game." : "Update wasn't successful\nTry again later,\nor update manually.";
+            
+        }
 
         private static int announcementNumber = 501;
         [HideFromIl2Cpp]

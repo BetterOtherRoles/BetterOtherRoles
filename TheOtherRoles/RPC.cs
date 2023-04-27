@@ -61,6 +61,7 @@ namespace TheOtherRoles
         Witch,
         Ninja,
         Thief,
+        Fallen,
         Bomber,
         Whisperer,
         Undertaker,
@@ -629,17 +630,12 @@ namespace TheOtherRoles
             foreach (DeadBody body in UnityEngine.Object.FindObjectsOfType<DeadBody>()) {
                 if (body.ParentId == draggedBodyId) Undertaker.draggedBody = body;
             }
-
-            // Undertaker.undertaker.MyPhysics.body.velocity = new Vector2(0.75f, 0.75f);
         }
 
         public static void undertakerDropBody(float vx, float vy, float vz = 0f)
         {
             if (Undertaker.undertaker == null || Undertaker.draggedBody == null) return;
 
-            // Vector2 @velocity = new Vector2(GameOptionsManager.Instance.currentNormalGameOptions.PlayerSpeedMod, GameOptionsManager.Instance.currentNormalGameOptions.PlayerSpeedMod);
-            
-            // Undertaker.undertaker.MyPhysics.body.velocity = @velocity;
             Undertaker.draggedBody.transform.position = new Vector3(vx, vy, vz);
             Undertaker.draggedBody = null;
 
@@ -773,6 +769,7 @@ namespace TheOtherRoles
             if (player == Lawyer.lawyer) Lawyer.clearAndReload();
             if (player == Pursuer.pursuer) Pursuer.clearAndReload();
             if (player == Thief.thief) Thief.clearAndReload();
+            if (player == Fallen.fallen) Fallen.clearAndReload();
 
             // Modifier
             if (!ignoreModifier)
@@ -1078,11 +1075,23 @@ namespace TheOtherRoles
                 RoleManager.Instance.SetRole(Thief.thief, RoleTypes.Impostor);
                 FastDestroyableSingleton<HudManager>.Instance.KillButton.SetCoolDown(Thief.thief.killTimer, GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown);
             }
-            if (Lawyer.lawyer != null && target == Lawyer.target)
+            if (target == Lawyer.target) {
                 Lawyer.target = thief;
+                Lawyer.formerLawyer = target;
+            }
+
+            if (Thief.stealMethod != Thief.StealMethod.BecomePartner) {
+                Fallen.clearAndReload();
+                Fallen.fallen = target; // Change target to Fallen ???
+                RoleManager.Instance.SetRole(target, RoleTypes.Crewmate);
+            }
+            
             if (Thief.thief == PlayerControl.LocalPlayer) CustomButton.ResetAllCooldowns();
             Thief.clearAndReload();
             Thief.formerThief = thief;  // After clearAndReload, else it would get reset...
+            Thief.playerStealed = target;
+            Thief.didStealRole = true;
+
         }
         
         public static void setTrap(byte[] buff) {

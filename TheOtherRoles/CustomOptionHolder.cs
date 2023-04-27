@@ -45,8 +45,12 @@ namespace TheOtherRoles {
         public static CustomOption whispererDelay;
 
         public static CustomOption undertakerSpawnRate;
-        public static CustomOption undertakerDragSpeed;
         public static CustomOption undertakerAbilityCooldown;
+        public static CustomOption undertakerDragSpeedModifier;
+        public static CustomOption undertakerDragDistance;
+        public static CustomOption undertakerDisableKillButtonWhileDragging;
+        public static CustomOption undertakerDisableReportButtonWhileDragging;
+        public static CustomOption undertakerDisableVentButtonWhileDragging;
 
         public static CustomOption eraserSpawnRate;
         public static CustomOption eraserCooldown;
@@ -240,6 +244,7 @@ namespace TheOtherRoles {
 
         public static CustomOption thiefSpawnRate;
         public static CustomOption thiefCooldown;
+        public static CustomOption thiefStealMethod;
         public static CustomOption thiefHasImpVision;
         public static CustomOption thiefCanUseVents;
         public static CustomOption thiefCanKillSheriff;
@@ -444,7 +449,12 @@ namespace TheOtherRoles {
             
             undertakerSpawnRate = CustomOption.Create(8010, Types.Impostor, cs(Undertaker.color, "Undertaker"), rates, null, true);
             undertakerAbilityCooldown = CustomOption.Create(8011, Types.Impostor, "Ability Cooldown", 20f, 10f, 60f, 2.5f, undertakerSpawnRate);
-            undertakerDragSpeed = CustomOption.Create(8012, Types.Impostor, "Speed Modifier While Dragging", 0.75f, 0.25f, 2.5f, 0.25f, undertakerSpawnRate);
+            undertakerDragSpeedModifier = CustomOption.Create(8012, Types.Impostor, "Speed Modifier While Dragging", rates, undertakerSpawnRate);
+            undertakerDragDistance = CustomOption.Create(8013, Types.Impostor, "Undertaker Drag Distance", new string[] { "Short", "Medium", "Long" }, undertakerSpawnRate);
+            undertakerDisableKillButtonWhileDragging = CustomOption.Create(8014, Types.Impostor, "Disable KillButton While Dragging", true, undertakerSpawnRate);
+            undertakerDisableReportButtonWhileDragging = CustomOption.Create(8015, Types.Impostor, "Disable ReportButton While Dragging", true, undertakerSpawnRate);
+            undertakerDisableVentButtonWhileDragging = CustomOption.Create(8016, Types.Impostor, "Disable VentButton While Dragging", true, undertakerSpawnRate);
+
 
             eraserSpawnRate = CustomOption.Create(230, Types.Impostor, cs(Eraser.color, "Eraser"), rates, null, true);
             eraserCooldown = CustomOption.Create(231, Types.Impostor, "Eraser Cooldown", 30f, 10f, 120f, 5f, eraserSpawnRate);
@@ -648,6 +658,7 @@ namespace TheOtherRoles {
 
             thiefSpawnRate = CustomOption.Create(400, Types.Neutral, cs(Thief.color, "Thief"), rates, null, true);
             thiefCooldown = CustomOption.Create(401, Types.Neutral, "Thief Cooldown", 30f, 5f, 120f, 5f, thiefSpawnRate);
+            thiefStealMethod = CustomOption.Create(405, Types.Neutral, "Thief Steal Method", new string[] { "Steal the Role", "Become a Friend" } , thiefSpawnRate);
             thiefCanKillSheriff = CustomOption.Create(402, Types.Neutral, "Thief Can Kill Sheriff", true, thiefSpawnRate);
             thiefHasImpVision = CustomOption.Create(403, Types.Neutral, "Thief Has Impostor Vision", true, thiefSpawnRate);
             thiefCanUseVents = CustomOption.Create(404, Types.Neutral, "Thief Can Use Vents", true, thiefSpawnRate);

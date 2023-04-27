@@ -28,6 +28,19 @@ namespace TheOtherRoles {
         Guesser,
         HideNSeek
     }
+
+    public static class Direction 
+    {
+        public static Vector2 up = Vector2.up; 
+        public static Vector2 down = Vector2.down; 
+        public static Vector2 left = Vector2.left; 
+        public static Vector2 right = Vector2.right; 
+        public static Vector2 upleft = new Vector2(-0.70710677f, 0.70710677f); 
+        public static Vector2 upright = new Vector2(0.70710677f, 0.70710677f); 
+        public static Vector2 downleft = new Vector2(-0.70710677f, -0.70710677f); 
+        public static Vector2 downright = new Vector2(0.70710677f, -0.70710677f); 
+    }
+
     public static class Helpers
     {
 
@@ -72,10 +85,11 @@ namespace TheOtherRoles {
             if (!MapUtilities.CachedShipStatus) return @result;
             
             if (targetingPlayer == null) targetingPlayer = CachedPlayer.LocalPlayer.PlayerControl;
-            if (maxDistance == 0f) maxDistance = AmongUs.GameOptions.GameOptionsData.KillDistances[Mathf.Clamp(GameOptionsManager.Instance.currentNormalGameOptions.KillDistance, 0, 2)];
             if (targetingPlayer.Data.IsDead) return @result;
 
-            Vector2 truePosition = targetingPlayer.GetTruePosition();
+            maxDistance = maxDistance == 0f ? 1f : maxDistance + 0.1f;
+
+            Vector2 truePosition = targetingPlayer.GetTruePosition() - new Vector2(-0.2f, -0.22f);
             
             bool flag =  GameOptionsManager.Instance.currentNormalGameOptions.GhostsDoTasks 
                         && (!AmongUsClient.Instance || !AmongUsClient.Instance.IsGameOver);
@@ -113,14 +127,12 @@ namespace TheOtherRoles {
             target.cosmetics.currentBodySprite.BodySprite.material.SetColor("_OutlineColor", color);
         }
 
-        // public static void setDeadPlayerOutline(DeadBody deadTarget, Color color) {
-        //     if (deadTarget == null || deadTarget.bodyRenderer == null) return;
+        public static void setDeadPlayerOutline(DeadBody deadTarget, Color color) {
+            if (deadTarget == null || deadTarget.bodyRenderers[0] == null) return;
 
-        //     color = color.SetAlpha(Chameleon.visibility(deadTarget.ParentId));
-
-        //     deadTarget.bodyRenderer.material.SetFloat("_Outline", 1f);
-        //     deadTarget.bodyRenderer.material.SetColor("_OutlineColor", color);
-        // }
+            deadTarget.bodyRenderers[0].material.SetFloat("_Outline", 1f);
+            deadTarget.bodyRenderers[0].material.SetColor("_OutlineColor", color);
+        }
 
         public static Sprite loadSpriteFromResources(string path, float pixelsPerUnit) {
             try
@@ -216,11 +228,38 @@ namespace TheOtherRoles {
         public static void handleVampireBiteOnBodyReport() {
             // Murder the bitten player and reset bitten (regardless whether the kill was successful or not)
             Helpers.checkMurderAttemptAndKill(Vampire.vampire, Vampire.bitten, true, false);
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.VampireSetBitten, Hazel.SendOption.Reliable, -1);
+            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(Vampire.vampire.NetId, (byte)CustomRPC.VampireSetBitten, Hazel.SendOption.Reliable, -1);
             writer.Write(byte.MaxValue);
             writer.Write(byte.MaxValue);
             AmongUsClient.Instance.FinishRpcImmediately(writer);
             RPCProcedure.vampireSetBitten(byte.MaxValue, byte.MaxValue);
+        }
+
+        public static void handleUndertakerDropOnBodyReport() {
+            var position = Undertaker.undertaker.transform.position;
+                        
+                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(Undertaker.undertaker.NetId, (byte)CustomRPC.UndertakerDropBody, Hazel.SendOption.Reliable, -1);
+                writer.Write(position.x);
+                writer.Write(position.y);
+                writer.Write(position.z);
+                AmongUsClient.Instance.FinishRpcImmediately(writer);
+
+                Undertaker.draggedBody = null;
+                Undertaker.LastDragged = DateTime.UtcNow;
+        }
+
+        public static void handleWhispererKillOnBodyReport() {
+            if (Whisperer.whisperVictimToKill != null && Whisperer.whisperVictimToKill != Medic.shielded && (!TORMapOptions.shieldFirstKill || Whisperer.whisperVictimToKill != TORMapOptions.firstKillPlayer)) 
+                Helpers.checkMurderAttemptAndKill(Whisperer.whisperer, Whisperer.whisperVictimToKill, true, false);
+            else 
+                Helpers.checkMurderAttemptAndKill(Whisperer.whisperer, Whisperer.whisperVictim, true, false);
+
+            // & reset anyway.
+            
+            Whisperer.whisperVictim = null;
+            Whisperer.whisperVictimTarget = null;
+            
+            HudManagerStartPatch.whispererKillButton.Timer = HudManagerStartPatch.whispererKillButton.MaxTimer;
         }
 
         public static void refreshRoleDescription(PlayerControl player) {

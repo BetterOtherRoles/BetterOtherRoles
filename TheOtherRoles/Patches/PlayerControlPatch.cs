@@ -208,16 +208,18 @@ namespace TheOtherRoles.Patches {
             if (!Undertaker.undertaker || Undertaker.undertaker != CachedPlayer.LocalPlayer.PlayerControl) return;
 
             if (!Undertaker.draggedBody) {
-                Undertaker.currentDeadTarget = Helpers.setDeadTarget(0f);
-                // Helpers.setDeadPlayerOutline(Undertaker.currentDeadTarget, Undertaker.color);
+                Undertaker.currentDeadTarget = Helpers.setDeadTarget(Undertaker.distancesList[(int) Undertaker.dragDistance]);
+                Helpers.setDeadPlayerOutline(Undertaker.currentDeadTarget, Undertaker.color);
             }
         }
 
+        
         static void undertakerUpdate() {
+            
             var @undertakerPlayer = Undertaker.undertaker;
-            DeadBody body = Undertaker.draggedBody;
+            DeadBody @bodyComponent = Undertaker.draggedBody;
 
-            if (!@undertakerPlayer || @undertakerPlayer != CachedPlayer.LocalPlayer.PlayerControl || body == null) return;
+            if (!@undertakerPlayer || CachedPlayer.LocalPlayer.PlayerControl != @undertakerPlayer || @bodyComponent == null) return;
 
             if (@undertakerPlayer.Data.IsDead)
             {
@@ -230,12 +232,8 @@ namespace TheOtherRoles.Patches {
                     writer.Write(position.y);
                     writer.Write(position.z);
                     AmongUsClient.Instance.FinishRpcImmediately(writer);
-                    // body.transform.position = position;
 
                     Undertaker.draggedBody = null;
-                    // body.currentBodyRenderer.material.SetFloat("_Outline", 0f);
-                    // target.cosmetics.currentBodySprite.BodySprite.material.SetFloat("_Outline", 1f);
-                    
                     Undertaker.LastDragged = DateTime.UtcNow;
 
                 }
@@ -243,31 +241,46 @@ namespace TheOtherRoles.Patches {
                 return;
             }
 
-            var currentPosition2D = @undertakerPlayer.GetTruePosition();
-            var currentPosition3D = @undertakerPlayer.transform.position;
+            
+            var undertakerPos = @undertakerPlayer.transform.position;
+            var bodyLastPos = @bodyComponent.transform.position;
 
+            var direction = @undertakerPlayer.gameObject.GetComponent<Rigidbody2D>().velocity.normalized;
 
-            var velocity = @undertakerPlayer.gameObject.GetComponent<Rigidbody2D>().velocity.normalized;
-            var newPos2D = ((Vector2) @undertakerPlayer.transform.position) - (velocity / 3) + body.myCollider.offset;
-            var newPos3D = new Vector3(newPos2D.x, newPos2D.y, currentPosition3D.z);
+            if (direction != Undertaker.LastDirection) 
+            {
+                Undertaker.LastDirection = direction; 
+                return;
+            }
+
+            var newBodyPos = direction == new Vector2(0f, 0f) ? bodyLastPos : undertakerPos - ((Vector3) (direction * (2f/3f))) + (Vector3) @bodyComponent.myCollider.offset;
+                newBodyPos.z = bodyLastPos.z;
+
+            if (direction == Direction.right) newBodyPos += new Vector3(0.3f, 0, 0); // Check;
+            if (direction == Direction.up) newBodyPos += new Vector3(0.15f, 0.2f, 0); // Check;
+            if (direction == Direction.down) newBodyPos += new Vector3(0.15f, -0.2f, 0); // Check;
+            if (direction == Direction.upleft) newBodyPos += new Vector3(0, 0.1f, 0); // Check;
+            if (direction == Direction.upright) newBodyPos += new Vector3(0.3f, 0.1f, 0); // Check;
+            if (direction == Direction.downright) newBodyPos += new Vector3(0.3f, -0.2f, 0); // Check;
+            if (direction == Direction.downleft) newBodyPos += new Vector3(0f, -0.2f, 0); // Check;
 
             if (PhysicsHelpers.AnythingBetween(
-                currentPosition2D,
-                newPos2D,
+                @undertakerPlayer.GetTruePosition(),
+                (Vector2) newBodyPos,
                 Constants.ShipAndObjectsMask,
                 false
             ))
             {
-                body.transform.position = currentPosition3D;
+                @bodyComponent.transform.position = new Vector3(undertakerPos.x, undertakerPos.y, bodyLastPos.z);
             }
             else
             {
-                body.transform.position = newPos3D;
+                @bodyComponent.transform.position = newBodyPos;
             }
 
             if (!@undertakerPlayer.AmOwner) return;
 
-            // Helpers.setDeadPlayerOutline(body, Color.green);
+            Helpers.setDeadPlayerOutline(@bodyComponent, Color.green);
         }
 
         static void jackalSetTarget() {
@@ -726,9 +739,17 @@ namespace TheOtherRoles.Patches {
                 BountyHunter.bountyUpdateTimer = BountyHunter.bountyDuration;
                 var possibleTargets = new List<PlayerControl>();
 
-                foreach (PlayerControl p in CachedPlayer.AllPlayers) {
-                    if (!p.Data.IsDead && !p.Data.Disconnected && p != p.Data.Role.IsImpostor && p != Spy.spy && (!TORMapOptions.shieldFirstKill || p != TORMapOptions.firstKillPlayer) && (p != Sidekick.sidekick || !Sidekick.wasTeamRed) && (p != Jackal.jackal || !Jackal.wasTeamRed) && (p != Mini.mini || Mini.isGrownUp()) && (Lovers.getPartner(BountyHunter.bountyHunter) == null || p != Lovers.getPartner(BountyHunter.bountyHunter))) possibleTargets.Add(p);
-                }
+                foreach (PlayerControl p in CachedPlayer.AllPlayers)
+                {
+                    if (p.Data.IsDead || p.Data.Disconnected) continue;
+                    if (p.Data.Role.IsImpostor || p == Spy.spy) continue;
+                    if (TORMapOptions.shieldFirstKill && TORMapOptions.firstKillPlayer == p) continue;
+                    if (Jackal.jackal == p && Jackal.wasTeamRed) continue;
+                    if (Sidekick.sidekick == p && Sidekick.wasTeamRed) continue;
+                    if (Lovers.getPartner(BountyHunter.bountyHunter) == p) continue;
+                    
+                    possibleTargets.Add(p);
+                }       
                 BountyHunter.bounty = possibleTargets[TheOtherRoles.rnd.Next(0, possibleTargets.Count)];
                 if (BountyHunter.bounty == null) return;
 
@@ -916,6 +937,8 @@ namespace TheOtherRoles.Patches {
                     Bait.active.Remove(entry.Key);
                     if (entry.Key.killerIfExisting != null && entry.Key.killerIfExisting.PlayerId == CachedPlayer.LocalPlayer.PlayerId) {
                         Helpers.handleVampireBiteOnBodyReport(); // Manually call Vampire handling, since the CmdReportDeadBody Prefix won't be called
+                        Helpers.handleWhispererKillOnBodyReport();
+                        Helpers.handleUndertakerDropOnBodyReport();
                         RPCProcedure.uncheckedCmdReportDeadBody(entry.Key.killerIfExisting.PlayerId, entry.Key.player.PlayerId);
 
                         MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UncheckedCmdReportDeadBody, Hazel.SendOption.Reliable, -1);
@@ -1165,6 +1188,8 @@ namespace TheOtherRoles.Patches {
         public static bool Prefix(PlayerControl __instance) {
             if (HideNSeek.isHideNSeekGM) return false;
             Helpers.handleVampireBiteOnBodyReport();
+            Helpers.handleWhispererKillOnBodyReport();
+            Helpers.handleUndertakerDropOnBodyReport();
             return true;
         }
     }
@@ -1381,15 +1406,20 @@ namespace TheOtherRoles.Patches {
     [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.SetKillTimer))]
     class PlayerControlSetCoolDownPatch {
         public static bool Prefix(PlayerControl __instance, [HarmonyArgument(0)]float time) {
+
+            var killButton = FastDestroyableSingleton<HudManager>.Instance.KillButton;
+
             if (GameOptionsManager.Instance.currentGameOptions.GameMode == GameModes.HideNSeek) return true;
             if (GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown <= 0f) return false;
             float multiplier = 1f;
             float addition = 0f;
             if (Mini.mini != null && CachedPlayer.LocalPlayer.PlayerControl == Mini.mini) multiplier = Mini.isGrownUp() ? 0.66f : 2f;
             if (BountyHunter.bountyHunter != null && CachedPlayer.LocalPlayer.PlayerControl == BountyHunter.bountyHunter) addition = BountyHunter.punishmentTime;
+            if(Undertaker.undertaker && CachedPlayer.LocalPlayer.PlayerControl == Undertaker.undertaker && Undertaker.draggedBody != null) return false;
+                
 
             __instance.killTimer = Mathf.Clamp(time, 0f, GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown * multiplier + addition);
-            FastDestroyableSingleton<HudManager>.Instance.KillButton.SetCoolDown(__instance.killTimer, GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown * multiplier + addition);
+            killButton.SetCoolDown(__instance.killTimer, GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown * multiplier + addition);
             return false;
         }
     }
@@ -1469,14 +1499,19 @@ namespace TheOtherRoles.Patches {
         public static void Postfix(PlayerPhysics __instance)
         {
             bool shouldInvert = (Invert.invert.FindAll(x => x.PlayerId == CachedPlayer.LocalPlayer.PlayerId).Count > 0 && Invert.meetings > 0) ^ EventUtility.eventInvert;  // xor. if already invert, eventInvert will turn it off for 10s
+            
             if (__instance.AmOwner &&
                 AmongUsClient.Instance &&
                 AmongUsClient.Instance.GameState == InnerNet.InnerNetClient.GameStates.Started &&
-                !CachedPlayer.LocalPlayer.Data.IsDead && 
-                shouldInvert && 
+                !CachedPlayer.LocalPlayer.Data.IsDead &&
                 GameData.Instance && 
-                __instance.myPlayer.CanMove)  
-                __instance.body.velocity *= -1;
+                __instance.myPlayer.CanMove)
+            {
+                if (shouldInvert) __instance.body.velocity *= -1;
+
+                if (CachedPlayer.LocalPlayer.PlayerControl == Undertaker.undertaker && Undertaker.draggedBody != null)
+                    __instance.body.velocity *= (1f - ( Undertaker.dragSpeedModifier / 10f));
+            }
         }
     }
 

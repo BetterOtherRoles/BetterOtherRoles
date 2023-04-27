@@ -59,9 +59,11 @@ namespace TheOtherRoles
             Witch.clearAndReload();
             Ninja.clearAndReload();
             Thief.clearAndReload();
+            Fallen.clearAndReload();
             Trapper.clearAndReload();
             Bomber.clearAndReload();
             Whisperer.clearAndReload();
+            Undertaker.clearAndReload();
 
             // Modifier
             Bait.clearAndReload();
@@ -824,14 +826,26 @@ namespace TheOtherRoles
     }
 
     public static class Undertaker {
+        public enum DragDistance {
+            Short,
+            Medium,
+            Long
+        }
         public static PlayerControl undertaker;
         public static Color color = Palette.ImpostorRed;
 
-        public static float dragSpeed;
-        public static float cooldown;
-        public static float dragDistance;
+        public static float dragSpeedModifier = 9f;
+        public static float cooldown = 20f;
+        public static DragDistance dragDistance = DragDistance.Short;
+        public static bool disableKillButton = true;
+        public static bool disableReportButton = true;
+        public static bool disableVentButton = true;
 
+        public static float[] distancesList = new float[] { (2f/3f), (4f/3f), 2f };
+
+        
         public static DateTime LastDragged { get; set; }
+        public static Vector2 LastDirection = new Vector2(0, 0);
         public static DeadBody  currentDeadTarget;
         public static DeadBody  draggedBody;
 
@@ -842,22 +856,17 @@ namespace TheOtherRoles
             return buttonSprite;
         }
 
-        public static float dragTimer() 
+        public static void clearAndReload()
         {
-            var utcNow = DateTime.UtcNow;
-            var timeSpan = utcNow - LastDragged;
-            var num = 25f * 1000f;
-            var flag2 = num - (float) timeSpan.TotalMilliseconds < 0f;
-            if (flag2) return 0;
-            return (num - (float) timeSpan.TotalMilliseconds) / 1000f;
-        }
-
-        public static void clearAndReload() {
             undertaker = null;
             currentDeadTarget = null;
             draggedBody = null;
-            dragSpeed = CustomOptionHolder.undertakerDragSpeed.getFloat();
+            dragSpeedModifier = (float) CustomOptionHolder.undertakerDragSpeedModifier.getSelection();
             cooldown = CustomOptionHolder.undertakerAbilityCooldown.getFloat();
+            dragDistance = (DragDistance) CustomOptionHolder.undertakerDragDistance.getSelection();
+            disableKillButton = CustomOptionHolder.undertakerDisableKillButtonWhileDragging.getBool();
+            disableReportButton = CustomOptionHolder.undertakerDisableReportButtonWhileDragging.getBool();
+            disableVentButton = CustomOptionHolder.undertakerDisableVentButtonWhileDragging.getBool();
         }
     }
 
@@ -1591,6 +1600,7 @@ namespace TheOtherRoles
     public static class Lawyer {
         public static PlayerControl lawyer;
         public static PlayerControl target;
+        public static PlayerControl formerLawyer;
         public static Color color = new Color32(134, 153, 25, byte.MaxValue);
         public static Sprite targetSprite;
         public static bool triggerProsecutorWin = false;
@@ -1610,6 +1620,7 @@ namespace TheOtherRoles
 
         public static void clearAndReload(bool clearTarget = true) {
             lawyer = null;
+            formerLawyer = null;
             if (clearTarget) {
                 target = null;
                 targetWasGuessed = false;
@@ -1745,6 +1756,13 @@ namespace TheOtherRoles
         public static Color color = new Color32(71, 99, 45, Byte.MaxValue);
         public static PlayerControl currentTarget;
         public static PlayerControl formerThief;
+        public static PlayerControl playerStealed;
+        public enum StealMethod {
+            StealRole,
+            BecomePartner
+        }
+
+        public static StealMethod stealMethod = StealMethod.StealRole;
 
         public static float cooldown = 30f;
 
@@ -1753,16 +1771,29 @@ namespace TheOtherRoles
         public static bool hasImpostorVision;
         public static bool canUseVents;
         public static bool canKillSheriff;
+        public static bool didStealRole = false;
 
         public static void clearAndReload() {
             thief = null;
             suicideFlag = false;
             currentTarget = null;
             formerThief = null;
+            playerStealed = null;
+            didStealRole = false;
+            stealMethod = (StealMethod) CustomOptionHolder.thiefStealMethod.getSelection();
             hasImpostorVision = CustomOptionHolder.thiefHasImpVision.getBool();
             cooldown = CustomOptionHolder.thiefCooldown.getFloat();
             canUseVents = CustomOptionHolder.thiefCanUseVents.getBool();
             canKillSheriff = CustomOptionHolder.thiefCanKillSheriff.getBool();
+        }
+    }
+
+    public static class Fallen {
+        public static PlayerControl fallen;
+        public static Color color = Thief.color;
+
+        public static void clearAndReload() {
+            fallen = null;
         }
     }
 
