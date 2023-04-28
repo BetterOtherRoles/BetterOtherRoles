@@ -1,38 +1,92 @@
-﻿using UnityEngine;
+﻿using TheOtherRoles.EnoFramework.Kernel;
+using TheOtherRoles.EnoFramework.Utils;
+using TheOtherRoles.Objects;
+using TheOtherRoles.Players;
+using UnityEngine;
 
 namespace TheOtherRoles.Customs.Roles.Crewmate;
 
+[EnoSingleton]
 public class Sheriff : CustomRole
 {
-    public static float cooldown = 30f;
-    public static bool canKillNeutrals = false;
-    public static bool spyCanDieToSheriff = false;
+    private CustomButton? _killButton;
 
-    public static PlayerControl currentTarget;
+    public readonly EnoFramework.CustomOption KillCooldown;
+    public readonly EnoFramework.CustomOption CanKillNeutrals;
 
-    public static PlayerControl formerDeputy; // Needed for keeping handcuffs + shifting
-    public static PlayerControl formerSheriff; // When deputy gets promoted...
-
-    public Sheriff() : base(nameof(Sheriff), new Color(248, 205, 70, byte.MaxValue), Teams.Crewmate)
+    public Sheriff() : base(nameof(Sheriff))
     {
+        Team = Teams.Crewmate;
+        Color = new Color32(248, 205, 70, byte.MaxValue);
+        CanTarget = true;
+
+        KillCooldown = OptionsTab.CreateFloatList(
+            $"{Name}{nameof(KillCooldown)}",
+            Colors.Cs(Color, "Kill cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        CanKillNeutrals = OptionsTab.CreateBool(
+            $"{Name}{nameof(CanKillNeutrals)}",
+            Colors.Cs(Color, "Can kill neutral roles"),
+            true,
+            SpawnRate);
     }
 
-    public static void replaceCurrentSheriff(PlayerControl deputy)
+    public override void CreateCustomButtons(HudManager hudManager)
     {
-        if (!formerSheriff) formerSheriff = sheriff;
-        sheriff = deputy;
-        currentTarget = null;
-        cooldown = CustomOptionHolder.sheriffCooldown.getFloat();
+        base.CreateCustomButtons(hudManager);
+        _killButton = new CustomButton(
+            OnKillButtonClick,
+            HasKillButton,
+            CouldUseKillButton,
+            ResetKillButton,
+            hudManager.KillButton.graphic.sprite,
+            CustomButton.ButtonPositions.upperRowRight,
+            hudManager,
+            "ActionSecondary"
+        );
     }
 
-    public static void clearAndReload()
+    private void ResetKillButton()
     {
-        sheriff = null;
-        currentTarget = null;
-        formerDeputy = null;
-        formerSheriff = null;
-        cooldown = CustomOptionHolder.sheriffCooldown.getFloat();
-        canKillNeutrals = CustomOptionHolder.sheriffCanKillNeutrals.getBool();
-        spyCanDieToSheriff = CustomOptionHolder.spyCanDieToSheriff.getBool();
+        if (_killButton == null) return;
+        _killButton.Timer = _killButton.MaxTimer;
+    }
+
+    private bool CouldUseKillButton()
+    {
+        return CurrentTarget != null && CachedPlayer.LocalPlayer.PlayerControl.CanMove;
+    }
+
+    private bool HasKillButton()
+    {
+        return Player != null && Is(CachedPlayer.LocalPlayer) && !CachedPlayer.LocalPlayer.Data.IsDead;
+    }
+
+    private void OnKillButtonClick()
+    {
+        if (_killButton == null || Player == null || CurrentTarget == null) return;
+        var result = Helpers.checkMurderAttempt(Player, CurrentTarget);
+        if (result == MurderAttemptResult.SuppressKill) return;
+        if (result == MurderAttemptResult.PerformKill)
+        {
+            var targetRole = GetRoleByPlayer(CurrentTarget);
+            if ((targetRole is { IsNeutral: true } && CanKillNeutrals) || CurrentTarget.Data.Role.IsImpostor)
+            {
+                Rpc.UncheckedMurderPlayer(Player, CurrentTarget, true);
+            }
+            else
+            {
+                Rpc.UncheckedMurderPlayer(Player, Player, true);
+            }
+        }
+
+        _killButton.Timer = _killButton.MaxTimer;
+        CurrentTarget = null;
     }
 }

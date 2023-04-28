@@ -22,7 +22,7 @@ public class Arsonist : CustomRole
     public readonly EnoFramework.CustomOption DouseDuration;
 
     public PlayerControl? DouseTarget;
-    public List<PlayerControl> DousedPlayers = new();
+    public readonly List<PlayerControl> DousedPlayers = new();
 
     public Arsonist() : base(nameof(Arsonist))
     {

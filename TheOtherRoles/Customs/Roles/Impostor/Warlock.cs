@@ -29,6 +29,7 @@ public class Warlock : CustomRole
         Team = Teams.Impostor;
         Color = Palette.ImpostorRed;
         CanTarget = true;
+        IncompatibleRoles.Add(typeof(Vampire));
 
         CurseCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(CurseCooldown)}",

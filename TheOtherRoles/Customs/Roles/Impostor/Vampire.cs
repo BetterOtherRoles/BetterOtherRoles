@@ -34,6 +34,7 @@ public class Vampire : CustomRole
         Team = Teams.Impostor;
         Color = Palette.ImpostorRed;
         CanTarget = true;
+        IncompatibleRoles.Add(typeof(Warlock));
 
         VampireDelay = OptionsTab.CreateFloatList(
             $"{nameof(VampireDelay)}",

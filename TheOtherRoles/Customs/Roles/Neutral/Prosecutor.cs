@@ -5,7 +5,7 @@ using UnityEngine;
 namespace TheOtherRoles.Customs.Roles.Neutral;
 
 [EnoSingleton]
-public class Lawyer : CustomRole
+public class Prosecutor : CustomRole
 {
     public readonly EnoFramework.CustomOption Vision;
     public readonly EnoFramework.CustomOption KnowsTargetRole;
@@ -14,11 +14,11 @@ public class Lawyer : CustomRole
     
     public PlayerControl? Target;
 
-    public Lawyer() : base(nameof(Lawyer))
+    public Prosecutor() : base(nameof(Prosecutor))
     {
         Team = Teams.Neutral;
         Color = new Color32(134, 153, 25, byte.MaxValue);
-        IncompatibleRoles.Add(typeof(Prosecutor));
+        IncompatibleRoles.Add(typeof(Lawyer));
 
         Vision = OptionsTab.CreateFloatList(
             $"{Name}{Vision}",

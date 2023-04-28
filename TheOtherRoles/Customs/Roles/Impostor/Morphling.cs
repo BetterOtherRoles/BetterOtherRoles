@@ -9,27 +9,28 @@ using Resources = TheOtherRoles.EnoFramework.Utils.Resources;
 namespace TheOtherRoles.Customs.Roles.Impostor;
 
 [EnoSingleton]
-public class Morphling : CustomRole {
+public class Morphling : CustomRole
+{
     private Sprite? _sampleSprite;
     private Sprite? _morphSprite;
-    
+
     private CustomButton? _morphlingButton;
-    
+
     private PoolablePlayer? _targetDisplay;
 
     public readonly EnoFramework.CustomOption MorphCooldown;
     public readonly EnoFramework.CustomOption MorphDuration;
-    
-    public byte? SampledTargetId;
-    public byte? MorphTargetId;
+
+    public PlayerControl? SampledTarget;
+    public PlayerControl? MorphTarget;
     public float MorphTimer;
 
-    public Morphling(): base(nameof(Morphling))
+    public Morphling() : base(nameof(Morphling))
     {
         Team = Teams.Impostor;
         Color = Palette.ImpostorRed;
         CanTarget = true;
-        
+
         MorphCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(MorphCooldown)}",
             Colors.Cs(Color, $"{Name} cooldown"),
@@ -58,6 +59,7 @@ public class Morphling : CustomRole {
         {
             _sampleSprite = Resources.LoadSpriteFromResources("TheOtherRoles.Resources.SampleButton.png", 115f);
         }
+
         return _sampleSprite;
     }
 
@@ -70,7 +72,7 @@ public class Morphling : CustomRole {
 
         return _morphSprite;
     }
-    
+
     public override void CreateCustomButtons(HudManager hudManager)
     {
         base.CreateCustomButtons(hudManager);
@@ -92,7 +94,7 @@ public class Morphling : CustomRole {
     private void OnMorphlingButtonEffectEnd()
     {
         if (_morphlingButton == null || !HasMorphlingButton()) return;
-        if (SampledTargetId != null) return;
+        if (SampledTarget != null) return;
         _morphlingButton.Timer = _morphlingButton.MaxTimer;
         _morphlingButton.Sprite = GetSampleSprite();
         SoundEffectsManager.play("morphlingMorph");
@@ -107,13 +109,13 @@ public class Morphling : CustomRole {
         _morphlingButton.isEffectActive = false;
         _morphlingButton.actionButton.cooldownTimerText.color = Palette.EnabledColor;
         if (!HasMorphlingButton()) return;
-        SampledTargetId = null;
+        SampledTarget = null;
         SetButtonTargetDisplay(null);
     }
 
     private bool CouldUseMorphlingButton()
     {
-        return HasMorphlingButton() && (CurrentTarget != null || SampledTargetId != null);
+        return HasMorphlingButton() && (CurrentTarget != null || SampledTarget != null);
     }
 
     private bool HasMorphlingButton()
@@ -125,37 +127,32 @@ public class Morphling : CustomRole {
     {
         if (_morphlingButton == null) return;
         if (!Is(CachedPlayer.LocalPlayer)) return;
-        if (SampledTargetId != null)
+        if (SampledTarget != null)
         {
-            MorphlingMorph(CachedPlayer.LocalPlayer, $"{SampledTargetId}");
+            MorphlingMorph(CachedPlayer.LocalPlayer, $"{SampledTarget.PlayerId}");
             _morphlingButton.EffectDuration = MorphDuration;
             SoundEffectsManager.play("morphlingMorph");
         }
         else if (CurrentTarget != null)
         {
-            SampledTargetId = CurrentTarget.PlayerId;
+            SampledTarget = CurrentTarget;
             _morphlingButton.Sprite = GetMorphSprite();
             _morphlingButton.EffectDuration = 1f;
             SoundEffectsManager.play("morphlingSample");
-            
+
             // Add poolable player to the button so that the target outfit is shown
-            var sampledTargetId = SampledTargetId;
-            if (sampledTargetId != null)
-                SetButtonTargetDisplay(Helpers.playerById(sampledTargetId.Value), _morphlingButton);
+            if (SampledTarget != null) SetButtonTargetDisplay(SampledTarget, _morphlingButton);
         }
     }
-    
+
     public void ResetMorph()
     {
-        if (MorphTargetId != null)
+        if (MorphTarget != null)
         {
-            var player = Helpers.playerById(MorphTargetId.Value);
-            if (player != null)
-            {
-                player.setDefaultLook();
-            }
+            MorphTarget.setDefaultLook();
         }
-        MorphTargetId = null;
+
+        MorphTarget = null;
         MorphTimer = 0f;
     }
 
@@ -164,8 +161,27 @@ public class Morphling : CustomRole {
         ResetMorph();
         base.ClearAndReload();
     }
-    
-    [MethodRpc((uint) Rpc.Id.MorphlingMorph)]
+
+    public override void OnPlayerUpdate(PlayerControl player)
+    {
+        base.OnPlayerUpdate(player);
+        var oldTimer = MorphTimer;
+        if (oldTimer > 0f && Singleton<Camouflager>.Instance.CamouflagerTimer <= 0f)
+        {
+            if (MorphTimer > 0f && Player != null && MorphTarget != null)
+            {
+                Player.setLook(MorphTarget.Data.PlayerName, MorphTarget.Data.DefaultOutfit.ColorId, MorphTarget.Data.DefaultOutfit.HatId, MorphTarget.Data.DefaultOutfit.VisorId, MorphTarget.Data.DefaultOutfit.SkinId, MorphTarget.Data.DefaultOutfit.PetId);
+            }
+        }
+
+        if (Singleton<Camouflager>.Instance.CamouflagerTimer <= 0f && oldTimer > 0f && MorphTimer <= 0f &&
+            Player != null)
+        {
+            ResetMorph();
+        }
+    }
+
+    [MethodRpc((uint)Rpc.Id.MorphlingMorph)]
     private static void MorphlingMorph(PlayerControl sender, string rawData)
     {
         if (Singleton<Morphling>.Instance.Player == null) return;
@@ -173,12 +189,16 @@ public class Morphling : CustomRole {
         var target = Helpers.playerById(targetId);
         if (Singleton<Camouflager>.Instance.CamouflagerTimer <= 0f)
         {
-            Singleton<Morphling>.Instance.Player.setLook(target.Data.PlayerName, target.Data.DefaultOutfit.ColorId, target.Data.DefaultOutfit.HatId, target.Data.DefaultOutfit.VisorId, target.Data.DefaultOutfit.SkinId, target.Data.DefaultOutfit.PetId);
+            Singleton<Morphling>.Instance.Player.setLook(target.Data.PlayerName, target.Data.DefaultOutfit.ColorId,
+                target.Data.DefaultOutfit.HatId, target.Data.DefaultOutfit.VisorId, target.Data.DefaultOutfit.SkinId,
+                target.Data.DefaultOutfit.PetId);
         }
     }
-    
-    private void SetButtonTargetDisplay(PlayerControl? target, CustomButton? button = null, Vector3? offset = null) {
-        if (target == null || button == null) {
+
+    private void SetButtonTargetDisplay(PlayerControl? target, CustomButton? button = null, Vector3? offset = null)
+    {
+        if (target == null || button == null)
+        {
             if (_targetDisplay == null) return; // Reset the poolable player
             GameObject gameObject;
             (gameObject = _targetDisplay.gameObject).SetActive(false);
@@ -186,14 +206,17 @@ public class Morphling : CustomRole {
             _targetDisplay = null;
             return;
         }
+
         // Add poolable player to the button so that the target outfit is shown
-        button.actionButton.cooldownTimerText.transform.localPosition = new Vector3(0, 0, -1f);  // Before the poolable player
-        _targetDisplay = Object.Instantiate(Patches.IntroCutsceneOnDestroyPatch.playerPrefab, button.actionButton.transform);
+        button.actionButton.cooldownTimerText.transform.localPosition =
+            new Vector3(0, 0, -1f); // Before the poolable player
+        _targetDisplay =
+            Object.Instantiate(Patches.IntroCutsceneOnDestroyPatch.playerPrefab, button.actionButton.transform);
         var data = target.Data;
         target.SetPlayerMaterialColors(_targetDisplay.cosmetics.currentBodySprite.BodySprite);
         _targetDisplay.SetSkin(data.DefaultOutfit.SkinId, data.DefaultOutfit.ColorId);
         _targetDisplay.SetHat(data.DefaultOutfit.HatId, data.DefaultOutfit.ColorId);
-        _targetDisplay.cosmetics.nameText.text = "";  // Hide the name!
+        _targetDisplay.cosmetics.nameText.text = ""; // Hide the name!
         _targetDisplay.transform.localPosition = new Vector3(0f, 0.22f, -0.01f);
         if (offset != null) _targetDisplay.transform.localPosition += (Vector3)offset;
         _targetDisplay.transform.localScale = Vector3.one * 0.33f;

@@ -18,6 +18,7 @@ using TheOtherRoles.Customs.Modifiers;
 using TheOtherRoles.Customs.Roles.Crewmate;
 using TheOtherRoles.Customs.Roles.Impostor;
 using TheOtherRoles.Customs.Roles.Neutral;
+using TheOtherRoles.EnoFramework.Kernel;
 
 namespace TheOtherRoles {
 
@@ -170,7 +171,8 @@ namespace TheOtherRoles {
 
         public static void handleVampireBiteOnBodyReport() {
             // Murder the bitten player and reset bitten (regardless whether the kill was successful or not)
-            Helpers.checkMurderAttemptAndKill(Vampire.vampire, Vampire.bitten, true, false);
+            if (Singleton<Vampire>.Instance.Player == null || Singleton<Vampire>.Instance.BittenTarget == null) return;
+            Helpers.checkMurderAttemptAndKill(Singleton<Vampire>.Instance.Player, Singleton<Vampire>.Instance.BittenTarget, true, false);
             MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.VampireSetBitten, Hazel.SendOption.Reliable, -1);
             writer.Write(byte.MaxValue);
             writer.Write(byte.MaxValue);

@@ -1,4 +1,5 @@
-﻿using Reactor.Networking.Attributes;
+﻿using System;
+using Reactor.Networking.Attributes;
 using TheOtherRoles.EnoFramework.Kernel;
 using TheOtherRoles.EnoFramework.Utils;
 using TheOtherRoles.Objects;
@@ -124,6 +125,17 @@ public class Camouflager : CustomRole
         if (_camoButton == null || Player == null || !Is(CachedPlayer.LocalPlayer)) return;
         CamouflagerCamouflage(CachedPlayer.LocalPlayer);
         SoundEffectsManager.play("morphlingMorph");
+    }
+
+    public override void OnPlayerUpdate(PlayerControl player)
+    {
+        base.OnPlayerUpdate(player);
+        var oldTimer = CamouflagerTimer;
+        CamouflagerTimer = MathF.Max(0f, CamouflagerTimer - Time.fixedDeltaTime);
+        if (oldTimer > 0f && CamouflagerTimer <= 0f)
+        {
+            ResetCamouflage();
+        }
     }
 
     [MethodRpc((uint)Rpc.Id.CamouflagerCamouflage)]

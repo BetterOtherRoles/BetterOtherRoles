@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Reactor.Networking.Attributes;
 using TheOtherRoles.EnoFramework;
 using TheOtherRoles.EnoFramework.Kernel;
 using UnityEngine;
 using TheOtherRoles.EnoFramework.Utils;
+using TheOtherRoles.Players;
 
 namespace TheOtherRoles.Customs.Roles;
 
@@ -10,11 +14,20 @@ public abstract class CustomRole
 {
     public static readonly List<CustomRole> AllRoles = new();
 
+    public static List<CustomRole> CrewmateRoles => AllRoles.Where(role => role.IsCrewmate).ToList();
+    public static List<CustomRole> ImpostorRoles => AllRoles.Where(role => role.IsImpostor).ToList();
+    public static List<CustomRole> NeutralRoles => AllRoles.Where(role => role.IsNeutral).ToList();
+
     public static CustomRole? GetRoleByName(string name)
     {
         return AllRoles.Find(role => role.Name == name);
     }
-    
+
+    public static CustomRole? GetRoleByPlayer(PlayerControl player)
+    {
+        return AllRoles.Find(role => role.Is(player));
+    }
+
     public readonly string Name;
     public Color Color = Palette.CrewmateBlue;
     public Teams Team = Teams.Crewmate;
@@ -22,7 +35,8 @@ public abstract class CustomRole
     public bool TriggerWin = false;
     public PlayerControl? Player;
     public PlayerControl? CurrentTarget;
-    public EnoFramework.CustomOption SpawnRate { get; private set; }
+    public EnoFramework.CustomOption? SpawnRate { get; private set; }
+    protected List<Type> IncompatibleRoles = new();
 
     protected EnoFramework.CustomOption.Tab OptionsTab => Team switch
     {
@@ -35,10 +49,10 @@ public abstract class CustomRole
     public bool IsImpostor => Team == Teams.Impostor;
     public bool IsNeutral => Team == Teams.Neutral;
 
-    public CustomRole(string name)
+    public CustomRole(string name, bool hasSpawnRate = true)
     {
         Name = name;
-
+        if (!hasSpawnRate) return;
         SpawnRate = OptionsTab.CreateFloatList(
             $"{Name}SpawnRate",
             Colors.Cs(Color, "Spawn rate"),
@@ -59,12 +73,43 @@ public abstract class CustomRole
 
     public void SetPlayer(PlayerControl player)
     {
+        // Player can only have one role
+        foreach (var role in AllRoles.Where(role => role.Player == player))
+        {
+            role.Player = null;
+        }
+
         Player = player;
     }
 
     public virtual void CreateCustomButtons(HudManager hudManager)
     {
-        
+    }
+
+    public virtual void OnPlayerUpdate(PlayerControl player)
+    {
+    }
+
+    public virtual void OnMeetingCheckForEndVoting(MeetingHud meetingHud)
+    {
+    }
+
+    public virtual void OnMeetingBloopAVoteIcon(MeetingHud meetingHud, GameData.PlayerInfo voter, int index,
+        Transform parent)
+    {
+    }
+
+    public virtual void OnMeetingPopulateResults(MeetingHud meetingHud, Il2CppStructArray<MeetingHud.VoterState> states)
+    {
+    }
+
+    public virtual void OnMeetingVotingComplete(MeetingHud meetingHud, byte[] states, GameData.PlayerInfo exiled,
+        bool tie)
+    {
+    }
+
+    public virtual void OnMeetingSelectPlayer(MeetingHud meetingHud)
+    {
     }
 
     public virtual void ClearAndReload()
@@ -78,5 +123,37 @@ public abstract class CustomRole
         Crewmate,
         Impostor,
         Neutral
+    }
+
+    public static void SetRole(CustomRole role, PlayerControl player)
+    {
+        RpcSetRole(CachedPlayer.LocalPlayer, $"{player.PlayerId}|{role.Name}");
+    }
+
+    public static void ClearAndReloadRoles()
+    {
+        RpcClearAndReloadRoles(CachedPlayer.LocalPlayer);
+    }
+
+    [MethodRpc((uint)Rpc.Id.RoleSetPlayer)]
+    private static void RpcSetRole(PlayerControl sender, string rawData)
+    {
+        var data = rawData.Split("|");
+        var playerId = byte.Parse(data[0]);
+        var roleName = data[1];
+        var role = GetRoleByName(roleName);
+        if (role == null) return;
+        var player = Helpers.playerById(playerId);
+        if (player == null) return;
+        role.SetPlayer(player);
+    }
+
+    [MethodRpc((uint)Rpc.Id.ClearAndReloadRoles)]
+    private static void RpcClearAndReloadRoles(PlayerControl sender)
+    {
+        foreach (var role in AllRoles)
+        {
+            role.ClearAndReload();
+        }
     }
 }

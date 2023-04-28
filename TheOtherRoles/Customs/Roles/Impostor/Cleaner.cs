@@ -1,5 +1,4 @@
-﻿using Hazel;
-using TheOtherRoles.EnoFramework.Kernel;
+﻿using TheOtherRoles.EnoFramework.Kernel;
 using TheOtherRoles.EnoFramework.Utils;
 using TheOtherRoles.Objects;
 using TheOtherRoles.Players;
@@ -96,15 +95,7 @@ public class Cleaner : CustomRole
                 !CachedPlayer.LocalPlayer.PlayerControl.CanMove || PhysicsHelpers.AnythingBetween(truePosition,
                     truePosition2, Constants.ShipAndObjectsMask, false)) continue;
             var playerInfo = GameData.Instance.GetPlayerById(component.ParentId);
-
-            var writer = AmongUsClient.Instance.StartRpcImmediately(
-                CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.CleanBody,
-                Hazel.SendOption.Reliable, -1);
-            writer.Write(playerInfo.PlayerId);
-            writer.Write(Player.PlayerId);
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
-            RPCProcedure.cleanBody(playerInfo.PlayerId, Player.PlayerId);
-
+            Rpc.CleanDeadBody(Player.PlayerId, playerInfo.PlayerId);
             Player.killTimer = _cleanButton.Timer = _cleanButton.MaxTimer;
             SoundEffectsManager.play("cleanerClean");
             break;

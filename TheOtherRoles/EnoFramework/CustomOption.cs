@@ -25,17 +25,17 @@ public class CustomOption
 
     public static ConfigEntry<string>? VanillaSettings;
 
-    private static int preset = 1;
-
     public static implicit operator string(CustomOption option)
     {
-        return option.Type switch
+        switch (option.Type)
         {
-            OptionType.Boolean => option ? "yes" : "no",
-            OptionType.StringList => option,
-            OptionType.FloatList => option.StringSelections[option.SelectionIndex],
-            _ => throw new KernelException("Error: CustomSetting type out of enum SettingType range")
-        };
+            case OptionType.Boolean:
+                return option ? "yes" : "no";
+            case OptionType.StringList:
+            case OptionType.FloatList:
+            default:
+                return option.StringSelections[option.SelectionIndex];
+        }
     }
 
     public static implicit operator float(CustomOption option)
@@ -45,7 +45,7 @@ public class CustomOption
             case OptionType.Boolean:
                 return option ? 1f : 0f;
             case OptionType.StringList:
-                return (float) Convert.ToDouble(
+                return (float)Convert.ToDouble(
                     StringToFloatRegex.Replace(option, string.Empty),
                     CultureInfo.InvariantCulture.NumberFormat);
             case OptionType.FloatList:
@@ -81,7 +81,7 @@ public class CustomOption
     private static byte ToByte(float f)
     {
         f = Mathf.Clamp01(f);
-        return (byte) (f * 255);
+        return (byte)(f * 255);
     }
 
     public readonly string Key;
@@ -114,7 +114,9 @@ public class CustomOption
         Parent = parent;
         IsHeader = isHeader;
         Type = type;
-        Entry = TheOtherRolesPlugin.Instance.Config.Bind(Key == nameof(Singleton<CustomOptionsHolder>.Instance.Preset) ? $"MainConfig" : $"Preset{preset}", Key, SelectionIndex);
+        Entry = TheOtherRolesPlugin.Instance.Config.Bind(
+            Key == nameof(Singleton<CustomOptionsHolder>.Instance.Preset) ? $"MainConfig" : $"Preset{Tab.Preset}", Key,
+            SelectionIndex);
         SelectionIndex = Mathf.Clamp(Entry.Value, 0, StringSelections.Count - 1);
     }
 
@@ -130,7 +132,7 @@ public class CustomOption
             stringOption.ValueText.text = StringSelections[SelectionIndex].ToString();
 
             if (!AmongUsClient.Instance.AmHost || !CachedPlayer.LocalPlayer?.PlayerControl) return;
-            if (Key == nameof(Singleton<CustomOptionsHolder>.Instance.Preset) && SelectionIndex != preset)
+            if (Key == nameof(Singleton<CustomOptionsHolder>.Instance.Preset) && SelectionIndex != Tab.Preset)
             {
                 Tab.SwitchPreset(SelectionIndex);
                 ShareOptionChange();
@@ -141,7 +143,8 @@ public class CustomOption
                 ShareOptionChange();
             }
         }
-        else if (Key == nameof(Singleton<CustomOptionsHolder>.Instance.Preset) && AmongUsClient.Instance.AmHost && PlayerControl.LocalPlayer)
+        else if (Key == nameof(Singleton<CustomOptionsHolder>.Instance.Preset) && AmongUsClient.Instance.AmHost &&
+                 PlayerControl.LocalPlayer)
         {
             // Share the preset switch for random maps, even if the menu isnt open!
             Tab.SwitchPreset(SelectionIndex);
@@ -161,8 +164,8 @@ public class CustomOption
             },
         }));
     }
-    
-    [MethodRpc((uint) Rpc.Id.ShareCustomOptionsChanges)]
+
+    [MethodRpc((uint)Rpc.Id.ShareCustomOptionsChanges)]
     private static void ShareCustomOptionsChanges(PlayerControl _, string rawData)
     {
         if (AmongUsClient.Instance.AmHost) return;
@@ -174,7 +177,7 @@ public class CustomOption
             option.SelectionIndex = customOptionInfo.Selection;
         }
     }
-    
+
     private class CustomOptionInfo
     {
         public string Key { get; set; }
@@ -185,7 +188,7 @@ public class CustomOption
     {
         public static List<Tab> Tabs = new();
 
-        private static int _preset;
+        public static int Preset { get; private set; } = 1;
 
         public CustomOption CreateBool(
             string key,
@@ -263,7 +266,8 @@ public class CustomOption
         public static void ShareCustomOptions()
         {
             if (!AmongUsClient.Instance.AmHost) return;
-            var options = Tabs.SelectMany(settingsTab => settingsTab.Settings).Select(setting => new CustomOptionInfo { Key = setting.Key, Selection = setting.SelectionIndex }).ToList();
+            var options = Tabs.SelectMany(settingsTab => settingsTab.Settings).Select(setting =>
+                new CustomOptionInfo { Key = setting.Key, Selection = setting.SelectionIndex }).ToList();
             ShareCustomOptionsChanges(
                 PlayerControl.LocalPlayer,
                 Rpc.Serialize(options)
@@ -273,14 +277,15 @@ public class CustomOption
         public static void SwitchPreset(int newPreset)
         {
             SaveVanillaOptions();
-            _preset = newPreset + 1;
-            VanillaSettings = TheOtherRolesPlugin.Instance.Config.Bind($"Preset{_preset}", "GameOptions", string.Empty);
+            Preset = newPreset + 1;
+            VanillaSettings = TheOtherRolesPlugin.Instance.Config.Bind($"Preset{Preset}", "GameOptions", string.Empty);
             LoadVanillaOptions();
             foreach (var setting in Tabs.SelectMany(settingsTab => settingsTab.Settings))
             {
                 if (setting.Key == nameof(Singleton<CustomOptionsHolder>.Instance.Preset)) continue;
                 setting.Entry =
-                    TheOtherRolesPlugin.Instance.Config.Bind($"Preset{_preset}", $"{setting.Key}", setting.SelectionIndex);
+                    TheOtherRolesPlugin.Instance.Config.Bind($"Preset{Preset}", $"{setting.Key}",
+                        setting.SelectionIndex);
                 setting.SelectionIndex = Mathf.Clamp(setting.Entry.Value, 0, setting.StringSelections.Count - 1);
                 if (setting.OptionBehaviour == null ||
                     setting.OptionBehaviour is not StringOption stringOption) continue;

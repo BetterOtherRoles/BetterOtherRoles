@@ -1,60 +1,184 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFramework.Kernel;
+using TheOtherRoles.EnoFramework.Utils;
+using TheOtherRoles.Objects;
+using TheOtherRoles.Players;
 using UnityEngine;
+using Resources = TheOtherRoles.EnoFramework.Utils.Resources;
 
 namespace TheOtherRoles.Customs.Roles.Neutral;
 
-public static class Jackal
+[EnoSingleton(1)]
+public class Jackal : CustomRole
 {
-    public static PlayerControl jackal;
-    public static Color color = new Color32(0, 180, 235, byte.MaxValue);
-    public static PlayerControl fakeSidekick;
-    public static PlayerControl currentTarget;
-    public static List<PlayerControl> formerJackals = new List<PlayerControl>();
+    private Sprite? _sidekickSprite;
 
-    public static float cooldown = 30f;
-    public static float createSidekickCooldown = 30f;
-    public static bool canUseVents = true;
-    public static bool canCreateSidekick = true;
-    public static Sprite buttonSprite;
-    public static bool jackalPromotedFromSidekickCanCreateSidekick = true;
-    public static bool canCreateSidekickFromImpostor = true;
-    public static bool hasImpostorVision = false;
-    public static bool wasTeamRed;
-    public static bool wasImpostor;
-    public static bool wasSpy;
+    private CustomButton? _killButton;
+    private CustomButton? _sidekickButton;
 
-    public static Sprite getSidekickButtonSprite()
+    public readonly EnoFramework.CustomOption KillCooldown;
+    public readonly EnoFramework.CustomOption HasImpostorVision;
+    public readonly EnoFramework.CustomOption CanUseVents;
+    public readonly EnoFramework.CustomOption CanCreateSidekick;
+    public readonly EnoFramework.CustomOption CreateSidekickCooldown;
+    public readonly EnoFramework.CustomOption SidekickPromoteToJackal;
+    public readonly EnoFramework.CustomOption CanCreateSidekickWhenPromoted;
+
+    public PlayerControl? FutureSidekick;
+    public bool IsSidekickPromoted;
+
+    public Jackal() : base(nameof(Jackal))
     {
-        if (buttonSprite) return buttonSprite;
-        buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.SidekickButton.png", 115f);
-        return buttonSprite;
+        Team = Teams.Neutral;
+        Color = new Color32(0, 180, 235, byte.MaxValue);
+        CanTarget = true;
+        IsSidekickPromoted = false;
+        
+        KillCooldown = OptionsTab.CreateFloatList(
+            $"{Name}{nameof(KillCooldown)}",
+            Colors.Cs(Color, "Kill cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        HasImpostorVision = OptionsTab.CreateBool(
+            $"{Name}{nameof(HasImpostorVision)}",
+            Colors.Cs(Color, "Has impostor vision"),
+            true,
+            SpawnRate);
+        CanUseVents = OptionsTab.CreateBool(
+            $"{Name}{nameof(CanUseVents)}",
+            Colors.Cs(Color, "Can use vents"),
+            true,
+            SpawnRate);
+        CanCreateSidekick = OptionsTab.CreateBool(
+            $"{Name}{nameof(CanCreateSidekick)}",
+            Colors.Cs(Color, "Can create a sidekick"),
+            false,
+            SpawnRate);
+        CreateSidekickCooldown = OptionsTab.CreateFloatList(
+            $"{Name}{nameof(CreateSidekickCooldown)}",
+            Colors.Cs(Color, "Create a sidekick cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            CanCreateSidekick,
+            string.Empty,
+            "s");
+        SidekickPromoteToJackal = OptionsTab.CreateBool(
+            $"{Name}{nameof(SidekickPromoteToJackal)}",
+            Colors.Cs(Color, "Sidekick gets promoted to jackal on jackal death"),
+            false,
+            CanCreateSidekick);
+        CanCreateSidekickWhenPromoted = OptionsTab.CreateBool(
+            $"{Name}{nameof(CanCreateSidekickWhenPromoted)}",
+            Colors.Cs(Color, "Jackal promoted from sidekick can create a sidekick"),
+            false,
+            CanCreateSidekick);
     }
 
-    public static void removeCurrentJackal()
+    public Sprite GetSidekickSprite()
     {
-        if (!formerJackals.Any(x => x.PlayerId == jackal.PlayerId)) formerJackals.Add(jackal);
-        jackal = null;
-        currentTarget = null;
-        fakeSidekick = null;
-        cooldown = CustomOptionHolder.jackalKillCooldown.getFloat();
-        createSidekickCooldown = CustomOptionHolder.jackalCreateSidekickCooldown.getFloat();
+        if (_sidekickSprite == null)
+        {
+            _sidekickSprite = Resources.LoadSpriteFromResources("TheOtherRoles.Resources.SidekickButton.png", 115f);
+        }
+
+        return _sidekickSprite;
     }
 
-    public static void clearAndReload()
+    public override void CreateCustomButtons(HudManager hudManager)
     {
-        jackal = null;
-        currentTarget = null;
-        fakeSidekick = null;
-        cooldown = CustomOptionHolder.jackalKillCooldown.getFloat();
-        createSidekickCooldown = CustomOptionHolder.jackalCreateSidekickCooldown.getFloat();
-        canUseVents = CustomOptionHolder.jackalCanUseVents.getBool();
-        canCreateSidekick = CustomOptionHolder.jackalCanCreateSidekick.getBool();
-        jackalPromotedFromSidekickCanCreateSidekick =
-            CustomOptionHolder.jackalPromotedFromSidekickCanCreateSidekick.getBool();
-        canCreateSidekickFromImpostor = CustomOptionHolder.jackalCanCreateSidekickFromImpostor.getBool();
-        formerJackals.Clear();
-        hasImpostorVision = CustomOptionHolder.jackalAndSidekickHaveImpostorVision.getBool();
-        wasTeamRed = wasImpostor = wasSpy = false;
+        base.CreateCustomButtons(hudManager);
+        _killButton = new CustomButton(
+            OnKillButtonClick,
+            HasKillButton,
+            CouldUseKillButton,
+            ResetKillButton,
+            hudManager.KillButton.graphic.sprite,
+            CustomButton.ButtonPositions.upperRowRight,
+            hudManager,
+            "ActionSecondary"
+        );
+        _sidekickButton = new CustomButton(
+            OnSidekickButtonClick,
+            HasSidekickButton,
+            CouldUseSidekickButton,
+            ResetSidekickButton,
+            GetSidekickSprite(),
+            CustomButton.ButtonPositions.lowerRowCenter,
+            hudManager,
+            "ActionQuaternary"
+        );
+    }
+
+    private void ResetSidekickButton()
+    {
+        if (_sidekickButton == null) return;
+        _sidekickButton.Timer = _sidekickButton.MaxTimer;
+    }
+
+    private bool CouldUseSidekickButton()
+    {
+        return CanCreateSidekick && CurrentTarget != null && CachedPlayer.LocalPlayer.PlayerControl.CanMove;
+    }
+
+    private bool HasSidekickButton()
+    {
+        if (IsSidekickPromoted && !CanCreateSidekickWhenPromoted) return false;
+        return CanCreateSidekick && Player != null && Is(CachedPlayer.LocalPlayer) &&
+               !CachedPlayer.LocalPlayer.Data.IsDead && FutureSidekick == null;
+    }
+
+    private void OnSidekickButtonClick()
+    {
+        if (CurrentTarget == null) return;
+        CreateSidekick(CachedPlayer.LocalPlayer, $"{CurrentTarget.PlayerId}");
+        SoundEffectsManager.play("jackalSidekick");
+    }
+    
+    [MethodRpc((uint)Rpc.Id.JackalCreateSidekick)]
+    private static void CreateSidekick(PlayerControl sender, string rawData)
+    {
+        if (Singleton<Jackal>.Instance.Player == null) return;
+        var playerId = byte.Parse(rawData);
+        var player = Helpers.playerById(playerId);
+        if (player == null) return;
+        Singleton<Jackal>.Instance.FutureSidekick = player;
+    }
+
+    private void ResetKillButton()
+    {
+        if (_killButton == null) return;
+        _killButton.Timer = _killButton.MaxTimer;
+    }
+
+    private bool CouldUseKillButton()
+    {
+        return CurrentTarget != null && CachedPlayer.LocalPlayer.PlayerControl.CanMove;
+    }
+
+    private bool HasKillButton()
+    {
+        return Player != null && Is(CachedPlayer.LocalPlayer) && !CachedPlayer.LocalPlayer.Data.IsDead;
+    }
+
+    private void OnKillButtonClick()
+    {
+        if (_killButton == null || Player == null || CurrentTarget == null) return;
+        if (Helpers.checkMurderAttemptAndKill(Player, CurrentTarget) == MurderAttemptResult.SuppressKill) return;
+        _killButton.Timer = _killButton.MaxTimer;
+        CurrentTarget = null;
+    }
+
+    public override void ClearAndReload()
+    {
+        base.ClearAndReload();
+        FutureSidekick = null;
+        IsSidekickPromoted = false;
     }
 }

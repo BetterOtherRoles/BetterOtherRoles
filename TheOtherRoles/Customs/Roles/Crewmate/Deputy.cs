@@ -1,83 +1,255 @@
 ﻿using System.Collections.Generic;
-using Hazel;
+using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFramework.Kernel;
+using TheOtherRoles.EnoFramework.Utils;
+using TheOtherRoles.Objects;
 using TheOtherRoles.Players;
+using TMPro;
 using UnityEngine;
+using Resources = TheOtherRoles.EnoFramework.Utils.Resources;
 
 namespace TheOtherRoles.Customs.Roles.Crewmate;
 
+[EnoSingleton]
 public class Deputy : CustomRole
 {
-    public static PlayerControl deputy;
-    public static Color color = Sheriff.color;
+    private Sprite? _handcuffSprite;
+    private Sprite? _handcuffedSprite;
 
-    public static PlayerControl currentTarget;
-    public static List<byte> handcuffedPlayers = new List<byte>();
-    public static int promotesToSheriff; // No: 0, Immediately: 1, After Meeting: 2
-    public static bool keepsHandcuffsOnPromotion;
-    public static float handcuffDuration;
-    public static float remainingHandcuffs;
-    public static float handcuffCooldown;
-    public static bool knowsSheriff;
-    public static Dictionary<byte, float> handcuffedKnows = new Dictionary<byte, float>();
+    private CustomButton? _handcuffButton;
+    private TMP_Text? _handcuffButtonText;
+    private CustomButton? _killButton;
 
-    private static Sprite buttonSprite;
-    private static Sprite handcuffedSprite;
+    public readonly EnoFramework.CustomOption NumberOfHandcuffs;
+    public readonly EnoFramework.CustomOption HandcuffCooldown;
+    public readonly EnoFramework.CustomOption HandcuffDuration;
+    public readonly EnoFramework.CustomOption KillCooldown;
+    public readonly EnoFramework.CustomOption PromotedWhen;
+    public readonly EnoFramework.CustomOption CanKillNeutrals;
 
-    public static Sprite getButtonSprite()
+    public bool KillButtonEnabled;
+    public int UsedHandcuffs;
+    public readonly List<PlayerControl> HandcuffedPlayers = new();
+
+    public Deputy() : base(nameof(Deputy))
     {
-        if (buttonSprite) return buttonSprite;
-        buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.DeputyHandcuffButton.png", 115f);
-        return buttonSprite;
+        Team = Teams.Crewmate;
+        Color = new Color32(248, 205, 70, byte.MaxValue);
+        CanTarget = true;
+
+        NumberOfHandcuffs = OptionsTab.CreateFloatList(
+            $"{Name}{nameof(NumberOfHandcuffs)}",
+            Colors.Cs(Color, "Number of handcuffs"),
+            0f,
+            15f,
+            3f,
+            1f,
+            SpawnRate);
+        HandcuffCooldown = OptionsTab.CreateFloatList(
+            $"{Name}{nameof(HandcuffCooldown)}",
+            Colors.Cs(Color, "Handcuff cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        HandcuffDuration = OptionsTab.CreateFloatList(
+            $"{Name}{nameof(HandcuffDuration)}",
+            Colors.Cs(Color, "Handcuff duration"),
+            2f,
+            60f,
+            10f,
+            1f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        PromotedWhen = OptionsTab.CreateStringList(
+            $"{Name}{nameof(PromotedWhen)}",
+            Colors.Cs(Color, "Can kill if sheriff dies"),
+            new List<string> { "no", "yes (immediately)", "yes (after meeting)" },
+            "no",
+            SpawnRate);
+        KillCooldown = OptionsTab.CreateFloatList(
+            $"{Name}{nameof(KillCooldown)}",
+            Colors.Cs(Color, "Kill cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            PromotedWhen,
+            string.Empty,
+            "s");
+        CanKillNeutrals = OptionsTab.CreateBool(
+            $"{Name}{nameof(CanKillNeutrals)}",
+            Colors.Cs(Color, "Can kill neutral roles"),
+            true,
+            PromotedWhen);
     }
 
-    public static Sprite getHandcuffedButtonSprite()
+    public Sprite GetHandcuffSprite()
     {
-        if (handcuffedSprite) return handcuffedSprite;
-        handcuffedSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.DeputyHandcuffed.png", 115f);
-        return handcuffedSprite;
+        if (_handcuffSprite == null)
+        {
+            _handcuffSprite =
+                Resources.LoadSpriteFromResources("TheOtherRoles.Resources.DeputyHandcuffButton.png", 115f);
+        }
+
+        return _handcuffSprite;
     }
 
     // Can be used to enable / disable the handcuff effect on the target's buttons
-    public static void setHandcuffedKnows(bool active = true, byte playerId = byte.MaxValue)
+    public Sprite GetHandcuffedSprite()
     {
-        if (playerId == byte.MaxValue)
-            playerId = CachedPlayer.LocalPlayer.PlayerId;
-
-        if (active && playerId == CachedPlayer.LocalPlayer.PlayerId)
+        if (_handcuffedSprite == null)
         {
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareGhostInfo, Hazel.SendOption.Reliable,
-                -1);
-            writer.Write(CachedPlayer.LocalPlayer.PlayerId);
-            writer.Write((byte)RPCProcedure.GhostInfoTypes.HandcuffNoticed);
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
+            _handcuffedSprite = Resources.LoadSpriteFromResources("TheOtherRoles.Resources.DeputyHandcuffed.png", 115f);
         }
 
-        if (active)
-        {
-            handcuffedKnows.Add(playerId, handcuffDuration);
-            handcuffedPlayers.RemoveAll(x => x == playerId);
-        }
-
-        if (playerId == CachedPlayer.LocalPlayer.PlayerId)
-        {
-            HudManagerStartPatch.setAllButtonsHandcuffedStatus(active);
-            SoundEffectsManager.play("deputyHandcuff");
-        }
+        return _handcuffedSprite;
     }
 
-    public static void clearAndReload()
+    public override void CreateCustomButtons(HudManager hudManager)
     {
-        deputy = null;
-        currentTarget = null;
-        handcuffedPlayers = new List<byte>();
-        handcuffedKnows = new Dictionary<byte, float>();
-        HudManagerStartPatch.setAllButtonsHandcuffedStatus(false, true);
-        promotesToSheriff = CustomOptionHolder.deputyGetsPromoted.getSelection();
-        remainingHandcuffs = CustomOptionHolder.deputyNumberOfHandcuffs.getFloat();
-        handcuffCooldown = CustomOptionHolder.deputyHandcuffCooldown.getFloat();
-        keepsHandcuffsOnPromotion = CustomOptionHolder.deputyKeepsHandcuffs.getBool();
-        handcuffDuration = CustomOptionHolder.deputyHandcuffDuration.getFloat();
-        knowsSheriff = CustomOptionHolder.deputyKnowsSheriff.getBool();
+        base.CreateCustomButtons(hudManager);
+        _killButton = new CustomButton(
+            OnKillButtonClick,
+            HasKillButton,
+            CouldUseKillButton,
+            ResetKillButton,
+            hudManager.KillButton.graphic.sprite,
+            CustomButton.ButtonPositions.upperRowRight,
+            hudManager,
+            "ActionSecondary"
+        );
+        _handcuffButton = new CustomButton(
+            OnHandcuffButtonClick,
+            HasHandcuffButton,
+            CouldUseHandcuffButton,
+            ResetHandcuffButton,
+            GetHandcuffSprite(),
+            CustomButton.ButtonPositions.lowerRowRight,
+            hudManager,
+            "ActionQuaternary"
+        );
+        _handcuffButtonText = UnityEngine.Object.Instantiate(
+            _handcuffButton.actionButton.cooldownTimerText,
+            _handcuffButton.actionButton.cooldownTimerText.transform.parent
+        );
+        _handcuffButtonText.text = "";
+        _handcuffButtonText.enableWordWrapping = false;
+        _handcuffButtonText.transform.localScale = Vector3.one * 0.5f;
+        _handcuffButtonText.transform.localPosition += new Vector3(-0.05f, 0.7f, 0);
+    }
+
+    private void ResetHandcuffButton()
+    {
+        if (_handcuffButton == null) return;
+        _handcuffButton.Timer = _handcuffButton.MaxTimer;
+    }
+
+    private bool CouldUseHandcuffButton()
+    {
+        if (_handcuffButtonText != null)
+        {
+            _handcuffButtonText.text = $"{NumberOfHandcuffs - UsedHandcuffs}";
+        }
+
+        return Player != null && Is(CachedPlayer.LocalPlayer) && CurrentTarget != null;
+    }
+
+    private bool HasHandcuffButton()
+    {
+        return Player != null && Is(CachedPlayer.LocalPlayer) && !CachedPlayer.LocalPlayer.Data.IsDead;
+    }
+
+    private void OnHandcuffButtonClick()
+    {
+        if (_handcuffButton == null || Player == null || CurrentTarget == null) return;
+        AddHandcuff(CurrentTarget);
+        CurrentTarget = null;
+        _handcuffButton.Timer = _handcuffButton.MaxTimer;
+        SoundEffectsManager.play("deputyHandcuff");
+    }
+
+    private void ResetKillButton()
+    {
+        if (_killButton == null) return;
+        _killButton.Timer = _killButton.MaxTimer;
+    }
+
+    private bool CouldUseKillButton()
+    {
+        return CurrentTarget != null && CachedPlayer.LocalPlayer.PlayerControl.CanMove;
+    }
+
+    private bool HasKillButton()
+    {
+        return Player != null && Is(CachedPlayer.LocalPlayer) && !CachedPlayer.LocalPlayer.Data.IsDead;
+    }
+
+    private void OnKillButtonClick()
+    {
+        if (_killButton == null || Player == null || CurrentTarget == null) return;
+        var result = Helpers.checkMurderAttempt(Player, CurrentTarget);
+        if (result == MurderAttemptResult.SuppressKill) return;
+        if (result == MurderAttemptResult.PerformKill)
+        {
+            var targetRole = GetRoleByPlayer(CurrentTarget);
+            if ((targetRole is { IsNeutral: true } && CanKillNeutrals) || CurrentTarget.Data.Role.IsImpostor)
+            {
+                Rpc.UncheckedMurderPlayer(Player, CurrentTarget, true);
+            }
+            else
+            {
+                Rpc.UncheckedMurderPlayer(Player, Player, true);
+            }
+        }
+
+        _killButton.Timer = _killButton.MaxTimer;
+        CurrentTarget = null;
+    }
+
+    public override void ClearAndReload()
+    {
+        base.ClearAndReload();
+        HandcuffedPlayers.Clear();
+        KillButtonEnabled = false;
+        UsedHandcuffs = 0;
+    }
+
+    public static void AddHandcuff(PlayerControl target)
+    {
+        RpcAddHandcuff(CachedPlayer.LocalPlayer, $"{target.PlayerId}");
+    }
+
+    public static void RemoveHandcuff(PlayerControl target)
+    {
+        RpcRemoveHandcuff(CachedPlayer.LocalPlayer, $"{target.PlayerId}");
+    }
+
+    [MethodRpc((uint)Rpc.Id.DeputyAddHandcuff)]
+    private static void RpcAddHandcuff(PlayerControl sender, string rawData)
+    {
+        var targetId = byte.Parse(rawData);
+        var target = Helpers.playerById(targetId);
+        if (target == null) return;
+        if (!Singleton<Deputy>.Instance.HandcuffedPlayers.Contains(target))
+        {
+            Singleton<Deputy>.Instance.HandcuffedPlayers.Add(target);
+        }
+
+        Singleton<Deputy>.Instance.UsedHandcuffs++;
+    }
+
+    [MethodRpc((uint)Rpc.Id.DeputyRemoveHandcuff)]
+    private static void RpcRemoveHandcuff(PlayerControl sender, string rawData)
+    {
+        var targetId = byte.Parse(rawData);
+        var target = Helpers.playerById(targetId);
+        if (target == null) return;
+        if (!Singleton<Deputy>.Instance.HandcuffedPlayers.Contains(target)) return;
+        Singleton<Deputy>.Instance.HandcuffedPlayers.Remove(target);
     }
 }
