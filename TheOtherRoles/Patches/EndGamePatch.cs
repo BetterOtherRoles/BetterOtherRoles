@@ -9,6 +9,7 @@ using System.Text;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using TheOtherRoles.CustomGameModes;
+using TheOtherRoles.Modules;
 
 namespace TheOtherRoles.Patches {
     enum CustomGameOverReason {
@@ -352,7 +353,7 @@ namespace TheOtherRoles.Patches {
                 roleSummaryText.AppendLine("Players and roles at the end of the game:");
                 foreach(AdditionalTempData.PlayerRoleInfo data in AdditionalTempData.playerRoles) {
                     var roles = string.Join(" ", data.Roles.Select(x => Helpers.cs(x.color, x.name)));
-                    var previousRole = data.PreviousRole != null ? $"{Helpers.cs(data.PreviousRole.color, data.PreviousRole.name)} => " : "";
+                    var previousRole = data.PreviousRole != null ? $"{Helpers.cs(data.PreviousRole.color, data.PreviousRole.name)} ⮀ " : "";
                     if (previousRole != "") {
                         string[] splittedRoles = roles.Split(" ");
                         splittedRoles[splittedRoles.Length - 1] = previousRole + splittedRoles[splittedRoles.Length - 1];
@@ -382,7 +383,7 @@ namespace TheOtherRoles.Patches {
     [HarmonyPatch(typeof(LogicGameFlowNormal), nameof(LogicGameFlowNormal.CheckEndCriteria))] 
     class CheckEndCriteriaPatch {
         public static bool Prefix(ShipStatus __instance) {
-            if (!GameData.Instance) return false;
+            if (!GameData.Instance || CustomGuid.IsDevMode) return false;
             
             if (DestroyableSingleton<TutorialManager>.InstanceExists) // InstanceExists | Don't check Custom Criteria when in Tutorial
                 return true;

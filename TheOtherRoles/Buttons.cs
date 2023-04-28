@@ -792,9 +792,11 @@ namespace TheOtherRoles
                                 else Helpers.checkMurderAttemptAndKill(Whisperer.whisperer, Whisperer.whisperVictim, showAnimation: false);
 
                                 // & reset anyway.
-                                
+
+                                Whisperer.currentTarget = null;
                                 Whisperer.whisperVictim = null;
                                 Whisperer.whisperVictimTarget = null;
+                                Whisperer.whisperVictimToKill = null;
                                 
                                 whispererKillButton.Timer = whispererKillButton.MaxTimer;
 
@@ -863,9 +865,6 @@ namespace TheOtherRoles
                         writer.Write(position.y);
                         writer.Write(position.z);
                         AmongUsClient.Instance.FinishRpcImmediately(writer);
-
-                        Undertaker.draggedBody = null;
-                        Undertaker.LastDragged = DateTime.UtcNow;
 
                     }
                 }, // Action OnClick

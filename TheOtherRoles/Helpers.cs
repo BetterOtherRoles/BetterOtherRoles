@@ -115,6 +115,8 @@ namespace TheOtherRoles {
                 closestDistance = distance;
             }
 
+            if (@result && Undertaker.undertaker == targetingPlayer) Helpers.setDeadPlayerOutline(@result, Undertaker.color);
+
             return @result;
         }
 
@@ -256,8 +258,10 @@ namespace TheOtherRoles {
 
             // & reset anyway.
             
+            Whisperer.currentTarget = null;
             Whisperer.whisperVictim = null;
             Whisperer.whisperVictimTarget = null;
+            Whisperer.whisperVictimToKill = null;
             
             HudManagerStartPatch.whispererKillButton.Timer = HudManagerStartPatch.whispererKillButton.MaxTimer;
         }

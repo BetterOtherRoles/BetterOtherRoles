@@ -43,6 +43,7 @@ namespace TheOtherRoles.Objects {
             Vector3 position = new Vector3(p.x, p.y,  p.y/1000f + 0.01f);
             position += (Vector3)CachedPlayer.LocalPlayer.PlayerControl.Collider.offset; // Add collider offset that DoMove moves the player up at a valid position
             // Create the marker
+            position.z = CachedPlayer.LocalPlayer.PlayerControl.transform.position.z - 0.01f;
             gameObject.transform.position = position;
             boxRenderer = gameObject.AddComponent<SpriteRenderer>();
             boxRenderer.sprite = getBoxAnimationSprite(0);

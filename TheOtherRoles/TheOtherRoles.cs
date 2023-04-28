@@ -942,6 +942,7 @@ namespace TheOtherRoles
         public static int taskCountForReveal = 1;
 
         public static bool isRevealed = false;
+        public static bool showTasksLeft = false;
         public static Dictionary<byte, byte> playerRoomMap = new Dictionary<byte, byte>();
         public static TMPro.TextMeshPro text = null;
         public static bool needsUpdate = true;
@@ -957,6 +958,7 @@ namespace TheOtherRoles
             taskCountForReveal = Mathf.RoundToInt(CustomOptionHolder.snitchLeftTasksForReveal.getFloat());
             snitch = null;
             isRevealed = false;
+            showTasksLeft = CustomOptionHolder.snitchShowTasksLeft.getBool();
             playerRoomMap = new Dictionary<byte, byte>();
             if (text != null) UnityEngine.Object.Destroy(text);
             text = null;

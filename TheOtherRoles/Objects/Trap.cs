@@ -32,6 +32,7 @@ namespace TheOtherRoles.Objects {
             trap = new GameObject("Trap") { layer = 11 };
             trap.AddSubmergedComponent(SubmergedCompatibility.Classes.ElevatorMover);
             Vector3 position = new Vector3(p.x, p.y, p.y / 1000 + 0.001f); // just behind player
+            position.z = CachedPlayer.LocalPlayer.PlayerControl.transform.position.z - 0.01f;
             trap.transform.position = position;
             neededCount = Trapper.trapCountToReveal;
 

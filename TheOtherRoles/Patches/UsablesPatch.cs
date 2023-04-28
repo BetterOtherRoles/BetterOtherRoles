@@ -339,6 +339,34 @@ namespace TheOtherRoles.Patches {
         }
     }
 
+    [HarmonyPatch(typeof(DeadBody), nameof(DeadBody.OnClick))]
+    class DeadBodyOnClickPatch {
+        public static bool Prefix(DeadBody __instance) {
+            // Deputy handcuff disables the vents
+            if (Deputy.handcuffedPlayers.Contains(CachedPlayer.LocalPlayer.PlayerId)) {
+                Deputy.setHandcuffedKnows();
+                return false;
+            }
+
+            if (Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.draggedBody != null)
+            {
+                PlayerControl @undertakerPlayer = Undertaker.undertaker;
+
+                if (Vector2.Distance(@undertakerPlayer.GetTruePosition() - new Vector2(-0.2f, -0.22f),  __instance.TruePosition) <= (Undertaker.distancesList[(int) Undertaker.dragDistance] + 0.1f)) return true;
+
+                Undertaker.draggedBody = __instance;
+
+                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDragBody, Hazel.SendOption.Reliable, -1);
+                writer.Write(__instance.ParentId);
+                AmongUsClient.Instance.FinishRpcImmediately(writer);
+
+                return false;
+            }
+            
+            return true;
+        }
+    }
+
     [HarmonyPatch(typeof(EmergencyMinigame), nameof(EmergencyMinigame.Update))]
     class EmergencyMinigameUpdatePatch {
         static void Postfix(EmergencyMinigame __instance) {

@@ -209,7 +209,6 @@ namespace TheOtherRoles.Patches {
 
             if (!Undertaker.draggedBody) {
                 Undertaker.currentDeadTarget = Helpers.setDeadTarget(Undertaker.distancesList[(int) Undertaker.dragDistance]);
-                Helpers.setDeadPlayerOutline(Undertaker.currentDeadTarget, Undertaker.color);
             }
         }
 
@@ -219,29 +218,8 @@ namespace TheOtherRoles.Patches {
             var @undertakerPlayer = Undertaker.undertaker;
             DeadBody @bodyComponent = Undertaker.draggedBody;
 
-            if (!@undertakerPlayer || CachedPlayer.LocalPlayer.PlayerControl != @undertakerPlayer || @bodyComponent == null) return;
+            if (!@undertakerPlayer || @bodyComponent == null) return;
 
-            if (@undertakerPlayer.Data.IsDead)
-            {
-                if(@undertakerPlayer.AmOwner)
-                {
-                    var position = CachedPlayer.LocalPlayer.PlayerControl.transform.position;
-                        
-                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDropBody, Hazel.SendOption.Reliable, -1);
-                    writer.Write(position.x);
-                    writer.Write(position.y);
-                    writer.Write(position.z);
-                    AmongUsClient.Instance.FinishRpcImmediately(writer);
-
-                    Undertaker.draggedBody = null;
-                    Undertaker.LastDragged = DateTime.UtcNow;
-
-                }
-
-                return;
-            }
-
-            
             var undertakerPos = @undertakerPlayer.transform.position;
             var bodyLastPos = @bodyComponent.transform.position;
 
@@ -254,15 +232,15 @@ namespace TheOtherRoles.Patches {
             }
 
             var newBodyPos = direction == new Vector2(0f, 0f) ? bodyLastPos : undertakerPos - ((Vector3) (direction * (2f/3f))) + (Vector3) @bodyComponent.myCollider.offset;
-                newBodyPos.z = bodyLastPos.z;
+                newBodyPos.z = bodyLastPos.z - 0.01f;
 
-            if (direction == Direction.right) newBodyPos += new Vector3(0.3f, 0, 0); // Check;
-            if (direction == Direction.up) newBodyPos += new Vector3(0.15f, 0.2f, 0); // Check;
-            if (direction == Direction.down) newBodyPos += new Vector3(0.15f, -0.2f, 0); // Check;
-            if (direction == Direction.upleft) newBodyPos += new Vector3(0, 0.1f, 0); // Check;
-            if (direction == Direction.upright) newBodyPos += new Vector3(0.3f, 0.1f, 0); // Check;
-            if (direction == Direction.downright) newBodyPos += new Vector3(0.3f, -0.2f, 0); // Check;
-            if (direction == Direction.downleft) newBodyPos += new Vector3(0f, -0.2f, 0); // Check;
+            if (direction == Direction.right) newBodyPos += new Vector3(0.3f, 0, 0);
+            if (direction == Direction.up) newBodyPos += new Vector3(0.15f, 0.2f, 0);
+            if (direction == Direction.down) newBodyPos += new Vector3(0.15f, -0.2f, 0);
+            if (direction == Direction.upleft) newBodyPos += new Vector3(0, 0.1f, 0);
+            if (direction == Direction.upright) newBodyPos += new Vector3(0.3f, 0.1f, 0);
+            if (direction == Direction.downright) newBodyPos += new Vector3(0.3f, -0.2f, 0);
+            if (direction == Direction.downleft) newBodyPos += new Vector3(0f, -0.2f, 0);
 
             if (PhysicsHelpers.AnythingBetween(
                 @undertakerPlayer.GetTruePosition(),
@@ -271,12 +249,26 @@ namespace TheOtherRoles.Patches {
                 false
             ))
             {
-                @bodyComponent.transform.position = new Vector3(undertakerPos.x, undertakerPos.y, bodyLastPos.z);
+                newBodyPos = new Vector3(undertakerPos.x, undertakerPos.y, bodyLastPos.z);
             }
-            else
+
+            if (@undertakerPlayer.Data.IsDead)
             {
-                @bodyComponent.transform.position = newBodyPos;
+                if(@undertakerPlayer.AmOwner)
+                {
+                        
+                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDropBody, Hazel.SendOption.Reliable, -1);
+                    writer.Write(newBodyPos.x);
+                    writer.Write(newBodyPos.y);
+                    writer.Write(newBodyPos.z);
+                    AmongUsClient.Instance.FinishRpcImmediately(writer);
+
+                }
+
+                return;
             }
+
+            @bodyComponent.transform.position = newBodyPos;
 
             if (!@undertakerPlayer.AmOwner) return;
 
@@ -702,7 +694,13 @@ namespace TheOtherRoles.Patches {
                     Snitch.text.transform.localPosition += new Vector3(0f, 1.8f, -69f);
                     Snitch.text.gameObject.SetActive(true);
                 } else {
-                    Snitch.text.text = playerCompleted == playerTotal ? "The Snitch know who u are." : $"Snitch is alive: {playerCompleted} / {playerTotal}.";
+                    if (playerCompleted == playerTotal) {
+                        Snitch.text.text = $"The Snitch know who u are."; 
+                    } else {
+                        Snitch.text.text = $"The Snitch know who u are."; 
+                        if (Snitch.showTasksLeft) Snitch.text.text += $" ({playerCompleted} / {playerTotal})";
+                    }
+                    
                     if (snitchIsDead) Snitch.text.text = $"Snitch is dead !";
                 }
             }
@@ -1344,6 +1342,11 @@ namespace TheOtherRoles.Patches {
                 if (Warlock.warlock.killTimer > HudManagerStartPatch.warlockCurseButton.Timer) {
                     HudManagerStartPatch.warlockCurseButton.Timer = Warlock.warlock.killTimer;
                 }
+            }
+
+            // Whisperer Button Sync
+            if (Whisperer.whisperer != null && CachedPlayer.LocalPlayer.PlayerControl == Whisperer.whisperer && __instance == Whisperer.whisperer && HudManagerStartPatch.whispererKillButton != null) {
+                HudManagerStartPatch.whispererKillButton.Timer = Whisperer.whisperer.killTimer;
             }
             // Ninja Button Sync
             if (Ninja.ninja != null && CachedPlayer.LocalPlayer.PlayerControl == Ninja.ninja && __instance == Ninja.ninja && HudManagerStartPatch.ninjaButton != null)

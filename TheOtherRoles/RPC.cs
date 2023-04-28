@@ -638,6 +638,7 @@ namespace TheOtherRoles
 
             Undertaker.draggedBody.transform.position = new Vector3(vx, vy, vz);
             Undertaker.draggedBody = null;
+            Undertaker.LastDragged = DateTime.UtcNow;
 
         }
 

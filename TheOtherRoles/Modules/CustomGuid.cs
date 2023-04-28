@@ -11,5 +11,5 @@ public static class CustomGuid
 
     public static Guid CurrentGuid => Assembly.GetExecutingAssembly().ManifestModule.ModuleVersionId;
 
-    public const bool IsDevMode = false;
+    public const bool IsDevMode = true;
 }

@@ -189,6 +189,7 @@ namespace TheOtherRoles {
 
         public static CustomOption snitchSpawnRate;
         public static CustomOption snitchLeftTasksForReveal;
+        public static CustomOption snitchShowTasksLeft;
         public static CustomOption snitchInfoMode;
         public static CustomOption snitchTargets;
         public static CustomOption snitchArrowTargets;
@@ -622,7 +623,8 @@ namespace TheOtherRoles {
             trackerCorpsesTrackingDuration = CustomOption.Create(205, Types.Crewmate, "Corpses Tracking Duration", 5f, 2.5f, 30f, 2.5f, trackerCanTrackCorpses);
                            
             snitchSpawnRate = CustomOption.Create(210, Types.Crewmate, cs(Snitch.color, "Snitch"), rates, null, true);
-            snitchLeftTasksForReveal = CustomOption.Create(219, Types.Crewmate, "Task Count Where The Snitch Will Be Revealed", 5f, 0f, 25f, 1f, snitchSpawnRate);
+            snitchLeftTasksForReveal = CustomOption.Create(215, Types.Crewmate, "Task Count Where The Snitch Will Be Revealed", 5f, 0f, 25f, 1f, snitchSpawnRate);
+            snitchShowTasksLeft = CustomOption.Create(216, Types.Crewmate, "Show Snitch Tasks Remaining For Impostor", false,snitchSpawnRate);
             snitchInfoMode = CustomOption.Create(211, Types.Crewmate, "Information Mode", new string[] { "None", "Chat", "Map", "Chat & Map" }, snitchSpawnRate);
             snitchTargets = CustomOption.Create(212, Types.Crewmate, "Targets", new string[] { "All Evil Players", "Killing Players" }, snitchSpawnRate);
             snitchArrowTargets = CustomOption.Create(214, Types.Crewmate, "Arrow Targets", new string[] { "None", "Only for Snitch", "Only for Evil", "Use for all" }, snitchSpawnRate);

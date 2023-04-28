@@ -83,7 +83,7 @@ namespace TheOtherRoles.Objects {
         public Portal(Vector2 p) {
             portalGameObject = new GameObject("Portal"){ layer = 11 };
             //Vector3 position = new Vector3(p.x, p.y, CachedPlayer.LocalPlayer.transform.position.z + 1f);
-            Vector3 position = new Vector3(p.x, p.y, p.y / 1000f + 0.01f);
+            Vector3 position = new Vector3(p.x, p.y, CachedPlayer.LocalPlayer.PlayerControl.transform.position.z - 0.01f);
 
             // Create the portal            
             portalGameObject.transform.position = position;
