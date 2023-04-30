@@ -66,6 +66,17 @@ public static class Rpc
         
         // TimeMaster
         TimeMasterShield,
+        
+        // Tracker
+        TrackerTrackPlayer,
+        
+        // PortalMaker
+        PortalMakerPlacePortal,
+        PortalMakerUsePortal,
+        
+        // SecurityGuard
+        SecurityGuardSealVent,
+        SecurityGuardPlaceCamera,
     }
 
     public static void SetInvisibility(PlayerControl player, bool visible)

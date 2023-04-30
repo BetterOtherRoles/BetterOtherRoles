@@ -1,74 +1,212 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFramework.Kernel;
+using TheOtherRoles.EnoFramework.Utils;
 using TheOtherRoles.Objects;
+using TheOtherRoles.Players;
 using UnityEngine;
+using Resources = TheOtherRoles.EnoFramework.Utils.Resources;
 
 namespace TheOtherRoles.Customs.Roles.Crewmate;
 
-public static class Tracker
+[EnoSingleton]
+public class Tracker : CustomRole
 {
-    public static PlayerControl tracker;
-    public static Color color = new Color32(100, 58, 220, byte.MaxValue);
-    public static List<Arrow> localArrows = new List<Arrow>();
+    private Sprite? _trackSprite;
+    private Sprite? _trackCorpseSprite;
 
-    public static float updateIntervall = 5f;
-    public static bool resetTargetAfterMeeting = false;
-    public static bool canTrackCorpses = false;
-    public static float corpsesTrackingCooldown = 30f;
-    public static float corpsesTrackingDuration = 5f;
-    public static float corpsesTrackingTimer = 0f;
-    public static List<Vector3> deadBodyPositions = new List<Vector3>();
+    private CustomButton? _trackButton;
+    private CustomButton? _trackCorpseButton;
 
-    public static PlayerControl currentTarget;
-    public static PlayerControl tracked;
-    public static bool usedTracker = false;
-    public static float timeUntilUpdate = 0f;
-    public static Arrow arrow = new Arrow(Color.blue);
+    public readonly EnoFramework.CustomOption UpdateArrowInterval;
+    public readonly EnoFramework.CustomOption ResetTargetAfterMeeting;
+    public readonly EnoFramework.CustomOption CanTrackCorpses;
+    public readonly EnoFramework.CustomOption CorpsesTrackingCooldown;
+    public readonly EnoFramework.CustomOption CorpsesTrackingDuration;
 
-    private static Sprite trackCorpsesButtonSprite;
+    public readonly List<Arrow> Arrows = new();
+    public readonly List<Vector3> DeadBodyPositions = new();
+    public PlayerControl? TrackedTarget;
+    public float TimeUntilUpdate;
+    public float CorpseTrackingTimer;
+    public Arrow Arrow = new Arrow(Color.blue);
 
-    public static Sprite getTrackCorpsesButtonSprite()
+    public Tracker() : base(nameof(Tracker))
     {
-        if (trackCorpsesButtonSprite) return trackCorpsesButtonSprite;
-        trackCorpsesButtonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.PathfindButton.png", 115f);
-        return trackCorpsesButtonSprite;
+        Team = Teams.Crewmate;
+        Color = new Color32(100, 58, 220, byte.MaxValue);
+        CanTarget = true;
+
+        UpdateArrowInterval = OptionsTab.CreateFloatList(
+            $"{Name}{nameof(UpdateArrowInterval)}",
+            Colors.Cs(Color, "Update interval"),
+            1f,
+            30f,
+            5f,
+            1f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        ResetTargetAfterMeeting = OptionsTab.CreateBool(
+            $"{Name}{nameof(ResetTargetAfterMeeting)}",
+            Colors.Cs(Color, "Reset target after meeting"),
+            true,
+            SpawnRate);
+        CanTrackCorpses = OptionsTab.CreateBool(
+            $"{Name}{nameof(CanTrackCorpses)}",
+            Colors.Cs(Color, "Can track dead bodies"),
+            false,
+            SpawnRate);
+        CorpsesTrackingCooldown = OptionsTab.CreateFloatList(
+            $"{Name}{nameof(CorpsesTrackingCooldown)}",
+            Colors.Cs(Color, "Corpses tracking cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            CanTrackCorpses,
+            string.Empty,
+            "s");
+        CorpsesTrackingDuration = OptionsTab.CreateFloatList(
+            $"{Name}{nameof(CorpsesTrackingDuration)}",
+            Colors.Cs(Color, "Corpses tracking duration"),
+            2.5f,
+            30f,
+            5f,
+            2.5f,
+            CanTrackCorpses,
+            string.Empty,
+            "s");
     }
 
-    private static Sprite buttonSprite;
-
-    public static Sprite getButtonSprite()
+    public Sprite GetTrackSprite()
     {
-        if (buttonSprite) return buttonSprite;
-        buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.TrackerButton.png", 115f);
-        return buttonSprite;
-    }
-
-    public static void resetTracked()
-    {
-        currentTarget = tracked = null;
-        usedTracker = false;
-        if (arrow?.arrow != null) UnityEngine.Object.Destroy(arrow.arrow);
-        arrow = new Arrow(Color.blue);
-        if (arrow.arrow != null) arrow.arrow.SetActive(false);
-    }
-
-    public static void clearAndReload()
-    {
-        tracker = null;
-        resetTracked();
-        timeUntilUpdate = 0f;
-        updateIntervall = CustomOptionHolder.trackerUpdateIntervall.getFloat();
-        resetTargetAfterMeeting = CustomOptionHolder.trackerResetTargetAfterMeeting.getBool();
-        if (localArrows != null)
+        if (_trackSprite == null)
         {
-            foreach (Arrow arrow in localArrows)
-                if (arrow?.arrow != null)
-                    UnityEngine.Object.Destroy(arrow.arrow);
+            _trackSprite = Resources.LoadSpriteFromResources("TheOtherRoles.Resources.PathfindButton.png", 115f);
         }
 
-        deadBodyPositions = new List<Vector3>();
-        corpsesTrackingTimer = 0f;
-        corpsesTrackingCooldown = CustomOptionHolder.trackerCorpsesTrackingCooldown.getFloat();
-        corpsesTrackingDuration = CustomOptionHolder.trackerCorpsesTrackingDuration.getFloat();
-        canTrackCorpses = CustomOptionHolder.trackerCanTrackCorpses.getBool();
+        return _trackSprite;
+    }
+
+    public Sprite GetTrackCorpsesSprite()
+    {
+        if (_trackCorpseSprite == null)
+        {
+            _trackCorpseSprite = Resources.LoadSpriteFromResources("TheOtherRoles.Resources.TrackerButton.png", 115f);
+        }
+
+        return _trackCorpseSprite;
+    }
+
+    public override void CreateCustomButtons(HudManager hudManager)
+    {
+        base.CreateCustomButtons(hudManager);
+        _trackButton = new CustomButton(
+            OnTrackButtonClick,
+            IsLocalPlayerAndAlive,
+            CouldUseTrackButton,
+            ResetTrackButton,
+            GetTrackSprite(),
+            CustomButton.ButtonPositions.lowerRowRight,
+            hudManager,
+            "ActionQuaternary"
+        );
+        _trackCorpseButton = new CustomButton(
+            OnTrackCorpseButtonClick,
+            HasTrackCorpseButton,
+            CanUseTrackCorpseButton,
+            ResetTrackCorpseButton,
+            GetTrackCorpsesSprite(),
+            CustomButton.ButtonPositions.lowerRowCenter,
+            hudManager,
+            "ActionSecondary",
+            true,
+            CorpsesTrackingDuration,
+            OnTrackCorpseEffectEnd
+        );
+    }
+
+    private void OnTrackCorpseEffectEnd()
+    {
+        if (_trackCorpseButton == null) return;
+        _trackCorpseButton.Timer = _trackCorpseButton.MaxTimer;
+    }
+
+    private void ResetTrackCorpseButton()
+    {
+        if (_trackCorpseButton == null) return;
+        _trackCorpseButton.Timer = _trackCorpseButton.MaxTimer;
+        _trackCorpseButton.isEffectActive = false;
+        _trackCorpseButton.actionButton.cooldownTimerText.color = Palette.EnabledColor;
+    }
+
+    private bool CanUseTrackCorpseButton()
+    {
+        return CachedPlayer.LocalPlayer.PlayerControl.CanMove;
+    }
+
+    private bool HasTrackCorpseButton()
+    {
+        return IsLocalPlayerAndAlive() && CanTrackCorpses;
+    }
+
+    private void OnTrackCorpseButtonClick()
+    {
+        CorpseTrackingTimer = CorpsesTrackingDuration;
+        SoundEffectsManager.play("trackerTrackCorpses");
+    }
+
+    private void ResetTrackButton()
+    {
+        if (ResetTargetAfterMeeting)
+        {
+            ResetTracked();
+        }
+    }
+
+    private bool CouldUseTrackButton()
+    {
+        return CachedPlayer.LocalPlayer.PlayerControl.CanMove && CurrentTarget != null && TrackedTarget == null;
+    }
+
+    private void OnTrackButtonClick()
+    {
+        if (CurrentTarget == null) return;
+        TrackPlayer(CachedPlayer.LocalPlayer, $"{CurrentTarget.PlayerId}");
+        SoundEffectsManager.play("trackerTrackPlayer");
+    }
+
+    [MethodRpc((uint)Rpc.Id.TrackerTrackPlayer)]
+    private static void TrackPlayer(PlayerControl sender, string rawData)
+    {
+        var targetId = byte.Parse(rawData);
+        var target = Helpers.playerById(targetId);
+        if (target == null) return;
+        Singleton<Tracker>.Instance.TrackedTarget = target;
+    }
+
+    public void ResetTracked()
+    {
+        CurrentTarget = TrackedTarget = null;
+        if (Arrow.arrow != null) UnityEngine.Object.Destroy(Arrow.arrow);
+        Arrow = new Arrow(Color.blue);
+        if (Arrow.arrow != null) Arrow.arrow.SetActive(true);
+    }
+
+    public override void ClearAndReload()
+    {
+        base.ClearAndReload();
+        ResetTracked();
+        TimeUntilUpdate = 0f;
+        foreach (var arrow in Arrows.Where(arrow => arrow.arrow != null))
+        {
+            UnityEngine.Object.Destroy(arrow.arrow);
+        }
+
+        Arrows.Clear();
+        DeadBodyPositions.Clear();
+        CorpseTrackingTimer = 0f;
     }
 }

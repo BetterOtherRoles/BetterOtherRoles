@@ -1,19 +1,40 @@
-﻿using UnityEngine;
+﻿using TheOtherRoles.EnoFramework.Kernel;
 
 namespace TheOtherRoles.Customs.Roles.Crewmate;
 
-public static class Spy {
-    public static PlayerControl spy;
-    public static Color color = Palette.ImpostorRed;
+[EnoSingleton]
+public class Spy : CustomRole
+{
+    public readonly EnoFramework.CustomOption ImpostorsCanKillAnyone;
+    public readonly EnoFramework.CustomOption CanDieToSheriff;
+    public readonly EnoFramework.CustomOption CanEnterVents;
+    public readonly EnoFramework.CustomOption HasImpostorVision;
 
-    public static bool impostorsCanKillAnyone = true;
-    public static bool canEnterVents = false;
-    public static bool hasImpostorVision = false;
+    public Spy() : base(nameof(Spy))
+    {
+        Team = Teams.Crewmate;
+        Color = Palette.ImpostorRed;
 
-    public static void clearAndReload() {
-        spy = null;
-        impostorsCanKillAnyone = CustomOptionHolder.spyImpostorsCanKillAnyone.getBool();
-        canEnterVents = CustomOptionHolder.spyCanEnterVents.getBool();
-        hasImpostorVision = CustomOptionHolder.spyHasImpostorVision.getBool();
+        ImpostorsCanKillAnyone = OptionsTab.CreateBool(
+            $"{Name}{nameof(ImpostorsCanKillAnyone)}",
+            Cs("Impostors can kill anyone if there is a spy"),
+            true,
+            SpawnRate);
+        CanDieToSheriff = OptionsTab.CreateBool(
+            $"{Name}{nameof(CanDieToSheriff)}",
+            Cs("Can be killed by sheriff"),
+            false,
+            SpawnRate);
+        CanEnterVents = OptionsTab.CreateBool(
+            $"{Name}{nameof(CanEnterVents)}",
+            Cs("Can enter vents"),
+            true,
+            SpawnRate);
+        HasImpostorVision = OptionsTab.CreateBool(
+            $"{Name}{nameof(HasImpostorVision)}",
+            Cs("Has impostor vision"),
+            false,
+            SpawnRate);
+        
     }
 }

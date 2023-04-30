@@ -1,34 +1,74 @@
-﻿using UnityEngine;
+﻿using TheOtherRoles.EnoFramework.Kernel;
+using TheOtherRoles.EnoFramework.Utils;
+using UnityEngine;
+using Resources = TheOtherRoles.EnoFramework.Utils.Resources;
 
 namespace TheOtherRoles.Customs.Roles.Crewmate;
 
-public static class Swapper {
-    public static PlayerControl swapper;
-    public static Color color = new Color32(134, 55, 86, byte.MaxValue);
-    private static Sprite spriteCheck;
-    public static bool canCallEmergency = false;
-    public static bool canOnlySwapOthers = false;
-    public static int charges;
-    public static float rechargeTasksNumber;
-    public static float rechargedTasks;
- 
-    public static byte playerId1 = byte.MaxValue;
-    public static byte playerId2 = byte.MaxValue;
+[EnoSingleton]
+public class Swapper : CustomRole
+{
+    private Sprite? _swapSprite;
 
-    public static Sprite getCheckSprite() {
-        if (spriteCheck) return spriteCheck;
-        spriteCheck = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.SwapperCheck.png", 150f);
-        return spriteCheck;
+    public readonly EnoFramework.CustomOption CanCallEmergencyMeeting;
+    public readonly EnoFramework.CustomOption CanOnlySwapOthers;
+    public readonly EnoFramework.CustomOption NumberOfSwaps;
+    public readonly EnoFramework.CustomOption RechargeTasksNumber;
+
+    public int UsedSwaps;
+    public bool EnableSwap;
+    public PlayerControl? FirstPlayer;
+    public PlayerControl? SecondPlayer;
+
+    public Swapper() : base(nameof(Swapper))
+    {
+        Team = Teams.Crewmate;
+        Color = new Color32(134, 55, 86, byte.MaxValue);
+
+        CanCallEmergencyMeeting = OptionsTab.CreateBool(
+            $"{Name}{nameof(CanCallEmergencyMeeting)}",
+            Colors.Cs(Color, "Can call emergency meeting"),
+            true,
+            SpawnRate);
+        CanOnlySwapOthers = OptionsTab.CreateBool(
+            $"{Name}{nameof(CanOnlySwapOthers)}",
+            Colors.Cs(Color, "Can only swap others"),
+            false,
+            SpawnRate);
+        NumberOfSwaps = OptionsTab.CreateFloatList(
+            $"{Name}{nameof(NumberOfSwaps)}",
+            Colors.Cs(Color, "Initial swap charges"),
+            0f,
+            5f,
+            1f,
+            1f,
+            SpawnRate);
+        RechargeTasksNumber = OptionsTab.CreateFloatList(
+            $"{Name}{nameof(RechargeTasksNumber)}",
+            Colors.Cs(Color, "Number of tasks needed for recharging"),
+            1f,
+            10f,
+            2f,
+            1f,
+            SpawnRate);
     }
 
-    public static void clearAndReload() {
-        swapper = null;
-        playerId1 = byte.MaxValue;
-        playerId2 = byte.MaxValue;
-        canCallEmergency = CustomOptionHolder.swapperCanCallEmergency.getBool();
-        canOnlySwapOthers = CustomOptionHolder.swapperCanOnlySwapOthers.getBool();
-        charges = Mathf.RoundToInt(CustomOptionHolder.swapperSwapsNumber.getFloat());
-        rechargeTasksNumber = Mathf.RoundToInt(CustomOptionHolder.swapperRechargeTasksNumber.getFloat());
-        rechargedTasks = Mathf.RoundToInt(CustomOptionHolder.swapperRechargeTasksNumber.getFloat());
+    public Sprite GetSwapSprite()
+    {
+        if (_swapSprite == null)
+        {
+            _swapSprite = Resources.LoadSpriteFromResources("TheOtherRoles.Resources.SwapperCheck.png", 150f);
+        }
+
+        return _swapSprite;
+    }
+
+    public override void ClearAndReload()
+    {
+        base.ClearAndReload();
+        UsedSwaps = 0;
+        EnableSwap = false;
+        FirstPlayer = null;
+        SecondPlayer = null;
     }
 }

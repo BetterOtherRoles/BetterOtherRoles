@@ -1,5 +1,4 @@
 ﻿using System;
-using Hazel;
 using Reactor.Networking.Attributes;
 using TheOtherRoles.EnoFramework.Kernel;
 using TheOtherRoles.EnoFramework.Utils;

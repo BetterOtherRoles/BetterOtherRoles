@@ -1,4 +1,6 @@
-﻿using TheOtherRoles.Customs.Roles.Neutral;
+﻿using TheOtherRoles.Customs.Roles.Impostor;
+using TheOtherRoles.Customs.Roles.Neutral;
+using TheOtherRoles.EnoFramework.Kernel;
 using UnityEngine;
 
 namespace TheOtherRoles.Customs.Modifiers;
@@ -37,8 +39,8 @@ public static class Lovers
 
     public static bool existingWithKiller()
     {
-        return existing() && (lover1 == Jackal.jackal || lover2 == Jackal.jackal
-                                                      || lover1 == Sidekick.sidekick || lover2 == Sidekick.sidekick
+        return existing() && (Singleton<Jackal>.Instance.Is(lover1) || Singleton<Jackal>.Instance.Is(lover2)
+                                                      || Singleton<Sidekick>.Instance.Is(lover1) || Singleton<Sidekick>.Instance.Is(lover2)
                                                       || lover1.Data.Role.IsImpostor || lover2.Data.Role.IsImpostor);
     }
 

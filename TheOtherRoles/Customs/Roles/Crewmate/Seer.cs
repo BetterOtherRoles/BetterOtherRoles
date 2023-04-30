@@ -1,29 +1,68 @@
 ﻿using System.Collections.Generic;
+using TheOtherRoles.EnoFramework.Kernel;
+using TheOtherRoles.EnoFramework.Utils;
 using UnityEngine;
+using Resources = TheOtherRoles.EnoFramework.Utils.Resources;
 
 namespace TheOtherRoles.Customs.Roles.Crewmate;
 
-public static class Seer {
-    public static PlayerControl seer;
-    public static Color color = new Color32(97, 178, 108, byte.MaxValue);
-    public static List<Vector3> deadBodyPositions = new List<Vector3>();
+[EnoSingleton]
+public class Seer : CustomRole
+{
+    private Sprite? _soulSprite;
 
-    public static float soulDuration = 15f;
-    public static bool limitSoulDuration = false;
-    public static int mode = 0;
+    public readonly EnoFramework.CustomOption ShowDeathFlash;
+    public readonly EnoFramework.CustomOption ShowDeathSouls;
+    public readonly EnoFramework.CustomOption LimitSoulsDuration;
+    public readonly EnoFramework.CustomOption SoulsDuration;
 
-    private static Sprite soulSprite;
-    public static Sprite getSoulSprite() {
-        if (soulSprite) return soulSprite;
-        soulSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.Soul.png", 500f);
-        return soulSprite;
+    public readonly List<Vector3> DeadBodyPositions = new();
+
+    public Seer() : base(nameof(Seer))
+    {
+        Team = Teams.Crewmate;
+        Color = new Color32(97, 178, 108, byte.MaxValue);
+
+        ShowDeathFlash = OptionsTab.CreateBool(
+            $"{Name}{nameof(ShowDeathFlash)}",
+            Colors.Cs(Color, "Show flash on player death"),
+            true,
+            SpawnRate);
+        ShowDeathSouls = OptionsTab.CreateBool(
+            $"{Name}{nameof(ShowDeathSouls)}",
+            Colors.Cs(Color, "Show souls of death players"),
+            true,
+            SpawnRate);
+        LimitSoulsDuration = OptionsTab.CreateBool(
+            $"{Name}{nameof(LimitSoulsDuration)}",
+            Colors.Cs(Color, "Limit souls duration"),
+            false,
+            ShowDeathSouls);
+        SoulsDuration = OptionsTab.CreateFloatList(
+            $"{Name}{nameof(SoulsDuration)}",
+            Colors.Cs(Color, "Souls duration"),
+            0f,
+            120f,
+            15f,
+            5f,
+            LimitSoulsDuration,
+            string.Empty,
+            "s");
     }
 
-    public static void clearAndReload() {
-        seer = null;
-        deadBodyPositions = new List<Vector3>();
-        limitSoulDuration = CustomOptionHolder.seerLimitSoulDuration.getBool();
-        soulDuration = CustomOptionHolder.seerSoulDuration.getFloat();
-        mode = CustomOptionHolder.seerMode.getSelection();
+    public Sprite GetSoulSprite()
+    {
+        if (_soulSprite == null)
+        {
+            _soulSprite = Resources.LoadSpriteFromResources("TheOtherRoles.Resources.Soul.png", 500f);
+        }
+
+        return _soulSprite;
+    }
+
+    public override void ClearAndReload()
+    {
+        base.ClearAndReload();
+        DeadBodyPositions.Clear();
     }
 }

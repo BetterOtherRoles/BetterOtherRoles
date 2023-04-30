@@ -33,7 +33,7 @@ public class Morphling : CustomRole
 
         MorphCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(MorphCooldown)}",
-            Colors.Cs(Color, $"{Name} cooldown"),
+            Cs("Morph cooldown"),
             10f,
             60f,
             30f,
@@ -43,7 +43,7 @@ public class Morphling : CustomRole
             "s");
         MorphDuration = OptionsTab.CreateFloatList(
             $"{Name}{nameof(MorphDuration)}",
-            Colors.Cs(Color, $"{Name} duration"),
+            Cs("Morph duration"),
             5f,
             60f,
             30f,

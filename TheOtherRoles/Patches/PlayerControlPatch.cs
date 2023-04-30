@@ -871,12 +871,7 @@ namespace TheOtherRoles.Patches
                     if (Jackal.jackal == p && Jackal.wasTeamRed) continue;
                     if (Sidekick.sidekick == p && Sidekick.wasTeamRed) continue;
                     if (Lovers.getPartner(BountyHunter.bountyHunter) == p) continue;
-                    if (!p.Data.IsDead && !p.Data.Disconnected && p != p.Data.Role.IsImpostor && p != Spy.spy &&
-                        (!TORMapOptions.shieldFirstKill || p != TORMapOptions.firstKillPlayer) &&
-                        (p != Sidekick.sidekick || !Sidekick.wasTeamRed) &&
-                        (p != Jackal.jackal || !Jackal.wasTeamRed) && (p != Mini.mini || Mini.isGrownUp()) &&
-                        (Lovers.getPartner(BountyHunter.bountyHunter) == null ||
-                         p != Lovers.getPartner(BountyHunter.bountyHunter))) 
+                    possibleTargets.Add(p);
                 }
 
                 BountyHunter.bounty = possibleTargets[TheOtherRoles.rnd.Next(0, possibleTargets.Count)];

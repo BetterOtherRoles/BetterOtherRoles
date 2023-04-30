@@ -29,6 +29,7 @@ public abstract class CustomRole
     }
 
     public readonly string Name;
+    public string? DisplayName;
     public Color Color = Palette.CrewmateBlue;
     public Teams Team = Teams.Crewmate;
     public bool CanTarget = false;
@@ -36,7 +37,9 @@ public abstract class CustomRole
     public PlayerControl? Player;
     public PlayerControl? CurrentTarget;
     public EnoFramework.CustomOption? SpawnRate { get; private set; }
-    protected List<Type> IncompatibleRoles = new();
+    protected readonly List<Type> IncompatibleRoles = new();
+
+    public string NameText => DisplayName ?? Name;
 
     protected EnoFramework.CustomOption.Tab OptionsTab => Team switch
     {
@@ -49,7 +52,7 @@ public abstract class CustomRole
     public bool IsImpostor => Team == Teams.Impostor;
     public bool IsNeutral => Team == Teams.Neutral;
 
-    public CustomRole(string name, bool hasSpawnRate = true)
+    protected CustomRole(string name, bool hasSpawnRate = true)
     {
         Name = name;
         if (!hasSpawnRate) return;
@@ -69,6 +72,21 @@ public abstract class CustomRole
     public bool Is(PlayerControl player)
     {
         return Player == player;
+    }
+
+    public bool IsLocalPlayer()
+    {
+        return Player != null && Is(CachedPlayer.LocalPlayer);
+    }
+
+    public bool IsLocalPlayerAndAlive()
+    {
+        return IsLocalPlayer() && !CachedPlayer.LocalPlayer.Data.IsDead;
+    }
+
+    public string Cs(string text)
+    {
+        return Colors.Cs(Color, text);
     }
 
     public void SetPlayer(PlayerControl player)

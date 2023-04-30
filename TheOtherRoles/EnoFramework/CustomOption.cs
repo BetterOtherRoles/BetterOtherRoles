@@ -59,34 +59,25 @@ public class CustomOption
 
     public static implicit operator int(CustomOption option)
     {
-        return (int)(float)option;
+        return Mathf.RoundToInt((float)option);
     }
 
     public static implicit operator bool(CustomOption option)
     {
-        return option.Type switch
+        switch (option.Type)
         {
-            OptionType.Boolean => option.SelectionIndex == 1,
-            OptionType.StringList => ((string)option).Length > 0,
-            OptionType.FloatList => (float)option > 0f,
-            _ => throw new KernelException("Error: CustomSetting type out of enum SettingType range")
-        };
-    }
-
-    public static string Cs(Color c, string s)
-    {
-        return $"<color=#{ToByte(c.r):X2}{ToByte(c.g):X2}{ToByte(c.b):X2}{ToByte(c.a):X2}>{s}</color>";
-    }
-
-    private static byte ToByte(float f)
-    {
-        f = Mathf.Clamp01(f);
-        return (byte)(f * 255);
+            case OptionType.Boolean:
+                return option.SelectionIndex == 1;
+            case OptionType.StringList:
+            case OptionType.FloatList:
+            default:
+                return option.SelectionIndex > 0;
+        }
     }
 
     public readonly string Key;
     public readonly string Name;
-    public readonly List<string> StringSelections = new();
+    public readonly List<string> StringSelections;
     public readonly List<float>? FloatSelections;
     public int SelectionIndex;
     public OptionBehaviour? OptionBehaviour;

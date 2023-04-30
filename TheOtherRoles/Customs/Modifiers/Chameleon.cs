@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using AmongUs.Data;
 using TheOtherRoles.Customs.Roles.Impostor;
+using TheOtherRoles.EnoFramework.Kernel;
 using UnityEngine;
 
 namespace TheOtherRoles.Customs.Modifiers;
@@ -48,7 +49,7 @@ public static class Chameleon
     {
         foreach (var chameleonPlayer in chameleon)
         {
-            if (chameleonPlayer == Ninja.ninja && Ninja.isInvisble) continue; // Dont make Ninja visible...
+            if (Singleton<Ninja>.Instance.Is(chameleonPlayer) && Singleton<Ninja>.Instance.IsInvisible) continue; // Dont make Ninja visible...
             // check movement by animation
             PlayerPhysics playerPhysics = chameleonPlayer.MyPhysics;
             var currentPhysicsAnim = playerPhysics.Animations.Animator.GetCurrentAnimation();
