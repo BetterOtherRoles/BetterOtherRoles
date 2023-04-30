@@ -77,6 +77,9 @@ public static class Rpc
         // SecurityGuard
         SecurityGuardSealVent,
         SecurityGuardPlaceCamera,
+        
+        // Trapper
+        TrapperPlaceTrap,
     }
 
     public static void SetInvisibility(PlayerControl player, bool visible)

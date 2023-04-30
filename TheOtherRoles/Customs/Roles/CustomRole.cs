@@ -57,7 +57,7 @@ public abstract class CustomRole
         Name = name;
         if (!hasSpawnRate) return;
         SpawnRate = OptionsTab.CreateFloatList(
-            $"{Name}SpawnRate",
+            $"{Name}{nameof(SpawnRate)}",
             Colors.Cs(Color, "Spawn rate"),
             0f,
             100f,

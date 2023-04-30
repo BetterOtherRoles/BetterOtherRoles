@@ -5,30 +5,77 @@ using TheOtherRoles.Customs.Modifiers;
 using TheOtherRoles.Customs.Roles.Impostor;
 using TheOtherRoles.Customs.Roles.Neutral;
 using TheOtherRoles.EnoFramework.Kernel;
+using TheOtherRoles.Objects;
+using TheOtherRoles.Players;
+using TheOtherRoles.Utilities;
 using UnityEngine;
+using Resources = TheOtherRoles.EnoFramework.Utils.Resources;
 
 namespace TheOtherRoles.Customs.Roles.Crewmate;
 
 [EnoSingleton]
 public class Medium : CustomRole
 {
-    public static PlayerControl medium;
-    public static DeadPlayer target;
-    public static DeadPlayer soulTarget;
-    public static Color color = new Color32(98, 120, 115, byte.MaxValue);
-    public static List<Tuple<DeadPlayer, Vector3>> deadBodies = new List<Tuple<DeadPlayer, Vector3>>();
-    public static List<Tuple<DeadPlayer, Vector3>> featureDeadBodies = new List<Tuple<DeadPlayer, Vector3>>();
-    public static List<SpriteRenderer> souls = new List<SpriteRenderer>();
-    public static DateTime meetingStartTime = DateTime.UtcNow;
+    private Sprite? _soulSprite;
+    private Sprite? _questionSprite;
 
-    public static float cooldown = 30f;
-    public static float duration = 3f;
-    public static bool oneTimeUse = false;
-    public static float chanceAdditionalInfo = 0f;
+    private CustomButton? _questionButton;
 
-    private static Sprite soulSprite;
+    public readonly EnoFramework.CustomOption QuestionCooldown;
+    public readonly EnoFramework.CustomOption QuestionDuration;
+    public readonly EnoFramework.CustomOption OneQuestionPerSoul;
+    public readonly EnoFramework.CustomOption AdditionalInfoChance;
 
-    enum SpecialMediumInfo
+    public DeadPlayer? DeadTarget;
+    public DeadPlayer? SoulTarget;
+    public readonly List<Tuple<DeadPlayer, Vector3>> DeadBodies = new();
+    public readonly List<Tuple<DeadPlayer, Vector3>> FeatureDeadBodies = new();
+    public readonly List<SpriteRenderer> Souls = new();
+    public DateTime MeetingStartTime = DateTime.UtcNow;
+
+    public Medium() : base(nameof(Medium))
+    {
+        Team = Teams.Crewmate;
+        Color = new Color32(98, 120, 115, byte.MaxValue);
+
+        QuestionCooldown = OptionsTab.CreateFloatList(
+            $"{Name}{nameof(QuestionCooldown)}",
+            Cs("Questioning cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        QuestionDuration = OptionsTab.CreateFloatList(
+            $"{Name}{nameof(QuestionDuration)}",
+            Cs("Questioning duration"),
+            0f,
+            15f,
+            3f,
+            1f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        OneQuestionPerSoul = OptionsTab.CreateBool(
+            $"{Name}{nameof(OneQuestionPerSoul)}",
+            Cs("Each soul can only be questionned once"),
+            false,
+            SpawnRate);
+        AdditionalInfoChance = OptionsTab.CreateFloatList(
+            $"{Name}{nameof(AdditionalInfoChance)}",
+            Cs("Chance to have additional information"),
+            0f,
+            100f,
+            0f,
+            10f,
+            null,
+            string.Empty,
+            "%");
+    }
+
+    private enum SpecialMediumInfo
     {
         SheriffSuicide,
         ThiefSuicide,
@@ -36,162 +83,303 @@ public class Medium : CustomRole
         PassiveLoverSuicide,
         LawyerKilledByClient,
         JackalKillsSidekick,
-        ImpostorTeamkill,
-        SubmergedO2,
+        ImpostorTeamKill,
         WarlockSuicide,
         BodyCleaned,
     }
 
-    public static Sprite getSoulSprite()
+    public Sprite GetSoulSprite()
     {
-        if (soulSprite) return soulSprite;
-        soulSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.Soul.png", 500f);
-        return soulSprite;
+        if (_soulSprite == null)
+        {
+            _soulSprite = Resources.LoadSpriteFromResources("TheOtherRoles.Resources.Soul.png", 500f);
+        }
+
+        return _soulSprite;
     }
 
-    private static Sprite question;
-
-    public static Sprite getQuestionSprite()
+    public Sprite GetQuestionSprite()
     {
-        if (question) return question;
-        question = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.MediumButton.png", 115f);
-        return question;
+        if (_questionSprite == null)
+        {
+            _questionSprite = Resources.LoadSpriteFromResources("TheOtherRoles.Resources.MediumButton.png", 115f);
+        }
+
+        return _questionSprite;
     }
 
-    public static void clearAndReload()
+    public override void CreateCustomButtons(HudManager hudManager)
     {
-        medium = null;
-        target = null;
-        soulTarget = null;
-        deadBodies = new List<Tuple<DeadPlayer, Vector3>>();
-        featureDeadBodies = new List<Tuple<DeadPlayer, Vector3>>();
-        souls = new List<SpriteRenderer>();
-        meetingStartTime = DateTime.UtcNow;
-        cooldown = CustomOptionHolder.mediumCooldown.getFloat();
-        duration = CustomOptionHolder.mediumDuration.getFloat();
-        oneTimeUse = CustomOptionHolder.mediumOneTimeUse.getBool();
-        chanceAdditionalInfo = CustomOptionHolder.mediumChanceAdditionalInfo.getSelection() / 10f;
+        base.CreateCustomButtons(hudManager);
+        _questionButton = new CustomButton(
+            OnQuestionButtonClick,
+            IsLocalPlayerAndAlive,
+            CouldUseQuestionButton,
+            ResetQuestionButton,
+            GetQuestionSprite(),
+            CustomButton.ButtonPositions.lowerRowRight,
+            hudManager,
+            "ActionQuaternary",
+            true,
+            QuestionDuration,
+            OnQuestionButtonEffectEnd
+        );
     }
 
-    public static string getInfo(PlayerControl target, PlayerControl killer)
+    private void OnQuestionButtonEffectEnd()
     {
-        string msg = "";
+        if (_questionButton == null) return;
+        _questionButton.Timer = _questionButton.MaxTimer;
+        if (DeadTarget == null || DeadTarget.player == null) return;
+        var msg = GetInfo(DeadTarget.player, DeadTarget.killerIfExisting);
+        FastDestroyableSingleton<HudManager>.Instance.Chat.AddChat(CachedPlayer.LocalPlayer.PlayerControl, msg);
 
-        List<SpecialMediumInfo> infos = new List<SpecialMediumInfo>();
+        // Ghost Info
+        var writer = AmongUsClient.Instance.StartRpcImmediately(
+            CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareGhostInfo,
+            Hazel.SendOption.Reliable, -1);
+        writer.Write(DeadTarget.player.PlayerId);
+        writer.Write((byte)RPCProcedure.GhostInfoTypes.MediumInfo);
+        writer.Write(msg);
+        AmongUsClient.Instance.FinishRpcImmediately(writer);
+
+        // Remove soul
+        if (OneQuestionPerSoul)
+        {
+            var closestDistance = float.MaxValue;
+            SpriteRenderer? target = null;
+
+            foreach ((DeadPlayer db, Vector3 ps) in DeadBodies)
+            {
+                if (db != DeadTarget) continue;
+                var deadBody = Tuple.Create(db, ps);
+                DeadBodies.Remove(deadBody);
+                break;
+            }
+
+            foreach (var rend in Souls)
+            {
+                var distance = Vector2.Distance(rend.transform.position,
+                    CachedPlayer.LocalPlayer.PlayerControl.GetTruePosition());
+                if (!(distance < closestDistance)) continue;
+                closestDistance = distance;
+                target = rend;
+            }
+
+            FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(5f,
+                new Action<float>((p) =>
+                {
+                    if (target != null)
+                    {
+                        var tmp = target.color;
+                        tmp.a = Mathf.Clamp01(1 - p);
+                        target.color = tmp;
+                    }
+
+                    if (p == 1f && target != null && target.gameObject != null)
+                        UnityEngine.Object.Destroy(target.gameObject);
+                })));
+            if (target != null) Souls.Remove(target);
+        }
+
+        SoundEffectsManager.stop("mediumAsk");
+    }
+
+    private void ResetQuestionButton()
+    {
+        if (_questionButton == null) return;
+        _questionButton.Timer = _questionButton.MaxTimer;
+        _questionButton.isEffectActive = false;
+        SoulTarget = null;
+    }
+
+    private bool CouldUseQuestionButton()
+    {
+        if (_questionButton == null) return false;
+        if (_questionButton.isEffectActive && DeadTarget != SoulTarget)
+        {
+            SoulTarget = null;
+            _questionButton.Timer = 0f;
+            _questionButton.isEffectActive = false;
+        }
+
+        return DeadTarget != null && CachedPlayer.LocalPlayer.PlayerControl.CanMove;
+    }
+
+    private void OnQuestionButtonClick()
+    {
+        if (DeadTarget == null || _questionButton == null) return;
+        SoulTarget = DeadTarget;
+        _questionButton.HasEffect = true;
+        SoundEffectsManager.play("mediumAsk");
+    }
+
+    public string GetInfo(PlayerControl target, PlayerControl killer)
+    {
+        var msg = "";
+        if (DeadTarget == null) return msg;
+
+        var infos = new List<SpecialMediumInfo>();
         // collect fitting death info types.
         // suicides:
         if (killer == target)
         {
-            if (target == Sheriff.sheriff || target == Sheriff.formerSheriff)
-                infos.Add(SpecialMediumInfo.SheriffSuicide);
-            if (target == Lovers.lover1 || target == Lovers.lover2) infos.Add(SpecialMediumInfo.PassiveLoverSuicide);
-            if (target == Thief.thief) infos.Add(SpecialMediumInfo.ThiefSuicide);
-            if (target == Warlock.warlock) infos.Add(SpecialMediumInfo.WarlockSuicide);
-        }
-        else
-        {
-            if (target == Lovers.lover1 || target == Lovers.lover2) infos.Add(SpecialMediumInfo.ActiveLoverDies);
-            if (target.Data.Role.IsImpostor && killer.Data.Role.IsImpostor && Thief.formerThief != killer)
-                infos.Add(SpecialMediumInfo.ImpostorTeamkill);
-        }
-
-        if (target == Sidekick.sidekick &&
-            (killer == Jackal.jackal || Jackal.formerJackals.Any(x => x.PlayerId == killer.PlayerId)))
-            infos.Add(SpecialMediumInfo.JackalKillsSidekick);
-        if (target == Lawyer.lawyer && killer == Lawyer.target) infos.Add(SpecialMediumInfo.LawyerKilledByClient);
-        if (Medium.target.wasCleaned) infos.Add(SpecialMediumInfo.BodyCleaned);
-
-        if (infos.Count > 0)
-        {
-            var selectedInfo = infos[TheOtherRoles.rnd.Next(infos.Count)];
-            switch (selectedInfo)
+            if (Singleton<Sheriff>.Instance.Is(target) || Singleton<Deputy>.Instance.Is(target))
             {
-                case SpecialMediumInfo.SheriffSuicide:
-                    msg = "Yikes, that Sheriff shot backfired.";
-                    break;
-                case SpecialMediumInfo.WarlockSuicide:
-                    msg = "MAYBE I cursed the person next to me and killed myself. Oops.";
-                    break;
-                case SpecialMediumInfo.ThiefSuicide:
-                    msg = "I tried to steal the gun from their pocket, but they were just happy to see me.";
-                    break;
-                case SpecialMediumInfo.ActiveLoverDies:
-                    msg = "I wanted to get out of this toxic relationship anyways.";
-                    break;
-                case SpecialMediumInfo.PassiveLoverSuicide:
-                    msg = "The love of my life died, thus with a kiss I die.";
-                    break;
-                case SpecialMediumInfo.LawyerKilledByClient:
-                    msg = "My client killed me. Do I still get paid?";
-                    break;
-                case SpecialMediumInfo.JackalKillsSidekick:
-                    msg = "First they sidekicked me, then they killed me. At least I don't need to do tasks anymore.";
-                    break;
-                case SpecialMediumInfo.ImpostorTeamkill:
-                    msg = "I guess they confused me for the Spy, is there even one?";
-                    break;
-                case SpecialMediumInfo.BodyCleaned:
-                    msg = "Is my dead body some kind of art now or... aaand it's gone.";
-                    break;
+                infos.Add(SpecialMediumInfo.SheriffSuicide);
+            }
+
+            if (target == Lovers.lover1 || target == Lovers.lover2)
+            {
+                infos.Add(SpecialMediumInfo.PassiveLoverSuicide);
+            }
+
+            if (Singleton<Thief>.Instance.Is(target))
+            {
+                infos.Add(SpecialMediumInfo.ThiefSuicide);
+            }
+
+            if (Singleton<Warlock>.Instance.Is(target))
+            {
+                infos.Add(SpecialMediumInfo.WarlockSuicide);
             }
         }
         else
         {
-            int randomNumber = TheOtherRoles.rnd.Next(4);
-            string typeOfColor = Helpers.isLighterColor(Medium.target.killerIfExisting.Data.DefaultOutfit.ColorId)
-                ? "lighter"
-                : "darker";
-            float timeSinceDeath = ((float)(Medium.meetingStartTime - Medium.target.timeOfDeath).TotalMilliseconds);
+            if (target == Lovers.lover1 || target == Lovers.lover2)
+            {
+                infos.Add(SpecialMediumInfo.ActiveLoverDies);
+            }
 
-            if (randomNumber == 0)
-                msg = "If my role hasn't been saved, there's no " +
-                      RoleInfo.GetRolesString(Medium.target.player, false) + " in the game anymore.";
-            else if (randomNumber == 1) msg = "I'm not sure, but I guess a " + typeOfColor + " color killed me.";
-            else if (randomNumber == 2)
-                msg = "If I counted correctly, I died " + Math.Round(timeSinceDeath / 1000) +
-                      "s before the next meeting started.";
-            else
-                msg = "It seems like my killer was the " +
-                      RoleInfo.GetRolesString(Medium.target.killerIfExisting, false, false, true) + ".";
+            if (target.Data.Role.IsImpostor && killer.Data.Role.IsImpostor && !Singleton<Thief>.Instance.Is(target))
+            {
+                infos.Add(SpecialMediumInfo.ImpostorTeamKill);
+            }
         }
 
-        if (TheOtherRoles.rnd.NextDouble() < chanceAdditionalInfo)
+        if ((Singleton<Sidekick>.Instance.Is(target) || Singleton<Jackal>.Instance.FutureSidekick == target) &&
+            Singleton<Jackal>.Instance.Is(killer))
         {
-            int count = 0;
-            string condition = "";
+            infos.Add(SpecialMediumInfo.JackalKillsSidekick);
+        }
+
+        if (Singleton<Lawyer>.Instance.Is(target) && Singleton<Lawyer>.Instance.Target == killer)
+        {
+            infos.Add(SpecialMediumInfo.LawyerKilledByClient);
+        }
+
+        if (DeadTarget.wasCleaned)
+        {
+            infos.Add(SpecialMediumInfo.BodyCleaned);
+        }
+
+        if (infos.Count > 0)
+        {
+            var selectedInfo = infos[TheOtherRoles.rnd.Next(infos.Count)];
+            msg = selectedInfo switch
+            {
+                SpecialMediumInfo.SheriffSuicide => "Yikes, that Sheriff/Deputy shot backfired.",
+                SpecialMediumInfo.WarlockSuicide => "MAYBE I cursed the person next to me and killed myself. Oops.",
+                SpecialMediumInfo.ThiefSuicide =>
+                    "I tried to steal the gun from their pocket, but they were just happy to see me.",
+                SpecialMediumInfo.ActiveLoverDies => "I wanted to get out of this toxic relationship anyways.",
+                SpecialMediumInfo.PassiveLoverSuicide => "The love of my life died, thus with a kiss I die.",
+                SpecialMediumInfo.LawyerKilledByClient => "My client killed me. Do I still get paid?",
+                SpecialMediumInfo.JackalKillsSidekick =>
+                    "First they sidekicked me, then they killed me. At least I don't need to do tasks anymore.",
+                SpecialMediumInfo.ImpostorTeamKill => "I guess they confused me for the Spy, is there even one?",
+                SpecialMediumInfo.BodyCleaned => "Is my dead body some kind of art now or... aaand it's gone.",
+                _ => msg
+            };
+        }
+        else
+        {
+            var randomNumber = TheOtherRoles.rnd.Next(4);
+            var typeOfColor = Helpers.isLighterColor(DeadTarget.killerIfExisting.Data.DefaultOutfit.ColorId)
+                ? "lighter"
+                : "darker";
+            var timeSinceDeath = (float)(MeetingStartTime - DeadTarget.timeOfDeath).TotalMilliseconds;
+            var targetRole = GetRoleByPlayer(DeadTarget.player);
+            var targetRoleName = targetRole != null
+                ? targetRole.NameText
+                : DeadTarget.player.Data.Role.IsImpostor
+                    ? "impostor"
+                    : "crewmate";
+            var killerRole = DeadTarget.killerIfExisting != null ? GetRoleByPlayer(DeadTarget.killerIfExisting) : null;
+            var killerRoleName = DeadTarget.killerIfExisting == null
+                ? "unknown"
+                : killerRole != null
+                    ? killerRole.NameText
+                    : DeadTarget.killerIfExisting.Data.Role.IsImpostor
+                        ? "impostor"
+                        : "crewmate";
+
+            if (randomNumber == 0)
+            {
+                msg = $"If my role hasn't been saved, there's no {targetRoleName} in the game anymore.";
+            }
+            else if (randomNumber == 1)
+            {
+                msg = $"I'm not sure, but I guess a {typeOfColor} color killed me.";
+            }
+            else if (randomNumber == 2)
+            {
+                msg =
+                    $"If I counted correctly, I died {Math.Round(timeSinceDeath / 1000)}s before the next meeting started.";
+            }
+            else
+            {
+                msg = $"It seems like my killer was the {killerRoleName}.";
+            }
+        }
+
+        if (TheOtherRoles.rnd.Next(100) <= AdditionalInfoChance)
+        {
+            int count;
+            string condition;
             var alivePlayersList = PlayerControl.AllPlayerControls.ToArray().Where(pc => !pc.Data.IsDead);
             switch (TheOtherRoles.rnd.Next(3))
             {
                 case 0:
-                    count = alivePlayersList.Count(pc => pc.Data.Role.IsImpostor ||
-                                                         new List<RoleInfo>()
-                                                             {
-                                                                 RoleInfo.jackal, RoleInfo.sidekick, RoleInfo.sheriff,
-                                                                 RoleInfo.thief
-                                                             }
-                                                             .Contains(RoleInfo.getRoleInfoForPlayer(pc, false)
-                                                                 .FirstOrDefault()));
-                    condition = "killer" + (count == 1 ? "" : "s");
+                    count = alivePlayersList.Count(pc =>
+                        pc.Data.Role.IsImpostor || Singleton<Jackal>.Instance.Is(pc) ||
+                        Singleton<Sheriff>.Instance.Is(pc) || (Singleton<Deputy>.Instance.Is(pc) &&
+                                                               Singleton<Deputy>.Instance.KillButtonEnabled) ||
+                        Singleton<Thief>.Instance.Is(pc));
+                    condition = $"killer{(count is 0 or > 1 ? "s" : "")}";
                     break;
                 case 1:
-                    count = alivePlayersList.Where(Helpers.roleCanUseVents).Count();
-                    condition = "player" + (count == 1 ? "" : "s") + " who can use vents";
+                    count = alivePlayersList.Count(pc =>
+                        pc.Data.Role.IsImpostor || Singleton<Engineer>.Instance.Is(pc) ||
+                        (Singleton<Jackal>.Instance.Is(pc) && Singleton<Jackal>.Instance.CanUseVents) ||
+                        (Singleton<Thief>.Instance.Is(pc) && Singleton<Thief>.Instance.CanUseVents) ||
+                        (Singleton<Vulture>.Instance.Is(pc) && Singleton<Vulture>.Instance.CanUseVents) ||
+                        (Singleton<Spy>.Instance.Is(pc) && Singleton<Spy>.Instance.CanEnterVents));
+                    condition = $"player{(count is 0 or > 1 ? "s" : "")} who can use vents";
                     break;
-                case 2:
-                    count = alivePlayersList
-                        .Count(pc => Helpers.isNeutral(pc) && pc != Jackal.jackal && pc != Sidekick.sidekick &&
-                                     pc != Thief.thief);
-                    condition = "player" + (count == 1 ? "" : "s") + " who " + (count == 1 ? "is" : "are") +
-                                " neutral but cannot kill";
-                    break;
-                case 3:
-                    //count = alivePlayersList.Where(pc =>
+                default:
+                    count = alivePlayersList.Count(pc =>
+                        GetRoleByPlayer(pc)?.IsNeutral == true && !Singleton<Jackal>.Instance.Is(pc) &&
+                        Singleton<Thief>.Instance.Is(pc));
+                    condition =
+                        $"player{(count is 0 or > 1 ? "s" : "")} who {(count is 0 or > 1 ? "are" : "is")} neutral but cannot kill";
                     break;
             }
 
             msg += $"\nWhen you asked, {count} " + condition + (count == 1 ? " was" : " were") + " still alive";
         }
 
-        return Medium.target.player.Data.PlayerName + "'s Soul:\n" + msg;
+        return DeadTarget.player.Data.PlayerName + "'s Soul:\n" + msg;
+    }
+
+    public override void ClearAndReload()
+    {
+        base.ClearAndReload();
+        DeadTarget = null;
+        SoulTarget = null;
+        DeadBodies.Clear();
+        FeatureDeadBodies.Clear();
+        Souls.Clear();
+        MeetingStartTime = DateTime.UtcNow;
     }
 }
