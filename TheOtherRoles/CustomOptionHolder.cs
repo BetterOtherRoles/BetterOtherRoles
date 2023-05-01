@@ -448,7 +448,7 @@ namespace TheOtherRoles {
             whispererCooldown = CustomOption.Create(8001, Types.Impostor, "Ability Cooldown", 20f, 10f, 60f, 2.5f, whispererSpawnRate);
             whispererDelay = CustomOption.Create(8002, Types.Impostor, "Ability Effect Delay", 5f, 3f, 15f, 1f, whispererSpawnRate);
             
-            undertakerSpawnRate = CustomOption.Create(8010, Types.Impostor, cs(Undertaker.color, "Undertaker"), rates, null, true);
+            undertakerSpawnRate = CustomOption.Create(8010, Types.Impostor, cs(Undertaker.color, "[BETA] Undertaker"), rates, null, true);
             undertakerAbilityCooldown = CustomOption.Create(8011, Types.Impostor, "Ability Cooldown", 20f, 10f, 60f, 2.5f, undertakerSpawnRate);
             undertakerDragSpeedModifier = CustomOption.Create(8012, Types.Impostor, "Speed Modifier While Dragging", rates, undertakerSpawnRate);
             undertakerDragDistance = CustomOption.Create(8013, Types.Impostor, "Undertaker Drag Distance", new string[] { "Short", "Medium", "Long" }, undertakerSpawnRate);

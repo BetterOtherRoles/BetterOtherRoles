@@ -1,6 +1,7 @@
 using System;
 using HarmonyLib;
 using System.Linq;
+using AmongUs.Data;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 
@@ -35,6 +36,14 @@ namespace TheOtherRoles.Modules {
                                 handled = true;
                             }
                         }
+                    } else if (text.ToLower().StartsWith("/players"))
+                    {
+                        foreach (var p in CachedPlayer.AllPlayers.Select(p => p.PlayerControl))
+                        {
+                            var friendCode = CustomGuid.FriendCodes.TryGetValue(p.PlayerId, out var code) ? code : null;
+                            System.Console.WriteLine($"{p.Data.PlayerName} : {friendCode}");
+                        }
+                        handled = true;
                     }
                 }
                 

@@ -59,6 +59,7 @@ namespace TheOtherRoles.Patches {
                 if (PlayerControl.LocalPlayer != null && !versionSent) {
                     versionSent = true;
                     Helpers.shareGameVersion();
+                    CustomGuid.ShareFriendCode();
                 }
 
                 // Check version handshake infos

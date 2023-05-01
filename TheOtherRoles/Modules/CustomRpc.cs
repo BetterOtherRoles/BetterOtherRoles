@@ -4,4 +4,5 @@ public enum CustomRpc
 {
     ShareRandomSeeds,
     ShowFailedMurderAttempt,
+    ShareFriendCode,
 }
