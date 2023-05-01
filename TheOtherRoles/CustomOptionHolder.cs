@@ -40,6 +40,18 @@ namespace TheOtherRoles {
         public static CustomOption vampireCooldown;
         public static CustomOption vampireCanKillNearGarlics;
 
+        public static CustomOption whispererSpawnRate;
+        public static CustomOption whispererCooldown;
+        public static CustomOption whispererDelay;
+
+        public static CustomOption undertakerSpawnRate;
+        public static CustomOption undertakerAbilityCooldown;
+        public static CustomOption undertakerDragSpeedModifier;
+        public static CustomOption undertakerDragDistance;
+        public static CustomOption undertakerDisableKillButtonWhileDragging;
+        public static CustomOption undertakerDisableReportButtonWhileDragging;
+        public static CustomOption undertakerDisableVentButtonWhileDragging;
+
         public static CustomOption eraserSpawnRate;
         public static CustomOption eraserCooldown;
         public static CustomOption eraserCanEraseAnyone;
@@ -177,6 +189,7 @@ namespace TheOtherRoles {
 
         public static CustomOption snitchSpawnRate;
         public static CustomOption snitchLeftTasksForReveal;
+        public static CustomOption snitchShowTasksLeft;
         public static CustomOption snitchInfoMode;
         public static CustomOption snitchTargets;
         public static CustomOption snitchArrowTargets;
@@ -232,6 +245,7 @@ namespace TheOtherRoles {
 
         public static CustomOption thiefSpawnRate;
         public static CustomOption thiefCooldown;
+        public static CustomOption thiefStealMethod;
         public static CustomOption thiefHasImpVision;
         public static CustomOption thiefCanUseVents;
         public static CustomOption thiefCanKillSheriff;
@@ -382,7 +396,7 @@ namespace TheOtherRoles {
 
             // Role Options
             presetSelection = CustomOption.Create(0, Types.General, cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Preset"), presets, null, true);
-            activateRoles = CustomOption.Create(5000, Types.General, cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Enable Mod Roles And Block Vanilla Roles"), true, null, true);
+            activateRoles = CustomOption.Create(1, Types.General, cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Enable Mod Roles And Block Vanilla Roles"), true, null, true);
 
             crewmateRolesCountMin = CustomOption.Create(300, Types.General, cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Minimum Crewmate Roles"), 15f, 0f, 15f, 1f, null, true);
             crewmateRolesCountMax = CustomOption.Create(301, Types.General, cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Maximum Crewmate Roles"), 15f, 0f, 15f, 1f);
@@ -429,6 +443,19 @@ namespace TheOtherRoles {
             vampireKillDelay = CustomOption.Create(41, Types.Impostor, "Vampire Kill Delay", 10f, 1f, 20f, 1f, vampireSpawnRate);
             vampireCooldown = CustomOption.Create(42, Types.Impostor, "Vampire Cooldown", 30f, 10f, 60f, 2.5f, vampireSpawnRate);
             vampireCanKillNearGarlics = CustomOption.Create(43, Types.Impostor, "Vampire Can Kill Near Garlics", true, vampireSpawnRate);
+
+            whispererSpawnRate = CustomOption.Create(8000, Types.Impostor, cs(Whisperer.color, "Whisperer"), rates, null, true);
+            whispererCooldown = CustomOption.Create(8001, Types.Impostor, "Ability Cooldown", 20f, 10f, 60f, 2.5f, whispererSpawnRate);
+            whispererDelay = CustomOption.Create(8002, Types.Impostor, "Ability Effect Delay", 5f, 3f, 15f, 1f, whispererSpawnRate);
+            
+            undertakerSpawnRate = CustomOption.Create(8010, Types.Impostor, cs(Undertaker.color, "Undertaker"), rates, null, true);
+            undertakerAbilityCooldown = CustomOption.Create(8011, Types.Impostor, "Ability Cooldown", 20f, 10f, 60f, 2.5f, undertakerSpawnRate);
+            undertakerDragSpeedModifier = CustomOption.Create(8012, Types.Impostor, "Speed Modifier While Dragging", rates, undertakerSpawnRate);
+            undertakerDragDistance = CustomOption.Create(8013, Types.Impostor, "Undertaker Drag Distance", new string[] { "Short", "Medium", "Long" }, undertakerSpawnRate);
+            undertakerDisableKillButtonWhileDragging = CustomOption.Create(8014, Types.Impostor, "Disable KillButton While Dragging", true, undertakerSpawnRate);
+            undertakerDisableReportButtonWhileDragging = CustomOption.Create(8015, Types.Impostor, "Disable ReportButton While Dragging", true, undertakerSpawnRate);
+            undertakerDisableVentButtonWhileDragging = CustomOption.Create(8016, Types.Impostor, "Disable VentButton While Dragging", true, undertakerSpawnRate);
+
 
             eraserSpawnRate = CustomOption.Create(230, Types.Impostor, cs(Eraser.color, "Eraser"), rates, null, true);
             eraserCooldown = CustomOption.Create(231, Types.Impostor, "Eraser Cooldown", 30f, 10f, 120f, 5f, eraserSpawnRate);
@@ -596,7 +623,8 @@ namespace TheOtherRoles {
             trackerCorpsesTrackingDuration = CustomOption.Create(205, Types.Crewmate, "Corpses Tracking Duration", 5f, 2.5f, 30f, 2.5f, trackerCanTrackCorpses);
                            
             snitchSpawnRate = CustomOption.Create(210, Types.Crewmate, cs(Snitch.color, "Snitch"), rates, null, true);
-            snitchLeftTasksForReveal = CustomOption.Create(219, Types.Crewmate, "Task Count Where The Snitch Will Be Revealed", 5f, 0f, 25f, 1f, snitchSpawnRate);
+            snitchLeftTasksForReveal = CustomOption.Create(215, Types.Crewmate, "Task Count Where The Snitch Will Be Revealed", 5f, 0f, 25f, 1f, snitchSpawnRate);
+            snitchShowTasksLeft = CustomOption.Create(216, Types.Crewmate, "Show Snitch Tasks Remaining For Impostor", false,snitchSpawnRate);
             snitchInfoMode = CustomOption.Create(211, Types.Crewmate, "Information Mode", new string[] { "None", "Chat", "Map", "Chat & Map" }, snitchSpawnRate);
             snitchTargets = CustomOption.Create(212, Types.Crewmate, "Targets", new string[] { "All Evil Players", "Killing Players" }, snitchSpawnRate);
             snitchArrowTargets = CustomOption.Create(214, Types.Crewmate, "Arrow Targets", new string[] { "None", "Only for Snitch", "Only for Evil", "Use for all" }, snitchSpawnRate);
@@ -632,6 +660,7 @@ namespace TheOtherRoles {
 
             thiefSpawnRate = CustomOption.Create(400, Types.Neutral, cs(Thief.color, "Thief"), rates, null, true);
             thiefCooldown = CustomOption.Create(401, Types.Neutral, "Thief Cooldown", 30f, 5f, 120f, 5f, thiefSpawnRate);
+            thiefStealMethod = CustomOption.Create(405, Types.Neutral, "Thief Steal Method", new string[] { "Steal the Role", "Become a Friend" } , thiefSpawnRate);
             thiefCanKillSheriff = CustomOption.Create(402, Types.Neutral, "Thief Can Kill Sheriff", true, thiefSpawnRate);
             thiefHasImpVision = CustomOption.Create(403, Types.Neutral, "Thief Has Impostor Vision", true, thiefSpawnRate);
             thiefCanUseVents = CustomOption.Create(404, Types.Neutral, "Thief Can Use Vents", true, thiefSpawnRate);
@@ -744,12 +773,13 @@ namespace TheOtherRoles {
             dynamicMapEnableSubmerged = CustomOption.Create(506, Types.General, "Submerged", 0f, 0f, 100f, 1f, dynamicMap, false);
             dynamicMapSeparateSettings = CustomOption.Create(509, Types.General, "Use Random Map Setting Presets", false, dynamicMap, false);
 
-            blockedRolePairings.Add((byte)RoleId.Vampire, new [] { (byte)RoleId.Warlock});
-            blockedRolePairings.Add((byte)RoleId.Warlock, new [] { (byte)RoleId.Vampire});
-            blockedRolePairings.Add((byte)RoleId.Spy, new [] { (byte)RoleId.Mini});
-            blockedRolePairings.Add((byte)RoleId.Mini, new [] { (byte)RoleId.Spy});
-            blockedRolePairings.Add((byte)RoleId.Vulture, new [] { (byte)RoleId.Cleaner});
-            blockedRolePairings.Add((byte)RoleId.Cleaner, new [] { (byte)RoleId.Vulture});
+            blockedRolePairings.Add((byte)RoleId.Vampire, new [] { (byte)RoleId.Warlock, (byte)RoleId.Whisperer });
+            blockedRolePairings.Add((byte)RoleId.Warlock, new [] { (byte)RoleId.Vampire, (byte)RoleId.Whisperer });
+            blockedRolePairings.Add((byte)RoleId.Whisperer, new [] { (byte)RoleId.Warlock, (byte)RoleId.Vampire });
+            blockedRolePairings.Add((byte)RoleId.Spy, new [] { (byte)RoleId.Mini });
+            blockedRolePairings.Add((byte)RoleId.Mini, new [] { (byte)RoleId.Spy });
+            blockedRolePairings.Add((byte)RoleId.Vulture, new [] { (byte)RoleId.Cleaner });
+            blockedRolePairings.Add((byte)RoleId.Cleaner, new [] { (byte)RoleId.Vulture });
             
         }
     }

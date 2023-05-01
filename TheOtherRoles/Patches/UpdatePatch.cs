@@ -280,6 +280,16 @@ namespace TheOtherRoles.Patches {
                 __instance.KillButton.Hide();
                 return;
             }
+            
+            if(Undertaker.undertaker && CachedPlayer.LocalPlayer.PlayerControl == Undertaker.undertaker && Undertaker.draggedBody != null) 
+            {
+                __instance.KillButton.graphic.color = Palette.DisabledClear;
+                __instance.KillButton.buttonLabelText.color = Palette.DisabledClear;
+                __instance.KillButton.cooldownTimerText.color = Palette.DisabledClear;
+                __instance.KillButton.graphic.material.SetFloat(Shader.PropertyToID("_Desat"), 1f);
+                return;
+            }
+
             bool enabled = true;
             if (Vampire.vampire != null && Vampire.vampire == CachedPlayer.LocalPlayer.PlayerControl)
                 enabled = false;
@@ -295,8 +305,21 @@ namespace TheOtherRoles.Patches {
         }
 
         static void updateReportButton(HudManager __instance) {
-            if (Deputy.handcuffedKnows.ContainsKey(CachedPlayer.LocalPlayer.PlayerId) && Deputy.handcuffedKnows[CachedPlayer.LocalPlayer.PlayerId] > 0 || MeetingHud.Instance) __instance.ReportButton.Hide();
-            else if (!__instance.ReportButton.isActiveAndEnabled) __instance.ReportButton.Show();
+            if (Deputy.handcuffedKnows.ContainsKey(CachedPlayer.LocalPlayer.PlayerId) && Deputy.handcuffedKnows[CachedPlayer.LocalPlayer.PlayerId] > 0 || MeetingHud.Instance) 
+            { 
+                __instance.ReportButton.Hide();
+            } 
+            else if (!__instance.ReportButton.isActiveAndEnabled) 
+            {
+                __instance.ReportButton.Show();
+            } 
+            
+            if(Undertaker.undertaker && CachedPlayer.LocalPlayer.PlayerControl == Undertaker.undertaker && Undertaker.draggedBody != null && Undertaker.disableReportButton) 
+            {
+                __instance.ReportButton.graphic.color = Palette.DisabledClear;
+                __instance.ReportButton.buttonLabelText.color = Palette.DisabledClear;
+                __instance.ReportButton.graphic.material.SetFloat(Shader.PropertyToID("_Desat"), 1f);
+            }
         }
          
         static void updateVentButton(HudManager __instance)

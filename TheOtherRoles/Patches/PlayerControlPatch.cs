@@ -187,6 +187,94 @@ namespace TheOtherRoles.Patches {
             Helpers.setPlayerOutline(Vampire.currentTarget, Vampire.color);
         }
 
+        // A voir si fini.
+        static void whispererSetTarget() {
+            if (Whisperer.whisperer == null || Whisperer.whisperer != CachedPlayer.LocalPlayer.PlayerControl) return;
+
+            if (Whisperer.whisperVictim != null && (Whisperer.whisperVictim.Data.Disconnected || Whisperer.whisperVictim.Data.IsDead)) {
+                Whisperer.resetWhisper();
+            }
+
+            if (Whisperer.whisperVictim == null) {
+                Whisperer.currentTarget = Helpers.setTarget(false, true);
+                Helpers.setPlayerOutline(Whisperer.currentTarget, Whisperer.color);
+            } else {
+                Whisperer.whisperVictimTarget = Helpers.setTarget(false, true, null, Whisperer.whisperVictim);
+                Helpers.setPlayerOutline(Whisperer.whisperVictimTarget, Whisperer.color);
+            }
+        }
+
+        static void undertakerSetTarget() {
+            if (!Undertaker.undertaker || Undertaker.undertaker != CachedPlayer.LocalPlayer.PlayerControl) return;
+
+            if (!Undertaker.draggedBody) {
+                Undertaker.currentDeadTarget = Helpers.setDeadTarget(Undertaker.distancesList[(int) Undertaker.dragDistance]);
+            }
+        }
+
+        
+        static void undertakerUpdate() {
+            
+            var @undertakerPlayer = Undertaker.undertaker;
+            DeadBody @bodyComponent = Undertaker.draggedBody;
+
+            if (!@undertakerPlayer || @bodyComponent == null) return;
+
+            var undertakerPos = @undertakerPlayer.transform.position;
+            var bodyLastPos = @bodyComponent.transform.position;
+
+            var direction = @undertakerPlayer.gameObject.GetComponent<Rigidbody2D>().velocity.normalized;
+
+            if (direction != Undertaker.LastDirection) 
+            {
+                Undertaker.LastDirection = direction; 
+                return;
+            }
+
+            var newBodyPos = direction == new Vector2(0f, 0f) ? bodyLastPos : undertakerPos - ((Vector3) (direction * (2f/3f))) + (Vector3) @bodyComponent.myCollider.offset;
+                newBodyPos.z = bodyLastPos.z - 0.01f;
+
+            if (direction == Direction.right) newBodyPos += new Vector3(0.3f, 0, 0);
+            if (direction == Direction.up) newBodyPos += new Vector3(0.15f, 0.2f, 0);
+            if (direction == Direction.down) newBodyPos += new Vector3(0.15f, -0.2f, 0);
+            if (direction == Direction.upleft) newBodyPos += new Vector3(0, 0.1f, 0);
+            if (direction == Direction.upright) newBodyPos += new Vector3(0.3f, 0.1f, 0);
+            if (direction == Direction.downright) newBodyPos += new Vector3(0.3f, -0.2f, 0);
+            if (direction == Direction.downleft) newBodyPos += new Vector3(0f, -0.2f, 0);
+
+            if (PhysicsHelpers.AnythingBetween(
+                @undertakerPlayer.GetTruePosition(),
+                (Vector2) newBodyPos,
+                Constants.ShipAndObjectsMask,
+                false
+            ))
+            {
+                newBodyPos = new Vector3(undertakerPos.x, undertakerPos.y, bodyLastPos.z);
+            }
+
+            if (@undertakerPlayer.Data.IsDead)
+            {
+                if(@undertakerPlayer.AmOwner)
+                {
+                        
+                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDropBody, Hazel.SendOption.Reliable, -1);
+                    writer.Write(newBodyPos.x);
+                    writer.Write(newBodyPos.y);
+                    writer.Write(newBodyPos.z);
+                    AmongUsClient.Instance.FinishRpcImmediately(writer);
+
+                }
+
+                return;
+            }
+
+            @bodyComponent.transform.position = newBodyPos;
+
+            if (!@undertakerPlayer.AmOwner) return;
+
+            Helpers.setDeadPlayerOutline(@bodyComponent, Color.green);
+        }
+
         static void jackalSetTarget() {
             if (Jackal.jackal == null || Jackal.jackal != CachedPlayer.LocalPlayer.PlayerControl) return;
             var untargetablePlayers = new List<PlayerControl>();
@@ -294,6 +382,7 @@ namespace TheOtherRoles.Patches {
 
         static void warlockSetTarget() {
             if (Warlock.warlock == null || Warlock.warlock != CachedPlayer.LocalPlayer.PlayerControl) return;
+
             if (Warlock.curseVictim != null && (Warlock.curseVictim.Data.Disconnected || Warlock.curseVictim.Data.IsDead)) {
                 // If the cursed victim is disconnected or dead reset the curse so a new curse can be applied
                 Warlock.resetCurse();
@@ -605,7 +694,13 @@ namespace TheOtherRoles.Patches {
                     Snitch.text.transform.localPosition += new Vector3(0f, 1.8f, -69f);
                     Snitch.text.gameObject.SetActive(true);
                 } else {
-                    Snitch.text.text = playerCompleted == playerTotal ? "The Snitch know who u are." : $"Snitch is alive: {playerCompleted} / {playerTotal}.";
+                    if (playerCompleted == playerTotal) {
+                        Snitch.text.text = $"The Snitch know who u are."; 
+                    } else {
+                        Snitch.text.text = $"The Snitch know who u are."; 
+                        if (Snitch.showTasksLeft) Snitch.text.text += $" ({playerCompleted} / {playerTotal})";
+                    }
+                    
                     if (snitchIsDead) Snitch.text.text = $"Snitch is dead !";
                 }
             }
@@ -642,9 +737,17 @@ namespace TheOtherRoles.Patches {
                 BountyHunter.bountyUpdateTimer = BountyHunter.bountyDuration;
                 var possibleTargets = new List<PlayerControl>();
 
-                foreach (PlayerControl p in CachedPlayer.AllPlayers) {
-                    if (!p.Data.IsDead && !p.Data.Disconnected && p != p.Data.Role.IsImpostor && p != Spy.spy && (!TORMapOptions.shieldFirstKill || p != TORMapOptions.firstKillPlayer) && (p != Sidekick.sidekick || !Sidekick.wasTeamRed) && (p != Jackal.jackal || !Jackal.wasTeamRed) && (p != Mini.mini || Mini.isGrownUp()) && (Lovers.getPartner(BountyHunter.bountyHunter) == null || p != Lovers.getPartner(BountyHunter.bountyHunter))) possibleTargets.Add(p);
-                }
+                foreach (PlayerControl p in CachedPlayer.AllPlayers)
+                {
+                    if (p.Data.IsDead || p.Data.Disconnected) continue;
+                    if (p.Data.Role.IsImpostor || p == Spy.spy) continue;
+                    if (TORMapOptions.shieldFirstKill && TORMapOptions.firstKillPlayer == p) continue;
+                    if (Jackal.jackal == p && Jackal.wasTeamRed) continue;
+                    if (Sidekick.sidekick == p && Sidekick.wasTeamRed) continue;
+                    if (Lovers.getPartner(BountyHunter.bountyHunter) == p) continue;
+                    
+                    possibleTargets.Add(p);
+                }       
                 BountyHunter.bounty = possibleTargets[TheOtherRoles.rnd.Next(0, possibleTargets.Count)];
                 if (BountyHunter.bounty == null) return;
 
@@ -822,9 +925,6 @@ namespace TheOtherRoles.Patches {
             Helpers.setPlayerOutline(Thief.currentTarget, Thief.color);
         }
 
-
-
-
         static void baitUpdate() {
             if (!Bait.active.Any()) return;
 
@@ -835,6 +935,8 @@ namespace TheOtherRoles.Patches {
                     Bait.active.Remove(entry.Key);
                     if (entry.Key.killerIfExisting != null && entry.Key.killerIfExisting.PlayerId == CachedPlayer.LocalPlayer.PlayerId) {
                         Helpers.handleVampireBiteOnBodyReport(); // Manually call Vampire handling, since the CmdReportDeadBody Prefix won't be called
+                        Helpers.handleWhispererKillOnBodyReport();
+                        Helpers.handleUndertakerDropOnBodyReport();
                         RPCProcedure.uncheckedCmdReportDeadBody(entry.Key.killerIfExisting.PlayerId, entry.Key.player.PlayerId);
 
                         MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UncheckedCmdReportDeadBody, Hazel.SendOption.Reliable, -1);
@@ -867,6 +969,7 @@ namespace TheOtherRoles.Patches {
                 var multiplier = Mini.isGrownUp() ? 0.66f : 2f;
                 HudManagerStartPatch.sheriffKillButton.MaxTimer = Sheriff.cooldown * multiplier;
                 HudManagerStartPatch.vampireKillButton.MaxTimer = Vampire.cooldown * multiplier;
+                HudManagerStartPatch.whispererKillButton.MaxTimer = Whisperer.cooldown * multiplier;
                 HudManagerStartPatch.jackalKillButton.MaxTimer = Jackal.cooldown * multiplier;
                 HudManagerStartPatch.sidekickKillButton.MaxTimer = Sidekick.cooldown * multiplier;
                 HudManagerStartPatch.warlockCurseButton.MaxTimer = Warlock.cooldown * multiplier;
@@ -989,6 +1092,11 @@ namespace TheOtherRoles.Patches {
                 // Vampire
                 vampireSetTarget();
                 Garlic.UpdateAll();
+                // Whisperer
+                whispererSetTarget();
+                // Undertaker
+                undertakerSetTarget();
+                undertakerUpdate();
                 Trap.Update();
                 // Eraser
                 eraserSetTarget();
@@ -1078,6 +1186,8 @@ namespace TheOtherRoles.Patches {
         public static bool Prefix(PlayerControl __instance) {
             if (HideNSeek.isHideNSeekGM) return false;
             Helpers.handleVampireBiteOnBodyReport();
+            Helpers.handleWhispererKillOnBodyReport();
+            Helpers.handleUndertakerDropOnBodyReport();
             return true;
         }
     }
@@ -1233,6 +1343,11 @@ namespace TheOtherRoles.Patches {
                     HudManagerStartPatch.warlockCurseButton.Timer = Warlock.warlock.killTimer;
                 }
             }
+
+            // Whisperer Button Sync
+            if (Whisperer.whisperer != null && CachedPlayer.LocalPlayer.PlayerControl == Whisperer.whisperer && __instance == Whisperer.whisperer && HudManagerStartPatch.whispererKillButton != null) {
+                HudManagerStartPatch.whispererKillButton.Timer = Whisperer.whisperer.killTimer;
+            }
             // Ninja Button Sync
             if (Ninja.ninja != null && CachedPlayer.LocalPlayer.PlayerControl == Ninja.ninja && __instance == Ninja.ninja && HudManagerStartPatch.ninjaButton != null)
                 HudManagerStartPatch.ninjaButton.Timer = HudManagerStartPatch.ninjaButton.MaxTimer;
@@ -1294,15 +1409,20 @@ namespace TheOtherRoles.Patches {
     [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.SetKillTimer))]
     class PlayerControlSetCoolDownPatch {
         public static bool Prefix(PlayerControl __instance, [HarmonyArgument(0)]float time) {
+
+            var killButton = FastDestroyableSingleton<HudManager>.Instance.KillButton;
+
             if (GameOptionsManager.Instance.currentGameOptions.GameMode == GameModes.HideNSeek) return true;
             if (GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown <= 0f) return false;
             float multiplier = 1f;
             float addition = 0f;
             if (Mini.mini != null && CachedPlayer.LocalPlayer.PlayerControl == Mini.mini) multiplier = Mini.isGrownUp() ? 0.66f : 2f;
             if (BountyHunter.bountyHunter != null && CachedPlayer.LocalPlayer.PlayerControl == BountyHunter.bountyHunter) addition = BountyHunter.punishmentTime;
+            if(Undertaker.undertaker && CachedPlayer.LocalPlayer.PlayerControl == Undertaker.undertaker && Undertaker.draggedBody != null) return false;
+                
 
             __instance.killTimer = Mathf.Clamp(time, 0f, GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown * multiplier + addition);
-            FastDestroyableSingleton<HudManager>.Instance.KillButton.SetCoolDown(__instance.killTimer, GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown * multiplier + addition);
+            killButton.SetCoolDown(__instance.killTimer, GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown * multiplier + addition);
             return false;
         }
     }
@@ -1382,14 +1502,19 @@ namespace TheOtherRoles.Patches {
         public static void Postfix(PlayerPhysics __instance)
         {
             bool shouldInvert = (Invert.invert.FindAll(x => x.PlayerId == CachedPlayer.LocalPlayer.PlayerId).Count > 0 && Invert.meetings > 0) ^ EventUtility.eventInvert;  // xor. if already invert, eventInvert will turn it off for 10s
+            
             if (__instance.AmOwner &&
                 AmongUsClient.Instance &&
                 AmongUsClient.Instance.GameState == InnerNet.InnerNetClient.GameStates.Started &&
-                !CachedPlayer.LocalPlayer.Data.IsDead && 
-                shouldInvert && 
+                !CachedPlayer.LocalPlayer.Data.IsDead &&
                 GameData.Instance && 
-                __instance.myPlayer.CanMove)  
-                __instance.body.velocity *= -1;
+                __instance.myPlayer.CanMove)
+            {
+                if (shouldInvert) __instance.body.velocity *= -1;
+
+                if (CachedPlayer.LocalPlayer.PlayerControl == Undertaker.undertaker && Undertaker.draggedBody != null)
+                    __instance.body.velocity *= (1f - ( Undertaker.dragSpeedModifier / 10f));
+            }
         }
     }
 

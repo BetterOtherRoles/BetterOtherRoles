@@ -5,7 +5,6 @@ namespace TheOtherRoles.Modules;
 
 public static class FeaturesCodes
 {
-    public static bool UnlockAllCosmetics => Has("UnlockAllCosmetics");
 
     private static List<string> Keys => TheOtherRolesPlugin.FeaturesCodes.Value.Split("|").ToList();
     

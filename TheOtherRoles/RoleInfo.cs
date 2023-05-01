@@ -37,10 +37,12 @@ namespace TheOtherRoles
         public static RoleInfo lighter = new RoleInfo("Lighter", Lighter.color, "Your light never goes out", "Your light never goes out", RoleId.Lighter);
         public static RoleInfo godfather = new RoleInfo("Godfather", Godfather.color, "Kill all Crewmates", "Kill all Crewmates", RoleId.Godfather);
         public static RoleInfo mafioso = new RoleInfo("Mafioso", Mafioso.color, "Work with the <color=#FF1919FF>Mafia</color> to kill the Crewmates", "Kill all Crewmates", RoleId.Mafioso);
-        public static RoleInfo janitor = new RoleInfo("Janitor", Janitor.color, "Work with the <color=#FF1919FF>Mafia</color> by hiding dead bodies", "Hide dead bodies", RoleId.Janitor);
+        public static RoleInfo janitor = new RoleInfo("Janitor", Janitor.color, "Work with the <color=#FF1919FF>Mafia</color> by making dead bodies disappear", "Vanish dead bodies", RoleId.Janitor);
         public static RoleInfo morphling = new RoleInfo("Morphling", Morphling.color, "Change your look to not get caught", "Change your look", RoleId.Morphling);
         public static RoleInfo camouflager = new RoleInfo("Camouflager", Camouflager.color, "Camouflage and kill the Crewmates", "Hide among others", RoleId.Camouflager);
         public static RoleInfo vampire = new RoleInfo("Vampire", Vampire.color, "Kill the Crewmates with your bites", "Bite your enemies", RoleId.Vampire);
+        public static RoleInfo whisperer = new RoleInfo("Whisperer", Whisperer.color, "Kill the Crewmates by whispering to him", "Order someone to die or kill someone.", RoleId.Whisperer);
+        public static RoleInfo undertaker = new RoleInfo("Undertaker", Undertaker.color, "Hide Dead Bodies by Dragging them to a secret location", "Drag dead bodies away.", RoleId.Whisperer);
         public static RoleInfo eraser = new RoleInfo("Eraser", Eraser.color, "Kill the Crewmates and erase their roles", "Erase the roles of your enemies", RoleId.Eraser);
         public static RoleInfo trickster = new RoleInfo("Trickster", Trickster.color, "Use your jack-in-the-boxes to surprise others", "Surprise your enemies", RoleId.Trickster);
         public static RoleInfo cleaner = new RoleInfo("Cleaner", Cleaner.color, "Kill everyone and leave no traces", "Clean up dead bodies", RoleId.Cleaner);
@@ -72,6 +74,7 @@ namespace TheOtherRoles
         public static RoleInfo witch = new RoleInfo("Witch", Witch.color, "Cast a spell upon your foes", "Cast a spell upon your foes", RoleId.Witch);
         public static RoleInfo ninja = new RoleInfo("Ninja", Ninja.color, "Surprise and assassinate your foes", "Surprise and assassinate your foes", RoleId.Ninja);
         public static RoleInfo thief = new RoleInfo("Thief", Thief.color, "Steal a killers role by killing them", "Steal a killers role", RoleId.Thief, true);
+        public static RoleInfo fallen = new RoleInfo("Fallen", Thief.color, "A Fallen Angel that lost his wings", "U did get u'r role stealed !", RoleId.Fallen, true);
         public static RoleInfo bomber = new RoleInfo("Bomber", Bomber.color, "Bomb all Crewmates", "Bomb all Crewmates", RoleId.Bomber);
 
         public static RoleInfo hunter = new RoleInfo("Hunter", Palette.ImpostorRed, Helpers.cs(Palette.ImpostorRed, "Seek and kill everyone"), "Seek and kill everyone", RoleId.Impostor);
@@ -101,6 +104,8 @@ namespace TheOtherRoles
             morphling,
             camouflager,
             vampire,
+            whisperer,
+            undertaker,
             eraser,
             trickster,
             cleaner,
@@ -120,6 +125,7 @@ namespace TheOtherRoles
             pursuer,
             lawyer,
             thief,
+            fallen,
             prosecutor,
             crewmate,
             mayor,
@@ -191,6 +197,8 @@ namespace TheOtherRoles
             if (p == Morphling.morphling) infos.Add(morphling);
             if (p == Camouflager.camouflager) infos.Add(camouflager);
             if (p == Vampire.vampire) infos.Add(vampire);
+            if (p == Whisperer.whisperer) infos.Add(whisperer);
+            if (p == Undertaker.undertaker) infos.Add(undertaker);
             if (p == Eraser.eraser) infos.Add(eraser);
             if (p == Trickster.trickster) infos.Add(trickster);
             if (p == Cleaner.cleaner) infos.Add(cleaner);
@@ -221,6 +229,7 @@ namespace TheOtherRoles
             if (p == Trapper.trapper) infos.Add(trapper);
             if (p == Pursuer.pursuer) infos.Add(pursuer);
             if (p == Thief.thief) infos.Add(thief);
+            if (p == Fallen.fallen) infos.Add(fallen);
 
             // Default roles (just impostor, just crewmate, or hunter / hunted for hide n seek
             if (infos.Count == count) {
@@ -249,7 +258,13 @@ namespace TheOtherRoles
                     if (Eraser.futureErased.Contains(p))
                         roleName = Helpers.cs(Color.gray, "(erased) ") + roleName;
                     if (Vampire.vampire != null && !Vampire.vampire.Data.IsDead && Vampire.bitten == p && !p.Data.IsDead)
-                        roleName = Helpers.cs(Vampire.color, $"(bitten {(int)HudManagerStartPatch.vampireKillButton.Timer + 1}) ") + roleName;
+                        roleName = Helpers.cs(Vampire.color, $"(bitten : {(int)HudManagerStartPatch.vampireKillButton.Timer + 1}s) ") + roleName;
+                    if (p == Whisperer.whisperVictim)
+                        roleName = Helpers.cs(Whisperer.color, $"(whsp) ") + roleName;
+                    if (p == Whisperer.whisperVictimToKill)
+                        roleName = Helpers.cs(Whisperer.color, $"(whsp kill : {(int)HudManagerStartPatch.whispererKillButton.Timer + 1}s) ") + roleName;
+                    if (Undertaker.draggedBody != null && p == Undertaker.undertaker)
+                        roleName = Helpers.cs(Undertaker.color, "(dragging) ") + roleName;
                     if (Deputy.handcuffedPlayers.Contains(p.PlayerId))
                         roleName = Helpers.cs(Color.gray, "(cuffed) ") + roleName;
                     if (Deputy.handcuffedKnows.ContainsKey(p.PlayerId))  // Active cuff

@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using TheOtherRoles.CustomGameModes;
+using Twitch;
+
 
 namespace TheOtherRoles
 {
@@ -35,6 +37,8 @@ namespace TheOtherRoles
         private static CustomButton trackerTrackPlayerButton;
         private static CustomButton trackerTrackCorpsesButton;
         public static CustomButton vampireKillButton;
+        public static CustomButton whispererKillButton;
+        public static CustomButton undertakerDragButton;
         public static CustomButton garlicButton;
         public static CustomButton jackalKillButton;
         public static CustomButton sidekickKillButton;
@@ -103,6 +107,8 @@ namespace TheOtherRoles
             hackerVitalsButton.MaxTimer = Hacker.cooldown;
             hackerAdminTableButton.MaxTimer = Hacker.cooldown;
             vampireKillButton.MaxTimer = Vampire.cooldown;
+            whispererKillButton.MaxTimer = Whisperer.cooldown;
+            undertakerDragButton.MaxTimer = Undertaker.cooldown;
             trackerTrackPlayerButton.MaxTimer = 0f;
             garlicButton.MaxTimer = 0f;
             jackalKillButton.MaxTimer = Jackal.cooldown;
@@ -138,6 +144,7 @@ namespace TheOtherRoles
             hackerVitalsButton.EffectDuration = Hacker.duration;
             hackerAdminTableButton.EffectDuration = Hacker.duration;
             vampireKillButton.EffectDuration = Vampire.delay;
+            whispererKillButton.EffectDuration = Whisperer.delay;
             camouflagerButton.EffectDuration = Camouflager.duration;
             morphlingButton.EffectDuration = Morphling.duration;
             lightsOutButton.EffectDuration = Trickster.lightsOutDuration;
@@ -748,13 +755,143 @@ namespace TheOtherRoles
                     trackerTrackCorpsesButton.Timer = trackerTrackCorpsesButton.MaxTimer;
                 }
             );
-    
+
+            whispererKillButton = new CustomButton(
+                () => {
+                    MurderAttemptResult murder = Helpers.checkMurderAttempt(Whisperer.whisperer, Whisperer.currentTarget);
+                    if (murder == MurderAttemptResult.PerformKill) {
+                        
+                        Whisperer.whisperVictim = Whisperer.currentTarget;
+                        
+                        SoundEffectsManager.play("warlockCurse");
+
+                        byte lastTimer = (byte)Whisperer.delay;
+                        FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Whisperer.delay, new Action<float>((p) => { // Delayed action
+                            
+                            Whisperer.whisperVictimToKill = Whisperer.whisperVictimTarget != null ? Whisperer.whisperVictimTarget : Whisperer.whisperVictim;
+
+                            if (p <= 1f) {
+                                    byte timer = (byte)whispererKillButton.Timer;
+                                    if (timer != lastTimer) {
+                                        lastTimer = timer;
+                                        
+                                        
+                                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareGhostInfo, Hazel.SendOption.Reliable, -1);
+                                        writer.Write(CachedPlayer.LocalPlayer.PlayerId);
+                                        writer.Write((byte)RPCProcedure.GhostInfoTypes.WhispererTimerAndTarget);
+                                        writer.Write(Whisperer.whisperVictim);
+                                        writer.Write(Whisperer.whisperVictimToKill);
+                                        writer.Write(timer);
+                                        AmongUsClient.Instance.FinishRpcImmediately(writer);
+                                    }
+                                }
+                            if (p == 1f) {
+                                // Perform kill if possible and reset bitten (regardless whether the kill was successful or not)
+                                
+                                if (Whisperer.whisperVictimToKill != null && Whisperer.whisperVictimToKill != Medic.shielded && (!TORMapOptions.shieldFirstKill || Whisperer.whisperVictimToKill != TORMapOptions.firstKillPlayer)) Helpers.checkMurderAttemptAndKill(Whisperer.whisperer, Whisperer.whisperVictimToKill, showAnimation: false);
+                                else Helpers.checkMurderAttemptAndKill(Whisperer.whisperer, Whisperer.whisperVictim, showAnimation: false);
+
+                                // & reset anyway.
+
+                                Whisperer.currentTarget = null;
+                                Whisperer.whisperVictim = null;
+                                Whisperer.whisperVictimTarget = null;
+                                Whisperer.whisperVictimToKill = null;
+                                
+                                whispererKillButton.Timer = whispererKillButton.MaxTimer;
+
+                            }
+                        })));
+
+                        whispererKillButton.HasEffect = true; // Trigger effect on this click
+                        Whisperer.whisperer.killTimer = GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown;
+
+                    } else if (murder == MurderAttemptResult.BlankKill) {
+                        whispererKillButton.Timer = whispererKillButton.MaxTimer;
+                        Whisperer.whisperer.killTimer = GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown;
+                        whispererKillButton.HasEffect = false;
+                    } else {
+                        whispererKillButton.HasEffect = false;
+                    }
+                },
+                () => { return Whisperer.whisperer != null && Whisperer.whisperer == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
+                () => {
+                    
+                    whispererKillButton.actionButton.graphic.sprite = Whisperer.getButtonSprite();
+                    whispererKillButton.showButtonText = false;
+                    
+                    return (Whisperer.currentTarget != null && Whisperer.whisperVictim == null) && CachedPlayer.LocalPlayer.PlayerControl.CanMove;
+                },
+                () => {
+                    whispererKillButton.Timer = whispererKillButton.MaxTimer;
+                    whispererKillButton.isEffectActive = false;
+                    whispererKillButton.actionButton.cooldownTimerText.color = Palette.EnabledColor;
+                    Whisperer.whisperVictim = null;
+                    Whisperer.whisperVictimTarget = null;
+                },
+                Whisperer.getButtonSprite(),
+                CustomButton.ButtonPositions.upperRowLeft,
+                __instance,
+                "ActionSecondary",
+                false,
+                0f,
+                () => {
+                    whispererKillButton.Timer = whispererKillButton.MaxTimer;
+                }
+            );
+
+            
+
+            undertakerDragButton = new CustomButton(
+                () => {
+                    DeadBody @bodyComponent = Undertaker.currentDeadTarget;
+                    PlayerControl @undertakerPlayer = Undertaker.undertaker;
+
+                    if (Undertaker.draggedBody == null && Undertaker.currentDeadTarget != null)
+                    {
+                        Undertaker.draggedBody = @bodyComponent;
+
+                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDragBody, Hazel.SendOption.Reliable, -1);
+                        writer.Write(@bodyComponent.ParentId);
+                        AmongUsClient.Instance.FinishRpcImmediately(writer);
+                        
+                    } else if (Undertaker.draggedBody)
+                    {
+                        
+                        var position = CachedPlayer.LocalPlayer.PlayerControl.transform.position;
+                        
+                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDropBody, Hazel.SendOption.Reliable, -1);
+                        writer.Write(position.x);
+                        writer.Write(position.y);
+                        writer.Write(position.z);
+                        AmongUsClient.Instance.FinishRpcImmediately(writer);
+
+                    }
+                }, // Action OnClick
+                () => { return Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; }, // Bool HasButton
+                () => { 
+                    return (Undertaker.currentDeadTarget != null
+                            || Undertaker.draggedBody != null) 
+                            && CachedPlayer.LocalPlayer.PlayerControl.CanMove;
+                }, // Bool CouldUse
+                () => {}, // Action OnMeetingEnds
+                Undertaker.getButtonSprite(), // Sprite sprite,
+                CustomButton.ButtonPositions.upperRowLeft, // Vector3 PositionOffset
+                __instance, // HudManager hudManager
+                "ActionQuaternary", // String actionName,
+                false, // bool HasEffect
+                0f, // Float EffectDuration
+                () => { }, // Action OnEffectEnds
+                false, // Bool mirror = false
+                "" // String buttonText = ""
+            );
+             
             vampireKillButton = new CustomButton(
                 () => {
                     MurderAttemptResult murder = Helpers.checkMurderAttempt(Vampire.vampire, Vampire.currentTarget);
                     if (murder == MurderAttemptResult.PerformKill) {
                         if (Vampire.targetNearGarlic) {
-                            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UncheckedMurderPlayer, Hazel.SendOption.Reliable, -1);
+                            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(Vampire.vampire.NetId, (byte)CustomRPC.UncheckedMurderPlayer, Hazel.SendOption.Reliable, -1);
                             writer.Write(Vampire.vampire.PlayerId);
                             writer.Write(Vampire.currentTarget.PlayerId);
                             writer.Write(Byte.MaxValue);
@@ -766,7 +903,7 @@ namespace TheOtherRoles
                         } else {
                             Vampire.bitten = Vampire.currentTarget;
                             // Notify players about bitten
-                            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.VampireSetBitten, Hazel.SendOption.Reliable, -1);
+                            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(Vampire.vampire.NetId, (byte)CustomRPC.VampireSetBitten, Hazel.SendOption.Reliable, -1);
                             writer.Write(Vampire.bitten.PlayerId);
                             writer.Write((byte)0);
                             AmongUsClient.Instance.FinishRpcImmediately(writer);
@@ -1389,7 +1526,7 @@ namespace TheOtherRoles
                 () => {
                     foreach (Collider2D collider2D in Physics2D.OverlapCircleAll(CachedPlayer.LocalPlayer.PlayerControl.GetTruePosition(), CachedPlayer.LocalPlayer.PlayerControl.MaxReportDistance, Constants.PlayersOnlyMask)) {
                         if (collider2D.tag == "DeadBody") {
-                            DeadBody component = collider2D.GetComponent<DeadBody>();
+                            DeadBody component = (DeadBody)collider2D.GetComponent<DeadBody>();
                             if (component && !component.Reported) {
                                 Vector2 truePosition = CachedPlayer.LocalPlayer.PlayerControl.GetTruePosition();
                                 Vector2 truePosition2 = component.TruePosition;
@@ -1676,16 +1813,18 @@ namespace TheOtherRoles
 
             mayorMeetingButton = new CustomButton(
                () => {
-                   CachedPlayer.LocalPlayer.NetTransform.Halt(); // Stop current movement 
-                   Mayor.remoteMeetingsLeft--;
-	               Helpers.handleVampireBiteOnBodyReport(); // Manually call Vampire handling, since the CmdReportDeadBody Prefix won't be called
-                   RPCProcedure.uncheckedCmdReportDeadBody(CachedPlayer.LocalPlayer.PlayerId, Byte.MaxValue);
+                    CachedPlayer.LocalPlayer.NetTransform.Halt(); // Stop current movement 
+                    Mayor.remoteMeetingsLeft--;
+	                Helpers.handleVampireBiteOnBodyReport(); // Manually call Vampire handling, since the CmdReportDeadBody Prefix won't be called
+                    Helpers.handleWhispererKillOnBodyReport();
+                    Helpers.handleUndertakerDropOnBodyReport();
+                    RPCProcedure.uncheckedCmdReportDeadBody(CachedPlayer.LocalPlayer.PlayerId, Byte.MaxValue);
 
-                   MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UncheckedCmdReportDeadBody, Hazel.SendOption.Reliable, -1);
-                   writer.Write(CachedPlayer.LocalPlayer.PlayerId);
-                   writer.Write(Byte.MaxValue);
-                   AmongUsClient.Instance.FinishRpcImmediately(writer);
-                   mayorMeetingButton.Timer = 1f;
+                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UncheckedCmdReportDeadBody, Hazel.SendOption.Reliable, -1);
+                    writer.Write(CachedPlayer.LocalPlayer.PlayerId);
+                    writer.Write(Byte.MaxValue);
+                    AmongUsClient.Instance.FinishRpcImmediately(writer);
+                    mayorMeetingButton.Timer = 1f;
                },
                () => { return Mayor.mayor != null && Mayor.mayor == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead && Mayor.meetingButton; },
                () => {

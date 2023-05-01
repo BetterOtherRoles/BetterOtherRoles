@@ -255,7 +255,16 @@ namespace TheOtherRoles.Patches {
     [HarmonyPatch(typeof(VentButton), nameof(VentButton.SetTarget))]
     class VentButtonSetTargetPatch {
         static Sprite defaultVentSprite = null;
+
+        static bool Prefix(VentButton __instance)
+        {
+            if (Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.draggedBody != null && Undertaker.disableVentButton) return false;
+
+            return true;
+        }
+
         static void Postfix(VentButton __instance) {
+
             // Trickster render special vent button
             if (Trickster.trickster != null && Trickster.trickster == CachedPlayer.LocalPlayer.PlayerControl) {
                 if (defaultVentSprite == null) defaultVentSprite = __instance.graphic.sprite;
@@ -265,18 +274,17 @@ namespace TheOtherRoles.Patches {
             }
         }
     }
-    
-    /*
-    [HarmonyPatch(typeof(PlayerPurchasesData), nameof(PlayerPurchasesData.GetPurchase))]
-    public static class SkinPatch
+
+    [HarmonyPatch(typeof(KillButton), nameof(KillButton.SetTarget))]
+    class KillButtonSetTargetPatch
     {
-        [HarmonyPatch]
-        public static void Postfix(out bool __result)
+        static bool Prefix(KillButton __instance)
         {
-            __result = FeaturesCodes.UnlockAllCosmetics;
+            if (Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.draggedBody != null) return false;
+
+            return true;
         }
     }
-    */
 
     [HarmonyPatch(typeof(KillButton), nameof(KillButton.DoClick))]
     class KillButtonDoClickPatch {
@@ -326,7 +334,38 @@ namespace TheOtherRoles.Patches {
     class ReportButtonDoClickPatch {
         public static bool Prefix(ReportButton __instance) {
             if (__instance.isActiveAndEnabled && Deputy.handcuffedPlayers.Contains(CachedPlayer.LocalPlayer.PlayerId) && __instance.graphic.color == Palette.EnabledColor) Deputy.setHandcuffedKnows();
+            if (Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.draggedBody != null && Undertaker.disableReportButton) return false;
             return !Deputy.handcuffedKnows.ContainsKey(CachedPlayer.LocalPlayer.PlayerId);
+        }
+    }
+
+    [HarmonyPatch(typeof(DeadBody), nameof(DeadBody.OnClick))]
+    class DeadBodyOnClickPatch {
+        public static bool Prefix(DeadBody __instance) {
+            // Deputy handcuff disables the vents
+            if (Deputy.handcuffedPlayers.Contains(CachedPlayer.LocalPlayer.PlayerId)) {
+                Deputy.setHandcuffedKnows();
+                return false;
+            }
+
+            if (Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.draggedBody != null)
+            {
+                PlayerControl @undertakerPlayer = Undertaker.undertaker;
+
+                if (Vector2.Distance(@undertakerPlayer.GetTruePosition() - new Vector2(-0.2f, -0.22f),  __instance.TruePosition) <= (Undertaker.distancesList[(int) Undertaker.dragDistance] + 0.1f))
+                {
+                    Undertaker.draggedBody = __instance;
+
+                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDragBody, Hazel.SendOption.Reliable, -1);
+                    writer.Write(__instance.ParentId);
+                    AmongUsClient.Instance.FinishRpcImmediately(writer);
+                    
+                    return false;
+                }
+
+            }
+            
+            return true;
         }
     }
 

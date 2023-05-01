@@ -61,7 +61,10 @@ namespace TheOtherRoles
         Witch,
         Ninja,
         Thief,
+        Fallen,
         Bomber,
+        Whisperer,
+        Undertaker,
         Crewmate,
         Impostor,
         // Modifier ---
@@ -113,6 +116,8 @@ namespace TheOtherRoles
         CamouflagerCamouflage,
         TrackerUsedTracker,
         VampireSetBitten,
+        UndertakerDragBody,
+        UndertakerDropBody,
         PlaceGarlic,
         DeputyUsedHandcuffs,
         DeputyPromotes,
@@ -365,8 +370,14 @@ namespace TheOtherRoles
                     case RoleId.Bomber:
                         Bomber.bomber = player;
                         break;
+                    case RoleId.Whisperer:
+                        Whisperer.whisperer = player;
+                        break;
+                    case RoleId.Undertaker:
+                        Undertaker.undertaker = player;
+                        break;
                     }
-        }
+            }
         }
 
         public static void setModifier(byte modifierId, byte playerId, byte flag) {
@@ -612,6 +623,25 @@ namespace TheOtherRoles
             }
         }
 
+        public static void undertakerDragBody(byte draggedBodyId)
+        {
+            if (Undertaker.undertaker == null || Undertaker.draggedBody != null) return;
+            
+            foreach (DeadBody body in UnityEngine.Object.FindObjectsOfType<DeadBody>()) {
+                if (body.ParentId == draggedBodyId) Undertaker.draggedBody = body;
+            }
+        }
+
+        public static void undertakerDropBody(float vx, float vy, float vz = 0f)
+        {
+            if (Undertaker.undertaker == null || Undertaker.draggedBody == null) return;
+
+            Undertaker.draggedBody.transform.position = new Vector3(vx, vy, vz);
+            Undertaker.draggedBody = null;
+            Undertaker.LastDragged = DateTime.UtcNow;
+
+        }
+
         public static void placeGarlic(byte[] buff) {
             Vector3 position = Vector3.zero;
             position.x = BitConverter.ToSingle(buff, 0*sizeof(float));
@@ -713,6 +743,8 @@ namespace TheOtherRoles
             if (player == Mafioso.mafioso) Mafioso.clearAndReload();
             if (player == Janitor.janitor) Janitor.clearAndReload();
             if (player == Vampire.vampire) Vampire.clearAndReload();
+            if (player == Whisperer.whisperer) Whisperer.clearAndReload();
+            if (player == Undertaker.undertaker) Undertaker.clearAndReload();
             if (player == Eraser.eraser) Eraser.clearAndReload();
             if (player == Trickster.trickster) Trickster.clearAndReload();
             if (player == Cleaner.cleaner) Cleaner.clearAndReload();
@@ -738,6 +770,7 @@ namespace TheOtherRoles
             if (player == Lawyer.lawyer) Lawyer.clearAndReload();
             if (player == Pursuer.pursuer) Pursuer.clearAndReload();
             if (player == Thief.thief) Thief.clearAndReload();
+            if (player == Fallen.fallen) Fallen.clearAndReload();
 
             // Modifier
             if (!ignoreModifier)
@@ -1029,6 +1062,8 @@ namespace TheOtherRoles
             if (target == Morphling.morphling) Morphling.morphling = thief;
             if (target == Camouflager.camouflager) Camouflager.camouflager = thief;
             if (target == Vampire.vampire) Vampire.vampire = thief;
+            if (target == Whisperer.whisperer) Whisperer.whisperer = thief;
+            if (target == Undertaker.undertaker) Undertaker.undertaker = thief;
             if (target == Eraser.eraser) Eraser.eraser = thief;
             if (target == Trickster.trickster) Trickster.trickster = thief;
             if (target == Cleaner.cleaner) Cleaner.cleaner = thief;
@@ -1041,11 +1076,22 @@ namespace TheOtherRoles
                 RoleManager.Instance.SetRole(Thief.thief, RoleTypes.Impostor);
                 FastDestroyableSingleton<HudManager>.Instance.KillButton.SetCoolDown(Thief.thief.killTimer, GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown);
             }
-            if (Lawyer.lawyer != null && target == Lawyer.target)
+            if (target == Lawyer.target) {
                 Lawyer.target = thief;
+                Lawyer.formerLawyer = target;
+            }
+
+            if (Thief.stealMethod != Thief.StealMethod.BecomePartner) {
+                Fallen.clearAndReload();
+                Fallen.fallen = target; // Change target to Fallen ???
+                RoleManager.Instance.SetRole(target, RoleTypes.Crewmate);
+            }
+            
             if (Thief.thief == PlayerControl.LocalPlayer) CustomButton.ResetAllCooldowns();
             Thief.clearAndReload();
             Thief.formerThief = thief;  // After clearAndReload, else it would get reset...
+            Thief.playerStealed = target;
+
         }
         
         public static void setTrap(byte[] buff) {
@@ -1113,6 +1159,7 @@ namespace TheOtherRoles
             BlankUsed,
             DetectiveOrMedicInfo,
             VampireTimer,
+            WhispererTimerAndTarget
         }
 
         public static void receiveGhostInfo (byte senderId, MessageReader reader) {
@@ -1153,6 +1200,11 @@ namespace TheOtherRoles
                     break;
                 case GhostInfoTypes.VampireTimer:
                     HudManagerStartPatch.vampireKillButton.Timer = (float)reader.ReadByte();
+                    break;
+                case GhostInfoTypes.WhispererTimerAndTarget:
+                    Whisperer.whisperVictim = Helpers.playerById(reader.ReadByte());
+                    Whisperer.whisperVictimToKill = Helpers.playerById(reader.ReadByte());
+                    HudManagerStartPatch.whispererKillButton.Timer = (float)reader.ReadByte();
                     break;
             }
         }
@@ -1307,6 +1359,16 @@ namespace TheOtherRoles
                     byte bittenId = reader.ReadByte();
                     byte reset = reader.ReadByte();
                     RPCProcedure.vampireSetBitten(bittenId, reset);
+                    break;
+                case (byte)CustomRPC.UndertakerDragBody:
+                    byte draggedBodyId = reader.ReadByte();
+                    RPCProcedure.undertakerDragBody(draggedBodyId);
+                    break;
+                case (byte)CustomRPC.UndertakerDropBody:
+                    var vx = reader.ReadSingle();
+                    var vy = reader.ReadSingle();
+                    var vz = reader.ReadSingle();
+                    RPCProcedure.undertakerDropBody(vx, vy, vz);
                     break;
                 case (byte)CustomRPC.PlaceGarlic:
                     RPCProcedure.placeGarlic(reader.ReadBytesAndSize());
