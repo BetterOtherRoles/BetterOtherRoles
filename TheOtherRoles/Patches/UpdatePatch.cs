@@ -309,6 +309,7 @@ namespace TheOtherRoles.Patches {
             { 
                 __instance.ReportButton.Hide();
             } 
+            /*
             else if (!__instance.ReportButton.isActiveAndEnabled) 
             {
                 __instance.ReportButton.Show();
@@ -320,6 +321,7 @@ namespace TheOtherRoles.Patches {
                 __instance.ReportButton.buttonLabelText.color = Palette.DisabledClear;
                 __instance.ReportButton.graphic.material.SetFloat(Shader.PropertyToID("_Desat"), 1f);
             }
+            */
         }
          
         static void updateVentButton(HudManager __instance)
