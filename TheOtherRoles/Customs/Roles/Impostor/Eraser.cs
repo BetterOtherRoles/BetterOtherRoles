@@ -31,10 +31,13 @@ public class Eraser : CustomRole
         Team = Teams.Impostor;
         Color = Palette.ImpostorRed;
         CanTarget = true;
+
+        IntroDescription = "Kill the Crewmates and erase their roles";
+        ShortDescription = "Erase the roles of your enemies";
         
         EraseCooldown = OptionsTab.CreateFloatList(
             nameof(EraseCooldown),
-            Colors.Cs(Color, $"{Name} cooldown"),
+            Cs($"{Name} cooldown"),
             10f,
             60f,
             30f,
@@ -44,7 +47,7 @@ public class Eraser : CustomRole
             "s");
         CanEraseAnyone = OptionsTab.CreateBool(
             $"{Name}{nameof(CanEraseAnyone)}",
-            Colors.Cs(Color, "Can erase anyone"),
+            Cs("Can erase anyone"),
             false,
             SpawnRate);
     }

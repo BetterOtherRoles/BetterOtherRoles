@@ -4,6 +4,7 @@ using System.Linq;
 using TheOtherRoles.Players;
 using System;
 using TheOtherRoles.Customs.Roles.Impostor;
+using TheOtherRoles.EnoFramework.Kernel;
 
 namespace TheOtherRoles.Patches {
     [HarmonyPatch]
@@ -63,9 +64,10 @@ namespace TheOtherRoles.Patches {
         [HarmonyPatch(typeof(HauntMenuMinigame), nameof(HauntMenuMinigame.FixedUpdate))]
         public static void UpdatePostfix(HauntMenuMinigame __instance) {
             if (GameOptionsManager.Instance.currentGameOptions.GameMode != GameModes.Normal) return;
-            if (CachedPlayer.LocalPlayer.Data.Role.IsImpostor && Vampire.vampire != CachedPlayer.LocalPlayer.PlayerControl)
-                __instance.gameObject.transform.localPosition = new UnityEngine.Vector3(-6f, -1.1f, __instance.gameObject.transform.localPosition.z);
-            return;
+            if (!CachedPlayer.LocalPlayer.Data.Role.IsImpostor ||
+                Singleton<Vampire>.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl) return;
+            var gameObject = __instance.gameObject;
+            gameObject.transform.localPosition = new UnityEngine.Vector3(-6f, -1.1f, gameObject.transform.localPosition.z);
         }
 
         [HarmonyPostfix]

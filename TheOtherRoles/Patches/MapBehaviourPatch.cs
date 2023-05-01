@@ -18,7 +18,7 @@ namespace TheOtherRoles.Patches {
 
 		[HarmonyPatch(typeof(MapBehaviour), nameof(MapBehaviour.FixedUpdate))]
 		static void Postfix(MapBehaviour __instance) {
-			if (Trapper.trapper != null && CachedPlayer.LocalPlayer.PlayerId == Trapper.trapper.PlayerId) {
+			if (Singleton<Trapper>.Instance.Player != null && CachedPlayer.LocalPlayer.PlayerId == Singleton<Trapper>.Instance.Player.PlayerId) {
 				foreach (PlayerControl player in Trapper.playersOnMap) {
 					if (herePoints.ContainsKey(player)) continue;
 					Vector3 v = Trap.trapPlayerIdMap[player.PlayerId].trap.transform.position;
@@ -38,8 +38,8 @@ namespace TheOtherRoles.Patches {
 					UnityEngine.Object.Destroy(s.Value);
 					herePoints.Remove(s.Key);
 				}
-			} else if (Snitch.snitch != null && CachedPlayer.LocalPlayer.PlayerId == Snitch.snitch.PlayerId && !Snitch.snitch.Data.IsDead && Snitch.infoMode != Snitch.InfoMode.Chat) {
-                var (playerCompleted, playerTotal) = TasksHandler.taskInfo(Snitch.snitch.Data);
+			} else if (Singleton<Snitch>.Instance.Player != null && CachedPlayer.LocalPlayer.PlayerId == Singleton<Snitch>.Instance.Player.PlayerId && !Singleton<Snitch>.Instance.Player.Data.IsDead && Snitch.infoMode != Snitch.InfoMode.Chat) {
+                var (playerCompleted, playerTotal) = TasksHandler.taskInfo(Singleton<Snitch>.Instance.Player.Data);
                 int numberOfTasks = playerTotal - playerCompleted;
 
                 if (numberOfTasks == 0) {

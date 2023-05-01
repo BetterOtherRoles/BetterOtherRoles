@@ -38,9 +38,12 @@ public class Tracker : CustomRole
         Color = new Color32(100, 58, 220, byte.MaxValue);
         CanTarget = true;
 
+        IntroDescription = $"Track the {Colors.Cs(Palette.ImpostorRed, "impostors")} down";
+        ShortDescription = "Track the Impostors down";
+
         UpdateArrowInterval = OptionsTab.CreateFloatList(
             $"{Name}{nameof(UpdateArrowInterval)}",
-            Colors.Cs(Color, "Update interval"),
+            Cs("Update interval"),
             1f,
             30f,
             5f,
@@ -50,17 +53,17 @@ public class Tracker : CustomRole
             "s");
         ResetTargetAfterMeeting = OptionsTab.CreateBool(
             $"{Name}{nameof(ResetTargetAfterMeeting)}",
-            Colors.Cs(Color, "Reset target after meeting"),
+            Cs("Reset target after meeting"),
             true,
             SpawnRate);
         CanTrackCorpses = OptionsTab.CreateBool(
             $"{Name}{nameof(CanTrackCorpses)}",
-            Colors.Cs(Color, "Can track dead bodies"),
+            Cs("Can track dead bodies"),
             false,
             SpawnRate);
         CorpsesTrackingCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(CorpsesTrackingCooldown)}",
-            Colors.Cs(Color, "Corpses tracking cooldown"),
+            Cs("Corpses tracking cooldown"),
             10f,
             60f,
             30f,
@@ -70,7 +73,7 @@ public class Tracker : CustomRole
             "s");
         CorpsesTrackingDuration = OptionsTab.CreateFloatList(
             $"{Name}{nameof(CorpsesTrackingDuration)}",
-            Colors.Cs(Color, "Corpses tracking duration"),
+            Cs("Corpses tracking duration"),
             2.5f,
             30f,
             5f,

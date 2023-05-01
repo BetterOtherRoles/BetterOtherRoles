@@ -43,9 +43,12 @@ public class Hacker : CustomRole
         Team = Teams.Crewmate;
         Color = new Color32(117, 250, 76, byte.MaxValue);
 
+        IntroDescription = $"Hack systems to find the {Colors.Cs(Palette.ImpostorRed, "impostors")}";
+        ShortDescription = "Hack to find the Impostors";
+
         HackCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(HackCooldown)}",
-            Colors.Cs(Color, "Hack cooldown"),
+            Cs("Hack cooldown"),
             10f,
             60f,
             30f,
@@ -55,7 +58,7 @@ public class Hacker : CustomRole
             "s");
         HackingDuration = OptionsTab.CreateFloatList(
             $"{Name}{nameof(HackingDuration)}",
-            Colors.Cs(Color, "Hacking duration"),
+            Cs("Hacking duration"),
             2.5f,
             60f,
             10f,
@@ -65,12 +68,12 @@ public class Hacker : CustomRole
             "s");
         OnlyColorType = OptionsTab.CreateBool(
             $"{Name}{nameof(OnlyColorType)}",
-            Colors.Cs(Color, "Only display color type"),
+            Cs("Only display color type"),
             false,
             SpawnRate);
         MaxGadgetCharges = OptionsTab.CreateFloatList(
             $"{Name}{nameof(MaxGadgetCharges)}",
-            Colors.Cs(Color, "Max mobile gadget charges"),
+            Cs("Max mobile gadget charges"),
             1f,
             30f,
             5f,
@@ -78,7 +81,7 @@ public class Hacker : CustomRole
             SpawnRate);
         RechargeTasksNumber = OptionsTab.CreateFloatList(
             $"{Name}{nameof(RechargeTasksNumber)}",
-            Colors.Cs(Color, "Number of tasks needed for recharging"),
+            Cs("Number of tasks needed for recharging"),
             1f,
             5f,
             2f,
@@ -86,7 +89,7 @@ public class Hacker : CustomRole
             SpawnRate);
         CanMoveDuringGadget = OptionsTab.CreateBool(
             $"{Name}{nameof(CanMoveDuringGadget)}",
-            Colors.Cs(Color, "Can move during mobile gadget duration"),
+            Cs("Can move during mobile gadget duration"),
             false,
             SpawnRate);
     }

@@ -20,9 +20,12 @@ public class Prosecutor : CustomRole
         Color = new Color32(134, 153, 25, byte.MaxValue);
         IncompatibleRoles.Add(typeof(Lawyer));
 
+        IntroDescription = "Vote out your target";
+        ShortDescription = "Vote out your target";
+
         Vision = OptionsTab.CreateFloatList(
             $"{Name}{Vision}",
-            Colors.Cs(Color, "Vision"),
+            Cs("Vision"),
             0.25f,
             3f,
             1f,
@@ -30,17 +33,17 @@ public class Prosecutor : CustomRole
             SpawnRate);
         KnowsTargetRole = OptionsTab.CreateBool(
             $"{Name}{KnowsTargetRole}",
-            Colors.Cs(Color, "Knows target role"),
+            Cs("Knows target role"),
             false,
             SpawnRate);
         CanCallEmergencyMeeting = OptionsTab.CreateBool(
             $"{Name}{CanCallEmergencyMeeting}",
-            Colors.Cs(Color, "Can call emergency meeting"),
+            Cs("Can call emergency meeting"),
             false,
             SpawnRate);
         TargetCanBeJester = OptionsTab.CreateBool(
             $"{Name}{TargetCanBeJester}",
-            Colors.Cs(Color, "Target can be jester"),
+            Cs("Target can be jester"),
             false,
             SpawnRate);
     }

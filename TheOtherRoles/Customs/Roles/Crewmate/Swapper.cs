@@ -25,19 +25,22 @@ public class Swapper : CustomRole
         Team = Teams.Crewmate;
         Color = new Color32(134, 55, 86, byte.MaxValue);
 
+        IntroDescription = $"Swap votes to exile the {Colors.Cs(Palette.ImpostorRed, "impostors")}";
+        ShortDescription = "Swap votes";
+
         CanCallEmergencyMeeting = OptionsTab.CreateBool(
             $"{Name}{nameof(CanCallEmergencyMeeting)}",
-            Colors.Cs(Color, "Can call emergency meeting"),
+            Cs("Can call emergency meeting"),
             true,
             SpawnRate);
         CanOnlySwapOthers = OptionsTab.CreateBool(
             $"{Name}{nameof(CanOnlySwapOthers)}",
-            Colors.Cs(Color, "Can only swap others"),
+            Cs("Can only swap others"),
             false,
             SpawnRate);
         NumberOfSwaps = OptionsTab.CreateFloatList(
             $"{Name}{nameof(NumberOfSwaps)}",
-            Colors.Cs(Color, "Initial swap charges"),
+            Cs("Initial swap charges"),
             0f,
             5f,
             1f,
@@ -45,7 +48,7 @@ public class Swapper : CustomRole
             SpawnRate);
         RechargeTasksNumber = OptionsTab.CreateFloatList(
             $"{Name}{nameof(RechargeTasksNumber)}",
-            Colors.Cs(Color, "Number of tasks needed for recharging"),
+            Cs("Number of tasks needed for recharging"),
             1f,
             10f,
             2f,

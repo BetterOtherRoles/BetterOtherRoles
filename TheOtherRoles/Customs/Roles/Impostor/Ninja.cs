@@ -34,9 +34,12 @@ public class Ninja : CustomRole
         Color = Palette.ImpostorRed;
         CanTarget = true;
 
+        IntroDescription = "Surprise and assassinate your foes";
+        ShortDescription = "Surprise and assassinate your foes";
+
         NinjaCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(NinjaCooldown)}",
-            Colors.Cs(Color, $"{Name} cooldown"),
+            Cs($"{Name} cooldown"),
             10f,
             60f,
             30f,
@@ -46,12 +49,12 @@ public class Ninja : CustomRole
             "s");
         KnowsTargetLocation = OptionsTab.CreateBool(
             $"{Name}{nameof(KnowsTargetLocation)}",
-            Colors.Cs(Color, "Knows location of target"),
+            Cs("Knows location of target"),
             true,
             SpawnRate);
         TraceDuration = OptionsTab.CreateFloatList(
             $"{Name}{nameof(TraceDuration)}",
-            Colors.Cs(Color, "Trace duration"),
+            Cs("Trace duration"),
             1f,
             20f,
             5f,
@@ -61,7 +64,7 @@ public class Ninja : CustomRole
             "s");
         TraceColorDuration = OptionsTab.CreateFloatList(
             $"{Name}{nameof(TraceColorDuration)}",
-            Colors.Cs(Color, "Time till trace color has faded"),
+            Cs("Time till trace color has faded"),
             0f,
             20f,
             2f,
@@ -71,7 +74,7 @@ public class Ninja : CustomRole
             "s");
         InvisibilityDuration = OptionsTab.CreateFloatList(
             $"{Name}{nameof(InvisibilityDuration)}",
-            Colors.Cs(Color, "Invisibility duration"),
+            Cs("Invisibility duration"),
             0f,
             20f,
             3f,

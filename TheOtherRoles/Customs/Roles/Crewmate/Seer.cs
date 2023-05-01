@@ -23,24 +23,27 @@ public class Seer : CustomRole
         Team = Teams.Crewmate;
         Color = new Color32(97, 178, 108, byte.MaxValue);
 
+        IntroDescription = "You will see players die";
+        ShortDescription = "You will see players die";
+
         ShowDeathFlash = OptionsTab.CreateBool(
             $"{Name}{nameof(ShowDeathFlash)}",
-            Colors.Cs(Color, "Show flash on player death"),
+            Cs("Show flash on player death"),
             true,
             SpawnRate);
         ShowDeathSouls = OptionsTab.CreateBool(
             $"{Name}{nameof(ShowDeathSouls)}",
-            Colors.Cs(Color, "Show souls of death players"),
+            Cs("Show souls of death players"),
             true,
             SpawnRate);
         LimitSoulsDuration = OptionsTab.CreateBool(
             $"{Name}{nameof(LimitSoulsDuration)}",
-            Colors.Cs(Color, "Limit souls duration"),
+            Cs("Limit souls duration"),
             false,
             ShowDeathSouls);
         SoulsDuration = OptionsTab.CreateFloatList(
             $"{Name}{nameof(SoulsDuration)}",
-            Colors.Cs(Color, "Souls duration"),
+            Cs("Souls duration"),
             0f,
             120f,
             15f,

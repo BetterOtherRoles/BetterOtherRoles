@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Reactor.Networking.Attributes;
 using TheOtherRoles.EnoFramework.Kernel;
 using TheOtherRoles.EnoFramework.Utils;
@@ -30,6 +31,8 @@ public class Deputy : CustomRole
     public bool KillButtonEnabled;
     public int UsedHandcuffs;
     public readonly List<PlayerControl> HandcuffedPlayers = new();
+    public DateTime LocalHandcuffStartAt = DateTime.UtcNow;
+    public bool IsLocalHandcuffed => new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds() - new DateTimeOffset(LocalHandcuffStartAt).ToUnixTimeSeconds() >= HandcuffDuration;
 
     public Deputy() : base(nameof(Deputy))
     {
@@ -37,9 +40,12 @@ public class Deputy : CustomRole
         Color = new Color32(248, 205, 70, byte.MaxValue);
         CanTarget = true;
 
+        IntroDescription = $"Handcuff the {Colors.Cs(Palette.ImpostorRed, "impostors")}";
+        ShortDescription = "Handcuff the Impostors";
+
         NumberOfHandcuffs = OptionsTab.CreateFloatList(
             $"{Name}{nameof(NumberOfHandcuffs)}",
-            Colors.Cs(Color, "Number of handcuffs"),
+            Cs("Number of handcuffs"),
             0f,
             15f,
             3f,
@@ -47,7 +53,7 @@ public class Deputy : CustomRole
             SpawnRate);
         HandcuffCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(HandcuffCooldown)}",
-            Colors.Cs(Color, "Handcuff cooldown"),
+            Cs("Handcuff cooldown"),
             10f,
             60f,
             30f,
@@ -57,7 +63,7 @@ public class Deputy : CustomRole
             "s");
         HandcuffDuration = OptionsTab.CreateFloatList(
             $"{Name}{nameof(HandcuffDuration)}",
-            Colors.Cs(Color, "Handcuff duration"),
+            Cs("Handcuff duration"),
             2f,
             60f,
             10f,
@@ -67,13 +73,13 @@ public class Deputy : CustomRole
             "s");
         PromotedWhen = OptionsTab.CreateStringList(
             $"{Name}{nameof(PromotedWhen)}",
-            Colors.Cs(Color, "Can kill if sheriff dies"),
+            Cs("Can kill if sheriff dies"),
             new List<string> { "no", "yes (immediately)", "yes (after meeting)" },
             "no",
             SpawnRate);
         KillCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(KillCooldown)}",
-            Colors.Cs(Color, "Kill cooldown"),
+            Cs("Kill cooldown"),
             10f,
             60f,
             30f,
@@ -83,7 +89,7 @@ public class Deputy : CustomRole
             "s");
         CanKillNeutrals = OptionsTab.CreateBool(
             $"{Name}{nameof(CanKillNeutrals)}",
-            Colors.Cs(Color, "Can kill neutral roles"),
+            Cs("Can kill neutral roles"),
             true,
             PromotedWhen);
     }

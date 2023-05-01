@@ -22,9 +22,12 @@ public class Cleaner : CustomRole
         Color = Palette.ImpostorRed;
         CanTarget = true;
 
+        IntroDescription = "Kill everyone and leave no traces";
+        ShortDescription = "Clean dead bodies";
+
         CleanCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(CleanCooldown)}",
-            Colors.Cs(Color, $"Clean cooldown"),
+            Cs($"Clean cooldown"),
             10f,
             60f,
             30f,

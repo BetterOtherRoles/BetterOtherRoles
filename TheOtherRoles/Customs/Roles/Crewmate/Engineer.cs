@@ -28,9 +28,12 @@ public class Engineer : CustomRole
         Team = Teams.Crewmate;
         Color = new Color32(0, 40, 245, byte.MaxValue);
 
+        IntroDescription = "Maintain important systems on the ship";
+        ShortDescription = "Repair the ship";
+
         NumberOfFixes = OptionsTab.CreateFloatList(
             $"{Name}{nameof(NumberOfFixes)}",
-            Colors.Cs(Color, "Number of sabotage fixes"),
+            Cs("Number of sabotage fixes"),
             1f,
             3f,
             1f,
@@ -38,12 +41,12 @@ public class Engineer : CustomRole
             SpawnRate);
         HighlightVentsForImpostors = OptionsTab.CreateBool(
             $"{Name}{nameof(HighlightVentsForImpostors)}",
-            Colors.Cs(Color, "Impostors see vents highlighted"),
+            Cs("Impostors see vents highlighted"),
             true,
             SpawnRate);
         HighlightVentsForNeutrals = OptionsTab.CreateBool(
             $"{Name}{nameof(HighlightVentsForNeutrals)}",
-            Colors.Cs(Color, "Neutrals see vents highlighted"),
+            Cs("Neutrals see vents highlighted"),
             false,
             SpawnRate);
     }

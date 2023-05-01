@@ -24,9 +24,12 @@ public class Thief : CustomRole
         Color = new Color32(71, 99, 45, byte.MaxValue);
         CanTarget = true;
 
+        IntroDescription = "Steal a killers role by killing them";
+        ShortDescription = "Steal a killers role";
+
         KillCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(KillCooldown)}",
-            Colors.Cs(Color, "Kill cooldown"),
+            Cs("Kill cooldown"),
             10f,
             60f,
             30f,
@@ -36,17 +39,17 @@ public class Thief : CustomRole
             "s");
         HasImpostorVision = OptionsTab.CreateBool(
             $"{Name}{nameof(HasImpostorVision)}",
-            Colors.Cs(Color, "Has impostor vision"),
+            Cs("Has impostor vision"),
             false,
             SpawnRate);
         CanUseVents = OptionsTab.CreateBool(
             $"{Name}{nameof(CanUseVents)}",
-            Colors.Cs(Color, "Can use vents"),
+            Cs("Can use vents"),
             true,
             SpawnRate);
         CanKillSheriff = OptionsTab.CreateBool(
             $"{Name}{nameof(CanKillSheriff)}",
-            Colors.Cs(Color, "Can kill sheriff"),
+            Cs("Can kill sheriff"),
             true,
             SpawnRate);
     }
@@ -121,6 +124,7 @@ public class Thief : CustomRole
         var targetRole = GetRoleByPlayer(target);
         if (targetRole == null) return;
         targetRole.Player = Singleton<Thief>.Instance.Player;
-        Singleton<Thief>.Instance.Player = target;
+        Singleton<Thief>.Instance.Player = null;
+        Singleton<Fallen>.Instance.Player = target;
     }
 }

@@ -52,6 +52,9 @@ public class SecurityGuard : CustomRole
         Color = new Color32(195, 178, 95, byte.MaxValue);
         DisplayName = "Security guard";
 
+        IntroDescription = "Seal vents and place cameras";
+        ShortDescription = "Seal vents and place cameras";
+
         Cooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(Cooldown)}",
             Cs("Cooldown"),

@@ -29,9 +29,12 @@ public class TimeMaster : CustomRole
         Team = Teams.Crewmate;
         Color = new Color32(112, 142, 239, byte.MaxValue);
 
+        IntroDescription = "Save yourself with your time shield";
+        ShortDescription = "Use your time shield";
+
         TimeShieldCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(TimeShieldCooldown)}",
-            Colors.Cs(Color, "Time shield cooldown"),
+            Cs("Time shield cooldown"),
             10f,
             60f,
             30f,
@@ -41,7 +44,7 @@ public class TimeMaster : CustomRole
             "s");
         ShieldDuration = OptionsTab.CreateFloatList(
             $"{Name}{nameof(ShieldDuration)}",
-            Colors.Cs(Color, "Time shield duration"),
+            Cs("Time shield duration"),
             1f,
             20f,
             3f,
@@ -51,7 +54,7 @@ public class TimeMaster : CustomRole
             "s");
         RewindTime = OptionsTab.CreateFloatList(
             $"{Name}{nameof(RewindTime)}",
-            Colors.Cs(Color, "Rewind time"),
+            Cs("Rewind time"),
             1f,
             10f,
             3f,
@@ -120,6 +123,13 @@ public class TimeMaster : CustomRole
         SoundEffectsManager.play("timemasterShield");
     }
 
+    public override void ClearAndReload()
+    {
+        base.ClearAndReload();
+        ShieldActive = false;
+        IsRewinding = false;
+    }
+    
     [MethodRpc((uint)Rpc.Id.TimeMasterShield)]
     private static void Shield(PlayerControl sender)
     {
@@ -131,10 +141,41 @@ public class TimeMaster : CustomRole
             })));
     }
 
-    public override void ClearAndReload()
+    [MethodRpc((uint)Rpc.Id.TimeMasterRewindTime)]
+    public static void StartRewindTime(PlayerControl sender)
     {
-        base.ClearAndReload();
-        ShieldActive = false;
-        IsRewinding = false;
+        Singleton<TimeMaster>.Instance.ShieldActive = false;
+        SoundEffectsManager.stop("timemasterShield");
+        if (Singleton<TimeMaster>.Instance.IsLocalPlayer())
+        {
+            Singleton<TimeMaster>.Instance.ResetTimeMasterButton();
+        }
+        FastDestroyableSingleton<HudManager>.Instance.FullScreen.color = new Color(0f, 0.5f, 0.8f, 0.3f);
+        FastDestroyableSingleton<HudManager>.Instance.FullScreen.enabled = true;
+        FastDestroyableSingleton<HudManager>.Instance.FullScreen.gameObject.SetActive(true);
+        FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Singleton<TimeMaster>.Instance.RewindTime / 2f,
+            new Action<float>((p) =>
+            {
+                if (p == 1f) FastDestroyableSingleton<HudManager>.Instance.FullScreen.enabled = false;
+            })));
+
+        if (Singleton<TimeMaster>.Instance.IsLocalPlayer()) return; // Time Master himself does not rewind
+
+        Singleton<TimeMaster>.Instance.IsRewinding = true;
+
+        if (MapBehaviour.Instance)
+            MapBehaviour.Instance.Close();
+        if (Minigame.Instance)
+            Minigame.Instance.ForceClose();
+        CachedPlayer.LocalPlayer.PlayerControl.moveable = false;
+    }
+
+    private void ResetTimeMasterButton()
+    {
+        if (_timeShieldButton == null) return;
+        _timeShieldButton.Timer = _timeShieldButton.MaxTimer;
+        _timeShieldButton.isEffectActive = false;
+        _timeShieldButton.actionButton.cooldownTimerText.color = Palette.EnabledColor;
+        SoundEffectsManager.stop("timemasterShield");
     }
 }

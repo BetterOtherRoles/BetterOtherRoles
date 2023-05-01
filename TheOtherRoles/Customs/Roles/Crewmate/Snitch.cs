@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using TheOtherRoles.EnoFramework.Kernel;
+using TheOtherRoles.EnoFramework.Utils;
 using TheOtherRoles.Objects;
 using TMPro;
 using UnityEngine;
@@ -25,6 +26,9 @@ public class Snitch : CustomRole
     {
         Team = Teams.Crewmate;
         Color = new Color32(184, 251, 79, byte.MaxValue);
+
+        IntroDescription = $"Finish your tasks to find the {Colors.Cs(Palette.ImpostorRed, "impostors")}";
+        ShortDescription = "Finish your tasks";
 
         LeftTasksForReveal = OptionsTab.CreateFloatList(
             $"{Name}{nameof(LeftTasksForReveal)}",

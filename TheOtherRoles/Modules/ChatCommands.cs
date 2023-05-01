@@ -4,6 +4,7 @@ using System.Linq;
 using TheOtherRoles.Customs.Modifiers;
 using TheOtherRoles.Customs.Roles.Crewmate;
 using TheOtherRoles.Customs.Roles.Neutral;
+using TheOtherRoles.EnoFramework.Kernel;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 
@@ -15,24 +16,24 @@ namespace TheOtherRoles.Modules {
         [HarmonyPatch(typeof(ChatController), nameof(ChatController.SendChat))]
         private static class SendChatPatch {
             static bool Prefix(ChatController __instance) {
-                string text = __instance.TextArea.text;
-                bool handled = false;
+                var text = __instance.TextArea.text;
+                var handled = false;
                 if (AmongUsClient.Instance.GameState != InnerNet.InnerNetClient.GameStates.Started) {
                     if (text.ToLower().StartsWith("/kick ")) {
-                        string playerName = text.Substring(6);
-                        PlayerControl target = CachedPlayer.AllPlayers.FirstOrDefault(x => x.Data.PlayerName.Equals(playerName));
+                        var playerName = text[6..];
+                        var target = CachedPlayer.AllPlayers.FirstOrDefault(x => x.Data.PlayerName.Equals(playerName));
                         if (target != null && AmongUsClient.Instance != null && AmongUsClient.Instance.CanBan()) {
-                            var client = AmongUsClient.Instance.GetClient(target.OwnerId);
+                            var client = AmongUsClient.Instance.GetClient(target.PlayerControl.OwnerId);
                             if (client != null) {
                                 AmongUsClient.Instance.KickPlayer(client.Id, false);
                                 handled = true;
                             }
                         }
                     } else if (text.ToLower().StartsWith("/ban ")) {
-                        string playerName = text.Substring(6);
-                        PlayerControl target = CachedPlayer.AllPlayers.FirstOrDefault(x => x.Data.PlayerName.Equals(playerName));
+                        var playerName = text.Substring(6);
+                        var target = CachedPlayer.AllPlayers.FirstOrDefault(x => x.Data.PlayerName.Equals(playerName));
                         if (target != null && AmongUsClient.Instance != null && AmongUsClient.Instance.CanBan()) {
-                            var client = AmongUsClient.Instance.GetClient(target.OwnerId);
+                            var client = AmongUsClient.Instance.GetClient(target.PlayerControl.OwnerId);
                             if (client != null) {
                                 AmongUsClient.Instance.KickPlayer(client.Id, true);
                                 handled = true;
@@ -41,15 +42,14 @@ namespace TheOtherRoles.Modules {
                     }
                 }
                 
-                if (AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay) {
+                if (AmongUsClient.Instance != null && AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay) {
                     if (text.ToLower().Equals("/murder")) {
                         CachedPlayer.LocalPlayer.PlayerControl.Exiled();
                         FastDestroyableSingleton<HudManager>.Instance.KillOverlay.ShowKillAnimation(CachedPlayer.LocalPlayer.Data, CachedPlayer.LocalPlayer.Data);
                         handled = true;
                     } else if (text.ToLower().StartsWith("/color ")) {
                         handled = true;
-                        int col;
-                        if (!Int32.TryParse(text.Substring(7), out col)) {
+                        if (!int.TryParse(text.AsSpan(7), out var col)) {
                             __instance.AddChat(CachedPlayer.LocalPlayer.PlayerControl, "Unable to parse color id\nUsage: /color {id}");
                         }
                         col = Math.Clamp(col, 0, Palette.PlayerColors.Length - 1);
@@ -59,10 +59,10 @@ namespace TheOtherRoles.Modules {
                 }
 
                 if (text.ToLower().StartsWith("/tp ") && CachedPlayer.LocalPlayer.Data.IsDead) {
-                    string playerName = text.Substring(4).ToLower();
-                    PlayerControl target = CachedPlayer.AllPlayers.FirstOrDefault(x => x.Data.PlayerName.ToLower().Equals(playerName));
+                    var playerName = text.Substring(4).ToLower();
+                    var target = CachedPlayer.AllPlayers.FirstOrDefault(x => x.Data.PlayerName.ToLower().Equals(playerName));
                     if (target != null) {
-                        CachedPlayer.LocalPlayer.transform.position = target.transform.position;
+                        CachedPlayer.LocalPlayer.transform.position = target.PlayerControl.transform.position;
                         handled = true;
                     }
                 }
@@ -85,8 +85,12 @@ namespace TheOtherRoles.Modules {
         [HarmonyPatch(typeof(ChatBubble), nameof(ChatBubble.SetName))]
         public static class SetBubbleName { 
             public static void Postfix(ChatBubble __instance, [HarmonyArgument(0)] string playerName) {
-                PlayerControl sourcePlayer = PlayerControl.AllPlayerControls.ToArray().ToList().FirstOrDefault(x => x.Data != null && x.Data.PlayerName.Equals(playerName));
-                if (CachedPlayer.LocalPlayer != null && CachedPlayer.LocalPlayer.Data.Role.IsImpostor && (Spy.spy != null && sourcePlayer.PlayerId == Spy.spy.PlayerId || Sidekick.sidekick != null && Sidekick.wasTeamRed && sourcePlayer.PlayerId == Sidekick.sidekick.PlayerId || Jackal.jackal != null && Jackal.wasTeamRed && sourcePlayer.PlayerId == Jackal.jackal.PlayerId) && __instance != null) __instance.NameText.color = Palette.ImpostorRed;
+                var sourcePlayer = PlayerControl.AllPlayerControls.ToArray().ToList().FirstOrDefault(x => x.Data != null && x.Data.PlayerName.Equals(playerName));
+                if (sourcePlayer == null) return;
+                if (CachedPlayer.LocalPlayer == null || !CachedPlayer.LocalPlayer.Data.Role.IsImpostor) return;
+                if (!Singleton<Spy>.Instance.Is(sourcePlayer)) return;
+                if (__instance == null) return;
+                __instance.NameText.color = Palette.ImpostorRed;
             }
         }
 

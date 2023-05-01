@@ -2,6 +2,8 @@ using Il2CppSystem.Runtime.ExceptionServices;
 using System;
 using System.Collections.Generic;
 using TheOtherRoles.Customs.Roles.Crewmate;
+using TheOtherRoles.Customs.Roles.Impostor;
+using TheOtherRoles.EnoFramework.Kernel;
 using TheOtherRoles.Players;
 using TMPro;
 using UnityEngine;
@@ -37,6 +39,7 @@ namespace TheOtherRoles.Objects {
         private string buttonText;
         public bool isHandcuffed = false;
         private static readonly int Desat = Shader.PropertyToID("_Desat");
+        public static DateTime? LocalHandcuffedStart;
 
         public static class ButtonPositions {
             public static readonly Vector3 lowerRowRight = new Vector3(-2f, -0.06f, 0);  // Not usable for imps beacuse of new button positions!
@@ -90,7 +93,7 @@ namespace TheOtherRoles.Objects {
                 this.OnClick();
 
                 // Deputy skip onClickEvent if handcuffed
-                if (Deputy.handcuffedKnows.ContainsKey(CachedPlayer.LocalPlayer.PlayerId) && Deputy.handcuffedKnows[CachedPlayer.LocalPlayer.PlayerId] > 0f) return;
+                if (Singleton<Deputy>.Instance.IsLocalHandcuffed) return;
 
                 if (this.HasEffect && !this.isEffectActive) {
                     this.DeputyTimer = this.EffectDuration;
@@ -231,9 +234,11 @@ namespace TheOtherRoles.Objects {
             if (!actionName.IsNullOrWhiteSpace() && Rewired.ReInput.players.GetPlayer(0).GetButtonDown(actionName)) onClickEvent();
 
             // Deputy disable the button and display Handcuffs instead...
-            if (Deputy.handcuffedPlayers.Contains(localPlayer.PlayerId)) {
-                OnClick = () => {
-                    Deputy.setHandcuffedKnows();
+            if (Singleton<Deputy>.Instance.HandcuffedPlayers.Contains(localPlayer)) {
+                OnClick = () =>
+                {
+                    Singleton<Deputy>.Instance.LocalHandcuffStartAt = DateTime.UtcNow;
+                    Deputy.RemoveHandcuff(localPlayer);
                 };
             } else // Reset.
             {

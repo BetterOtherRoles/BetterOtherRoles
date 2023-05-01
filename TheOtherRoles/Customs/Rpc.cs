@@ -22,6 +22,8 @@ public static class Rpc
         UncheckedMurderPlayer,
         CleanDeadBody,
         UncheckedReportDeadBody,
+        ShareRandomSeeds,
+        ShowFailedMurderAttempt,
 
         // Morphling
         MorphlingMorph,
@@ -66,6 +68,7 @@ public static class Rpc
         
         // TimeMaster
         TimeMasterShield,
+        TimeMasterRewindTime,
         
         // Tracker
         TrackerTrackPlayer,
@@ -80,6 +83,11 @@ public static class Rpc
         
         // Trapper
         TrapperPlaceTrap,
+        TrapperTriggerTrap,
+        
+        // Pursuer
+        PursuerBlankPlayer,
+        PursuerRemoveBlank,
     }
 
     public static void SetInvisibility(PlayerControl player, bool visible)

@@ -36,9 +36,12 @@ public class Vampire : CustomRole
         CanTarget = true;
         IncompatibleRoles.Add(typeof(Warlock));
 
+        IntroDescription = "Kill the Crewmates with your bites";
+        ShortDescription = "Bite your enemies";
+
         VampireDelay = OptionsTab.CreateFloatList(
             $"{nameof(VampireDelay)}",
-            Colors.Cs(Color, "Vampire kill delay"),
+            Cs("Vampire kill delay"),
             1f,
             20f,
             10f,
@@ -48,7 +51,7 @@ public class Vampire : CustomRole
             "s");
         VampireCooldown = OptionsTab.CreateFloatList(
             nameof(VampireCooldown),
-            Colors.Cs(Color, $"{Name} cooldown"),
+            Cs($"{Name} cooldown"),
             10f,
             60f,
             30f,
@@ -58,7 +61,7 @@ public class Vampire : CustomRole
             "s");
         CanKillNearGarlics = OptionsTab.CreateBool(
             $"{Name}{nameof(CanKillNearGarlics)},",
-            Colors.Cs(Color, "Can kill near garlics"),
+            Cs("Can kill near garlics"),
             true,
             SpawnRate);
     }

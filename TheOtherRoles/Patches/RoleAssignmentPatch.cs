@@ -277,18 +277,18 @@ namespace TheOtherRoles.Patches {
             }
 
             // --- Assign Main Roles if they won the lottery ---
-            if (isSheriff && Sheriff.sheriff == null && data.crewmates.Count > 0 && data.maxCrewmateRoles > 0 && sheriffFlag) { // Set Sheriff cause he won the lottery
+            if (isSheriff && Singleton<Sheriff>.Instance.Player == null && data.crewmates.Count > 0 && data.maxCrewmateRoles > 0 && sheriffFlag) { // Set Sheriff cause he won the lottery
                 byte sheriff = setRoleToRandomPlayer((byte)RoleId.Sheriff, data.crewmates);
                 data.crewmates.ToList().RemoveAll(x => x.PlayerId == sheriff);
                 data.maxCrewmateRoles--;
             }
             if (!isGuesserGamemode) {
-                if (!isEvilGuesser && isGuesser && Guesser.niceGuesser == null && data.crewmates.Count > 0 && data.maxCrewmateRoles > 0 && guesserFlag) { // Set Nice Guesser cause he won the lottery
+                if (!isEvilGuesser && isGuesser && Singleton<NiceGuesser>.Instance.Player == null && data.crewmates.Count > 0 && data.maxCrewmateRoles > 0 && guesserFlag) { // Set Nice Guesser cause he won the lottery
                     byte niceGuesser = setRoleToRandomPlayer((byte)RoleId.NiceGuesser, data.crewmates);
                     data.crewmates.ToList().RemoveAll(x => x.PlayerId == niceGuesser);
                     data.maxCrewmateRoles--;
                 }
-                else if (isEvilGuesser && isGuesser && Guesser.evilGuesser == null && data.impostors.Count > 0 && data.maxImpostorRoles > 0 && guesserFlag) { // Set Evil Guesser cause he won the lottery
+                else if (isEvilGuesser && isGuesser && Singleton<EvilGuesser>.Instance.Player == null && data.impostors.Count > 0 && data.maxImpostorRoles > 0 && guesserFlag) { // Set Evil Guesser cause he won the lottery
                     byte evilGuesser = setRoleToRandomPlayer((byte)RoleId.EvilGuesser, data.impostors);
                     data.impostors.ToList().RemoveAll(x => x.PlayerId == evilGuesser);
                     data.maxImpostorRoles--;
@@ -296,7 +296,7 @@ namespace TheOtherRoles.Patches {
             }
 
             // --- Assign Dependent Roles if main role exists ---
-            if (Sheriff.sheriff != null) { // Deputy
+            if (Singleton<Sheriff>.Instance.Player != null) { // Deputy
                 if (CustomOptionHolder.deputySpawnRate.getSelection() == 10 && data.crewmates.Count > 0 && data.maxCrewmateRoles > 0) { // Force Deputy
                     byte deputy = setRoleToRandomPlayer((byte)RoleId.Deputy, data.crewmates);
                     data.crewmates.ToList().RemoveAll(x => x.PlayerId == deputy);
@@ -308,7 +308,7 @@ namespace TheOtherRoles.Patches {
             if (!data.crewSettings.ContainsKey((byte)RoleId.Sheriff)) data.crewSettings.Add((byte)RoleId.Sheriff, 0);
 
             if (!isGuesserGamemode) {
-                if (!isEvilGuesser && Guesser.niceGuesser != null) { // Other Guesser (evil)
+                if (!isEvilGuesser && Singleton<NiceGuesser>.Instance.Player != null) { // Other Guesser (evil)
                     if (CustomOptionHolder.guesserSpawnBothRate.getSelection() == 10 && data.impostors.Count > 0 && data.maxImpostorRoles > 0) { // Force other guesser (evil)
                         byte bothGuesser = setRoleToRandomPlayer((byte)RoleId.EvilGuesser, data.impostors);
                         data.impostors.ToList().RemoveAll(x => x.PlayerId == bothGuesser);
@@ -317,7 +317,7 @@ namespace TheOtherRoles.Patches {
                     else if (CustomOptionHolder.guesserSpawnBothRate.getSelection() < 10) // Dont force, add Guesser (evil) to the ticket system
                         data.impSettings.Add((byte)RoleId.EvilGuesser, CustomOptionHolder.guesserSpawnBothRate.getSelection());
                 }
-                else if (isEvilGuesser && Guesser.evilGuesser != null) { // ELSE other Guesser (nice)
+                else if (isEvilGuesser && Singleton<EvilGuesser>.Instance.Player != null) { // ELSE other Guesser (nice)
                     if (CustomOptionHolder.guesserSpawnBothRate.getSelection() == 10 && data.crewmates.Count > 0 && data.maxCrewmateRoles > 0) { // Force other guesser (nice)
                         byte bothGuesser = setRoleToRandomPlayer((byte)RoleId.NiceGuesser, data.crewmates);
                         data.crewmates.ToList().RemoveAll(x => x.PlayerId == bothGuesser);
@@ -377,16 +377,16 @@ namespace TheOtherRoles.Patches {
 
         private static void assignRoleTargets(RoleAssignmentData data) {
             // Set Lawyer or Prosecutor Target
-            if (Lawyer.lawyer != null) {
+            if (Singleton<Lawyer>.Instance.Player != null) {
                 var possibleTargets = new List<PlayerControl>();
                 if (!Lawyer.isProsecutor) { // Lawyer
                     foreach (PlayerControl p in CachedPlayer.AllPlayers) {
-                        if (!p.Data.IsDead && !p.Data.Disconnected && p != Lovers.lover1 && p != Lovers.lover2 && (p.Data.Role.IsImpostor || p == Jackal.jackal || (Lawyer.targetCanBeJester && p == Jester.jester)))
+                        if (!p.Data.IsDead && !p.Data.Disconnected && p != Lovers.lover1 && p != Lovers.lover2 && (p.Data.Role.IsImpostor || p == Singleton<Jackal>.Instance.Player || (Singleton<Lawyer>.Instance.TargetCanBeJester && p == Singleton<Jester>.Instance.Player)))
                             possibleTargets.Add(p);
                     }
                 } else { // Prosecutor
                     foreach (PlayerControl p in CachedPlayer.AllPlayers) {
-                        if (!p.Data.IsDead && !p.Data.Disconnected && p != Lovers.lover1 && p != Lovers.lover2 && p != Mini.mini && !p.Data.Role.IsImpostor && !Helpers.isNeutral(p) && p != Swapper.swapper)
+                        if (!p.Data.IsDead && !p.Data.Disconnected && p != Lovers.lover1 && p != Lovers.lover2 && p != Mini.mini && !p.Data.Role.IsImpostor && !Helpers.isNeutral(p) && p != Singleton<Swapper>.Instance.Player)
                             possibleTargets.Add(p);
                     }
                 }
@@ -439,7 +439,7 @@ namespace TheOtherRoles.Patches {
                 List<PlayerControl> impPlayer = new List<PlayerControl>(players);
                 List<PlayerControl> crewPlayer = new List<PlayerControl>(players);
                 impPlayer.RemoveAll(x => !x.Data.Role.IsImpostor);
-                crewPlayer.RemoveAll(x => x.Data.Role.IsImpostor || x == Lawyer.lawyer);
+                crewPlayer.RemoveAll(x => x.Data.Role.IsImpostor || x == Singleton<Lawyer>.Instance.Player);
 
                 if (isEvilLover) firstLoverId = setModifierToRandomPlayer((byte)RoleId.Lover, impPlayer);
                 else firstLoverId = setModifierToRandomPlayer((byte)RoleId.Lover, crewPlayer);
@@ -492,8 +492,8 @@ namespace TheOtherRoles.Patches {
             for (int i = 0; i < count && playerList.Count > 0; i++) {
                 var index = rnd.Next(0, playerList.Count);
                 if (forceJackal) {
-                    if (Jackal.jackal != null)
-                        index = playerList.FindIndex(x => x == Jackal.jackal);
+                    if (Singleton<Jackal>.Instance.Player != null)
+                        index = playerList.FindIndex(x => x == Singleton<Jackal>.Instance.Player);
                     forceJackal = false;
                 }
                 byte playerId = playerList[index].PlayerId;
@@ -550,7 +550,7 @@ namespace TheOtherRoles.Patches {
             crewPlayer.RemoveAll(x => x.Data.Role.IsImpostor || RoleInfo.getRoleInfoForPlayer(x).Any(r => r.isNeutral));
             if (modifiers.Contains(RoleId.Shifter)) {
                 var crewPlayerShifter = new List<PlayerControl>(crewPlayer);
-                crewPlayerShifter.RemoveAll(x => x == Spy.spy);
+                crewPlayerShifter.RemoveAll(x => x == Singleton<Spy>.Instance.Player);
                 playerId = setModifierToRandomPlayer((byte)RoleId.Shifter, crewPlayerShifter);
                 crewPlayer.RemoveAll(x => x.PlayerId == playerId);
                 playerList.RemoveAll(x => x.PlayerId == playerId);

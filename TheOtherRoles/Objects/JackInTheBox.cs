@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using TheOtherRoles.Customs.Roles.Crewmate;
 using TheOtherRoles.Customs.Roles.Impostor;
+using TheOtherRoles.EnoFramework.Kernel;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 
@@ -71,8 +73,7 @@ namespace TheOtherRoles.Objects {
             vent.name = "JackInTheBoxVent_" + vent.Id;
 
             // Only render the box for the Trickster
-            var playerIsTrickster = CachedPlayer.LocalPlayer.PlayerControl == Trickster.trickster;
-            gameObject.SetActive(playerIsTrickster);
+            gameObject.SetActive(Singleton<Trickster>.Instance.IsLocalPlayer());
 
             AllJackInTheBoxes.Add(this);
         }
@@ -80,8 +81,7 @@ namespace TheOtherRoles.Objects {
         public static void UpdateStates() {
             if (boxesConvertedToVents == true) return;
             foreach (var box in AllJackInTheBoxes) {
-                var playerIsTrickster = CachedPlayer.LocalPlayer.PlayerControl == Trickster.trickster;
-                box.gameObject.SetActive(playerIsTrickster);
+                box.gameObject.SetActive(Singleton<Trickster>.Instance.IsLocalPlayer());
             }
         }
 

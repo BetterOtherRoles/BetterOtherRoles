@@ -1,4 +1,5 @@
 ﻿using TheOtherRoles.EnoFramework.Kernel;
+using TheOtherRoles.EnoFramework.Utils;
 
 namespace TheOtherRoles.Customs.Roles.Crewmate;
 
@@ -14,6 +15,9 @@ public class Spy : CustomRole
     {
         Team = Teams.Crewmate;
         Color = Palette.ImpostorRed;
+
+        IntroDescription = $"Confuse the {Colors.Cs(Palette.ImpostorRed, "impostors")}";
+        ShortDescription = "Confuse the Impostors";
 
         ImpostorsCanKillAnyone = OptionsTab.CreateBool(
             $"{Name}{nameof(ImpostorsCanKillAnyone)}",

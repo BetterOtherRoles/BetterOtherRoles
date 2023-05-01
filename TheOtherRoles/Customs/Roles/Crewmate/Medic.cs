@@ -27,6 +27,7 @@ public class Medic : CustomRole
     public PlayerControl? FutureShieldedPlayer;
     public bool UsedShield;
     public bool VisibleShield;
+    public bool MeetingAfterShielding;
 
     public bool IsShielded(PlayerControl player)
     {
@@ -41,31 +42,34 @@ public class Medic : CustomRole
         CanTarget = true;
         ShieldColor = new Color32(0, 221, 255, byte.MaxValue);
 
+        IntroDescription = "Protect someone with your shield";
+        ShortDescription = "Protect other players";
+
         ShowMurderAttemptToMedic = OptionsTab.CreateBool(
             $"{Name}{nameof(ShowMurderAttemptToMedic)}",
-            Colors.Cs(Color, "Show murder attempt to medic"),
+            Cs("Show murder attempt to medic"),
             false,
             SpawnRate);
         ShowMurderAttemptToShielded = OptionsTab.CreateBool(
             $"{Name}{nameof(ShowMurderAttemptToShielded)}",
-            Colors.Cs(Color, "Show murder attempt to shielded"),
+            Cs("Show murder attempt to shielded"),
             false,
             SpawnRate);
         WhenSetShield = OptionsTab.CreateStringList(
             $"{Name}{nameof(WhenSetShield)}",
-            Colors.Cs(Color, "Shield will be activated"),
+            Cs("Shield will be activated"),
             new List<string> { "instantly", "after meeting" },
             "instantly",
             SpawnRate);
         WhenShowShield = OptionsTab.CreateStringList(
             $"{Name}{nameof(WhenShowShield)}",
-            Colors.Cs(Color, "Shield will be shown"),
+            Cs("Shield will be shown"),
             new List<string> { "never", "instantly", "after meeting" },
             "instantly",
             SpawnRate);
         ShowShield = OptionsTab.CreateStringList(
             $"{Name}{nameof(ShowShield)}",
-            Colors.Cs(Color, "Show shielded player"),
+            Cs("Show shielded player"),
             new List<string> { "everyone", "shielded + medic", "medic" },
             "shielded + medic",
             WhenShowShield);
@@ -133,6 +137,7 @@ public class Medic : CustomRole
         ShieldedPlayer = null;
         FutureShieldedPlayer = null;
         UsedShield = false;
+        MeetingAfterShielding = false;
     }
 
     [MethodRpc((uint)Rpc.Id.MedicShieldPlayer)]

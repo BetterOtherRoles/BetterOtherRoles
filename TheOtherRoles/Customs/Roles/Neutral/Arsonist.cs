@@ -30,9 +30,12 @@ public class Arsonist : CustomRole
         Color = new Color32(238, 112, 46, byte.MaxValue);
         CanTarget = true;
 
+        IntroDescription = "Let them burn";
+        ShortDescription = "Let them burn";
+
         DouseCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(DouseCooldown)}",
-            Colors.Cs(Color, "Douse cooldown"),
+            Cs("Douse cooldown"),
             10f,
             60f,
             30f,
@@ -42,7 +45,7 @@ public class Arsonist : CustomRole
             "s");
         DouseDuration = OptionsTab.CreateFloatList(
             $"{Name}{nameof(DouseDuration)}",
-            Colors.Cs(Color, "Douse duration"),
+            Cs("Douse duration"),
             0f,
             10f,
             1f,

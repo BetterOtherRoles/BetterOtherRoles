@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TheOtherRoles.Customs.Roles.Impostor;
+using TheOtherRoles.EnoFramework.Kernel;
 using TheOtherRoles.Utilities;
 using UnityEngine;
 using static TheOtherRoles.TheOtherRoles;
@@ -47,7 +48,7 @@ namespace TheOtherRoles.Objects {
 
             FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(10f, new Action<float>((p) => {
             Color c = color;
-            if (Camouflager.camouflageTimer > 0) c = Palette.PlayerColors[6];
+            if (Singleton<Camouflager>.Instance.CamouflagerTimer > 0) c = Palette.PlayerColors[6];
             if (spriteRenderer) spriteRenderer.color = new Color(c.r, c.g, c.b, Mathf.Clamp01(1 - p));
 
             if (p == 1f && blood != null) {

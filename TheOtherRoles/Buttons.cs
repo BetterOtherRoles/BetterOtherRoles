@@ -296,78 +296,10 @@ namespace TheOtherRoles
                 true
             );
 
-            // Pursuer button
-            pursuerButton = new CustomButton(
-                () => {
-                    if (Pursuer.target != null) {
-                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SetBlanked, Hazel.SendOption.Reliable, -1);
-                        writer.Write(Pursuer.target.PlayerId);
-                        writer.Write(Byte.MaxValue);
-                        AmongUsClient.Instance.FinishRpcImmediately(writer);
-                        RPCProcedure.setBlanked(Pursuer.target.PlayerId, Byte.MaxValue);
-
-                        Pursuer.target = null;
-
-                        Pursuer.blanks++;
-                        pursuerButton.Timer = pursuerButton.MaxTimer;
-                        SoundEffectsManager.play("pursuerBlank");
-                    }
-
-                },
-                () => { return Pursuer.pursuer != null && Pursuer.pursuer == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead && Pursuer.blanks < Pursuer.blanksNumber; },
-                () => {
-                    if (pursuerButtonBlanksText != null) pursuerButtonBlanksText.text = $"{Pursuer.blanksNumber - Pursuer.blanks}";
-
-                    return Pursuer.blanksNumber > Pursuer.blanks && CachedPlayer.LocalPlayer.PlayerControl.CanMove && Pursuer.target != null;
-                },
-                () => { pursuerButton.Timer = pursuerButton.MaxTimer; },
-                Pursuer.getTargetSprite(),
-                CustomButton.ButtonPositions.lowerRowRight,
-                __instance,
-                "ActionQuaternary"
-            );
-
-            // Pursuer button blanks left
-            pursuerButtonBlanksText = GameObject.Instantiate(pursuerButton.actionButton.cooldownTimerText, pursuerButton.actionButton.cooldownTimerText.transform.parent);
-            pursuerButtonBlanksText.text = "";
-            pursuerButtonBlanksText.enableWordWrapping = false;
-            pursuerButtonBlanksText.transform.localScale = Vector3.one * 0.5f;
-            pursuerButtonBlanksText.transform.localPosition += new Vector3(-0.05f, 0.7f, 0);
-
-            // Trapper button
-            trapperButton = new CustomButton(
-                () => {
-
-
-                    var pos = CachedPlayer.LocalPlayer.transform.position;
-                    byte[] buff = new byte[sizeof(float) * 2];
-                    Buffer.BlockCopy(BitConverter.GetBytes(pos.x), 0, buff, 0 * sizeof(float), sizeof(float));
-                    Buffer.BlockCopy(BitConverter.GetBytes(pos.y), 0, buff, 1 * sizeof(float), sizeof(float));
-
-                    MessageWriter writer = AmongUsClient.Instance.StartRpc(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SetTrap, Hazel.SendOption.Reliable);
-                    writer.WriteBytesAndSize(buff);
-                    writer.EndMessage();
-                    RPCProcedure.setTrap(buff);
-
-                    SoundEffectsManager.play("trapperTrap");
-                    trapperButton.Timer = trapperButton.MaxTimer;
-                },
-                () => { return Trapper.trapper != null && Trapper.trapper == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
-                () => {
-                    if (trapperChargesText != null) trapperChargesText.text = $"{Trapper.charges} / {Trapper.maxCharges}";
-                    return CachedPlayer.LocalPlayer.PlayerControl.CanMove && Trapper.charges > 0;
-                },
-                () => { trapperButton.Timer = trapperButton.MaxTimer; },
-                Trapper.getButtonSprite(),
-                CustomButton.ButtonPositions.lowerRowRight,
-                __instance,
-                "ActionQuaternary"
-            );
-
             // Bomber button
             bomberButton = new CustomButton(
                 () => {
-                    if (Helpers.checkMurderAttempt(Bomber.bomber, Bomber.bomber) != MurderAttemptResult.BlankKill) {
+                    if (Helpers.checkMurderAttempt(Singleton<Bomber>.Instance.Player, Singleton<Bomber>.Instance.Player) != MurderAttemptResult.BlankKill) {
                         var pos = CachedPlayer.LocalPlayer.transform.position;
                         byte[] buff = new byte[sizeof(float) * 2];
                         Buffer.BlockCopy(BitConverter.GetBytes(pos.x), 0, buff, 0 * sizeof(float), sizeof(float));
@@ -384,7 +316,7 @@ namespace TheOtherRoles
                     bomberButton.Timer = bomberButton.MaxTimer;
                     Bomber.isPlanted = true;
                 },
-                () => { return Bomber.bomber != null && Bomber.bomber == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
+                () => { return Singleton<Bomber>.Instance.Player != null && Singleton<Bomber>.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
                 () => { return CachedPlayer.LocalPlayer.PlayerControl.CanMove && !Bomber.isPlanted; },
                 () => { bomberButton.Timer = bomberButton.MaxTimer; },
                 Bomber.getButtonSprite(),
@@ -440,7 +372,7 @@ namespace TheOtherRoles
 
             thiefKillButton = new CustomButton(
                 () => {
-                    PlayerControl thief = Thief.thief;
+                    PlayerControl thief = Singleton<Thief>.Instance.Player;
                     PlayerControl target = Thief.currentTarget;
                     var result = Helpers.checkMurderAttempt(thief, target);
                     if (result == MurderAttemptResult.BlankKill) {
@@ -456,11 +388,11 @@ namespace TheOtherRoles
                         writer2.Write(0);
                         RPCProcedure.uncheckedMurderPlayer(thief.PlayerId, thief.PlayerId, 0);
                         AmongUsClient.Instance.FinishRpcImmediately(writer2);
-                        Thief.thief.clearAllTasks();
+                        Singleton<Thief>.Instance.Player.clearAllTasks();
                     }
 
                     // Steal role if survived.
-                    if (!Thief.thief.Data.IsDead && result == MurderAttemptResult.PerformKill) {
+                    if (!Singleton<Thief>.Instance.Player.Data.IsDead && result == MurderAttemptResult.PerformKill) {
                         MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ThiefStealsRole, Hazel.SendOption.Reliable, -1);
                         writer.Write(target.PlayerId);
                         AmongUsClient.Instance.FinishRpcImmediately(writer);
@@ -476,7 +408,7 @@ namespace TheOtherRoles
                         RPCProcedure.uncheckedMurderPlayer(thief.PlayerId, target.PlayerId, byte.MaxValue);
                     }
                 },
-               () => { return Thief.thief != null && CachedPlayer.LocalPlayer.PlayerControl == Thief.thief && !CachedPlayer.LocalPlayer.Data.IsDead; },
+               () => { return Singleton<Thief>.Instance.Player != null && CachedPlayer.LocalPlayer.PlayerControl == Singleton<Thief>.Instance.Player && !CachedPlayer.LocalPlayer.Data.IsDead; },
                () => { return Thief.currentTarget != null && CachedPlayer.LocalPlayer.PlayerControl.CanMove; },
                () => { thiefKillButton.Timer = thiefKillButton.MaxTimer; },
                __instance.KillButton.graphic.sprite,

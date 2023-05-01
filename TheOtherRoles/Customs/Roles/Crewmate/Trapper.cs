@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Reactor.Networking.Attributes;
 using TheOtherRoles.EnoFramework.Kernel;
+using TheOtherRoles.EnoFramework.Utils;
 using TheOtherRoles.Objects;
 using TheOtherRoles.Players;
 using TMPro;
@@ -32,6 +33,9 @@ public class Trapper : CustomRole
     {
         Team = Teams.Crewmate;
         Color = new Color32(110, 57, 105, byte.MaxValue);
+
+        IntroDescription = $"Place traps to find the {Colors.Cs(Palette.ImpostorRed, "impostors")}";
+        ShortDescription = "Place traps";
 
         PlaceTrapCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(PlaceTrapCooldown)}",
@@ -161,5 +165,14 @@ public class Trapper : CustomRole
         position.x = float.Parse(rawPos[0]);
         position.y = float.Parse(rawPos[1]);
         var _ = new Trap(position);
+    }
+
+    [MethodRpc((uint)Rpc.Id.TrapperTriggerTrap)]
+    public static void TriggerTrap(PlayerControl sender, string rawData)
+    {
+        var data = rawData.Split("|");
+        var playerId = byte.Parse(data[0]);
+        var trapId = byte.Parse(data[1]);
+        Trap.triggerTrap(playerId, trapId);
     }
 }

@@ -101,9 +101,9 @@ namespace TheOtherRoles.Patches
                 }
 
                 // If player is Lighter with ability active
-                if (Lighter.lighter != null && Lighter.lighter.PlayerId == player.PlayerId) {
+                if (Singleton<Lighter>.Instance.Player != null && Singleton<Lighter>.Instance.Player.PlayerId == player.PlayerId) {
                     float unlerped = Mathf.InverseLerp(__instance.MinLightRadius, __instance.MaxLightRadius, GetNeutralLightRadius(__instance, false));
-                    __result = Mathf.Lerp(__instance.MaxLightRadius * Lighter.lighterModeLightsOffVision, __instance.MaxLightRadius * Lighter.lighterModeLightsOnVision, unlerped);
+                    __result = Mathf.Lerp(__instance.MaxLightRadius * Singleton<Lighter>.Instance.PlayerModeLightsOffVision, __instance.MaxLightRadius * Singleton<Lighter>.Instance.PlayerModeLightsOnVision, unlerped);
                 }
 
                 // If Game mode is Hide N Seek and hunter with ability active
@@ -113,7 +113,7 @@ namespace TheOtherRoles.Patches
                 }
 
                 // If there is a Trickster with their ability active
-                else if (Trickster.trickster != null && Trickster.lightsOutTimer > 0f) {
+                else if (Singleton<Trickster>.Instance.Player != null && Trickster.lightsOutTimer > 0f) {
                     float lerpValue = 1f;
                     if (Trickster.lightsOutDuration - Trickster.lightsOutTimer < 0.5f) {
                         lerpValue = Mathf.Clamp01((Trickster.lightsOutDuration - Trickster.lightsOutTimer) * 2);
@@ -125,7 +125,7 @@ namespace TheOtherRoles.Patches
                 }
 
                 // If player is Lawyer, apply Lawyer vision modifier
-                else if (Lawyer.lawyer != null && Lawyer.lawyer.PlayerId == player.PlayerId) {
+                else if (Singleton<Lawyer>.Instance.Player != null && Singleton<Lawyer>.Instance.Player.PlayerId == player.PlayerId) {
                     float unlerped = Mathf.InverseLerp(__instance.MinLightRadius, __instance.MaxLightRadius, GetNeutralLightRadius(__instance, false));
                     __result = Mathf.Lerp(__instance.MinLightRadius, __instance.MaxLightRadius * Lawyer.vision, unlerped);
                     return false;

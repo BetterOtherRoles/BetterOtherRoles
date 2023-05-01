@@ -36,6 +36,9 @@ public class Portalmaker : CustomRole
         Team = Teams.Crewmate;
         Color = new Color32(69, 69, 169, byte.MaxValue);
 
+        IntroDescription = "You can create portals";
+        ShortDescription = "You can create portals";
+
         PortalCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(PortalCooldown)}",
             Cs("Portal cooldown"),

@@ -37,7 +37,7 @@ namespace TheOtherRoles.Patches {
                 if (player)
                 {
                     var playerName = text;
-                    if (morphTimerNotUp && morphTargetNotNull && Morphling.morphling == player) playerName = Morphling.morphTarget.Data.PlayerName;
+                    if (morphTimerNotUp && morphTargetNotNull && Singleton<Morphling>.Instance.Player == player) playerName = Morphling.morphTarget.Data.PlayerName;
                     var nameText = player.cosmetics.nameText;
                 
                     nameText.text = Helpers.hidePlayerName(localPlayer, player) ? "" : playerName;
@@ -78,95 +78,95 @@ namespace TheOtherRoles.Patches {
             var localRole = RoleInfo.getRoleInfoForPlayer(localPlayer, false).FirstOrDefault();
             setPlayerNameColor(localPlayer, localRole.color);
 
-            /*if (Jester.jester != null && Jester.jester == localPlayer)
-                setPlayerNameColor(Jester.jester, Jester.color);
-            else if (Mayor.mayor != null && Mayor.mayor == localPlayer)
-                setPlayerNameColor(Mayor.mayor, Mayor.color);
-            else if (Engineer.engineer != null && Engineer.engineer == localPlayer)
-                setPlayerNameColor(Engineer.engineer, Engineer.color);
-            else if (Sheriff.sheriff != null && Sheriff.sheriff == localPlayer) {
-                setPlayerNameColor(Sheriff.sheriff, Sheriff.color);
-                if (Deputy.deputy != null && Deputy.knowsSheriff) {
-                    setPlayerNameColor(Deputy.deputy, Deputy.color);
+            /*if (Singleton<Jester>.Instance.Player != null && Singleton<Jester>.Instance.Player == localPlayer)
+                setPlayerNameColor(Singleton<Jester>.Instance.Player, Singleton<Jester>.Instance.Color);
+            else if (Singleton<Mayor>.Instance.Player != null && Singleton<Mayor>.Instance.Player == localPlayer)
+                setPlayerNameColor(Singleton<Mayor>.Instance.Player, Singleton<Mayor>.Instance.Color);
+            else if (Singleton<Engineer>.Instance.Player != null && Singleton<Engineer>.Instance.Player == localPlayer)
+                setPlayerNameColor(Singleton<Engineer>.Instance.Player, Singleton<Engineer>.Instance.Color);
+            else if (Singleton<Sheriff>.Instance.Player != null && Singleton<Sheriff>.Instance.Player == localPlayer) {
+                setPlayerNameColor(Singleton<Sheriff>.Instance.Player, Singleton<Sheriff>.Instance.Color);
+                if (Singleton<Deputy>.Instance.Player != null && Deputy.knowsSheriff) {
+                    setPlayerNameColor(Singleton<Deputy>.Instance.Player, Deputy.color);
                 }
             } else*/
-            if (Deputy.deputy != null && Deputy.deputy == localPlayer) {
-                setPlayerNameColor(Deputy.deputy, Deputy.color);
-                if (Sheriff.sheriff != null && Deputy.knowsSheriff) {
-                    setPlayerNameColor(Sheriff.sheriff, Sheriff.color);
+            if (Singleton<Deputy>.Instance.Player != null && Singleton<Deputy>.Instance.Player == localPlayer) {
+                setPlayerNameColor(Singleton<Deputy>.Instance.Player, Deputy.color);
+                if (Singleton<Sheriff>.Instance.Player != null && Deputy.knowsSheriff) {
+                    setPlayerNameColor(Singleton<Sheriff>.Instance.Player, Singleton<Sheriff>.Instance.Color);
                 }
-            } /*else if (Portalmaker.portalmaker != null && Portalmaker.portalmaker == localPlayer)
-                setPlayerNameColor(Portalmaker.portalmaker, Portalmaker.color);
-            else if (Lighter.lighter != null && Lighter.lighter == localPlayer)
-                setPlayerNameColor(Lighter.lighter, Lighter.color);
-            else if (Detective.detective != null && Detective.detective == localPlayer)
-                setPlayerNameColor(Detective.detective, Detective.color);
-            else if (TimeMaster.timeMaster != null && TimeMaster.timeMaster == localPlayer)
-                setPlayerNameColor(TimeMaster.timeMaster, TimeMaster.color);
-            else if (Medic.medic != null && Medic.medic == localPlayer)
-                setPlayerNameColor(Medic.medic, Medic.color);
+            } /*else if (Singleton<Portalmaker>.Instance.Player != null && Singleton<Portalmaker>.Instance.Player == localPlayer)
+                setPlayerNameColor(Singleton<Portalmaker>.Instance.Player, Singleton<Portalmaker>.Instance.Color);
+            else if (Singleton<Lighter>.Instance.Player != null && Singleton<Lighter>.Instance.Player == localPlayer)
+                setPlayerNameColor(Singleton<Lighter>.Instance.Player, Singleton<Lighter>.Instance.Color);
+            else if (Singleton<Detective>.Instance.Player != null && Singleton<Detective>.Instance.Player == localPlayer)
+                setPlayerNameColor(Singleton<Detective>.Instance.Player, Singleton<Detective>.Instance.Color);
+            else if (Singleton<TimeMaster>.Instance.Player != null && Singleton<TimeMaster>.Instance.Player == localPlayer)
+                setPlayerNameColor(Singleton<TimeMaster>.Instance.Player, Singleton<TimeMaster>.Instance.Color);
+            else if (Singleton<Medic>.Instance.Player != null && Singleton<Medic>.Instance.Player == localPlayer)
+                setPlayerNameColor(Singleton<Medic>.Instance.Player, Singleton<Medic>.Instance.Color);
             else if (Shifter.shifter != null && Shifter.shifter == localPlayer)
                 setPlayerNameColor(Shifter.shifter, Shifter.color);
-            else if (Swapper.swapper != null && Swapper.swapper == localPlayer)
-                setPlayerNameColor(Swapper.swapper, Swapper.color);
-            else if (Seer.seer != null && Seer.seer == localPlayer)
-                setPlayerNameColor(Seer.seer, Seer.color);
-            else if (Hacker.hacker != null && Hacker.hacker == localPlayer)
-                setPlayerNameColor(Hacker.hacker, Hacker.color);
-            else if (Tracker.tracker != null && Tracker.tracker == localPlayer)
-                setPlayerNameColor(Tracker.tracker, Tracker.color);
-            else if (Snitch.snitch != null && Snitch.snitch == localPlayer)
-                setPlayerNameColor(Snitch.snitch, Snitch.color);*/
-            else if (Jackal.jackal != null && Jackal.jackal == localPlayer) {
+            else if (Singleton<Swapper>.Instance.Player != null && Singleton<Swapper>.Instance.Player == localPlayer)
+                setPlayerNameColor(Singleton<Swapper>.Instance.Player, Singleton<Swapper>.Instance.Color);
+            else if (Singleton<Seer>.Instance.Player != null && Singleton<Seer>.Instance.Player == localPlayer)
+                setPlayerNameColor(Singleton<Seer>.Instance.Player, Singleton<Seer>.Instance.Color);
+            else if (Singleton<Hacker>.Instance.Player != null && Singleton<Hacker>.Instance.Player == localPlayer)
+                setPlayerNameColor(Singleton<Hacker>.Instance.Player, Singleton<Hacker>.Instance.Color);
+            else if (Singleton<Tracker>.Instance.Player != null && Singleton<Tracker>.Instance.Player == localPlayer)
+                setPlayerNameColor(Singleton<Tracker>.Instance.Player, Singleton<Tracker>.Instance.Color);
+            else if (Singleton<Snitch>.Instance.Player != null && Singleton<Snitch>.Instance.Player == localPlayer)
+                setPlayerNameColor(Singleton<Snitch>.Instance.Player, Singleton<Snitch>.Instance.Color);*/
+            else if (Singleton<Jackal>.Instance.Player != null && Singleton<Jackal>.Instance.Player == localPlayer) {
                 // Jackal can see his sidekick
-                setPlayerNameColor(Jackal.jackal, Jackal.color);
-                if (Sidekick.sidekick != null) {
-                    setPlayerNameColor(Sidekick.sidekick, Jackal.color);
+                setPlayerNameColor(Singleton<Jackal>.Instance.Player, Singleton<Jackal>.Instance.Color);
+                if (Singleton<Sidekick>.Instance.Player != null) {
+                    setPlayerNameColor(Singleton<Sidekick>.Instance.Player, Singleton<Jackal>.Instance.Color);
                 }
                 if (Jackal.fakeSidekick != null) {
-                    setPlayerNameColor(Jackal.fakeSidekick, Jackal.color);
+                    setPlayerNameColor(Jackal.fakeSidekick, Singleton<Jackal>.Instance.Color);
                 }
             }
-            /*else if (Spy.spy != null && Spy.spy == localPlayer) {
-                setPlayerNameColor(Spy.spy, Spy.color);
-            } else if (SecurityGuard.securityGuard != null && SecurityGuard.securityGuard == localPlayer) {
-                setPlayerNameColor(SecurityGuard.securityGuard, SecurityGuard.color);
-            } else if (Arsonist.arsonist != null && Arsonist.arsonist == localPlayer) {
-                setPlayerNameColor(Arsonist.arsonist, Arsonist.color);
-            } else if (Guesser.niceGuesser != null && Guesser.niceGuesser == localPlayer) {
-                setPlayerNameColor(Guesser.niceGuesser, Guesser.color);
-            } else if (Guesser.evilGuesser != null && Guesser.evilGuesser == localPlayer) {
-                setPlayerNameColor(Guesser.evilGuesser, Palette.ImpostorRed);
-            } else if (Vulture.vulture != null && Vulture.vulture == localPlayer) {
-                setPlayerNameColor(Vulture.vulture, Vulture.color);
-            } else if (Medium.medium != null && Medium.medium == localPlayer) {
-                setPlayerNameColor(Medium.medium, Medium.color);
-            } else if (Trapper.trapper != null && Trapper.trapper == localPlayer) {
-                setPlayerNameColor(Trapper.trapper, Trapper.color);
-            } else if (Lawyer.lawyer != null && Lawyer.lawyer == localPlayer) {
-                setPlayerNameColor(Lawyer.lawyer, Lawyer.color);
-            } else if (Pursuer.pursuer != null && Pursuer.pursuer == localPlayer) {
-                setPlayerNameColor(Pursuer.pursuer, Pursuer.color);
+            /*else if (Singleton<Spy>.Instance.Player != null && Singleton<Spy>.Instance.Player == localPlayer) {
+                setPlayerNameColor(Singleton<Spy>.Instance.Player, Singleton<Spy>.Instance.Color);
+            } else if (Singleton<SecurityGuard>.Instance.Player != null && Singleton<SecurityGuard>.Instance.Player == localPlayer) {
+                setPlayerNameColor(Singleton<SecurityGuard>.Instance.Player, Singleton<SecurityGuard>.Instance.Color);
+            } else if (Singleton<Arsonist>.Instance.Player != null && Singleton<Arsonist>.Instance.Player == localPlayer) {
+                setPlayerNameColor(Singleton<Arsonist>.Instance.Player, Singleton<Arsonist>.Instance.Color);
+            } else if (Singleton<NiceGuesser>.Instance.Player != null && Singleton<NiceGuesser>.Instance.Player == localPlayer) {
+                setPlayerNameColor(Singleton<NiceGuesser>.Instance.Player, Guesser.color);
+            } else if (Singleton<EvilGuesser>.Instance.Player != null && Singleton<EvilGuesser>.Instance.Player == localPlayer) {
+                setPlayerNameColor(Singleton<EvilGuesser>.Instance.Player, Palette.ImpostorRed);
+            } else if (Singleton<Vulture>.Instance.Player != null && Singleton<Vulture>.Instance.Player == localPlayer) {
+                setPlayerNameColor(Singleton<Vulture>.Instance.Player, Singleton<Vulture>.Instance.Color);
+            } else if (Singleton<Medium>.Instance.Player != null && Singleton<Medium>.Instance.Player == localPlayer) {
+                setPlayerNameColor(Singleton<Medium>.Instance.Player, Singleton<Medium>.Instance.Color);
+            } else if (Singleton<Trapper>.Instance.Player != null && Singleton<Trapper>.Instance.Player == localPlayer) {
+                setPlayerNameColor(Singleton<Trapper>.Instance.Player, Singleton<Trapper>.Instance.Color);
+            } else if (Singleton<Lawyer>.Instance.Player != null && Singleton<Lawyer>.Instance.Player == localPlayer) {
+                setPlayerNameColor(Singleton<Lawyer>.Instance.Player, Singleton<Lawyer>.Instance.Color);
+            } else if (Singleton<Pursuer>.Instance.Player != null && Singleton<Pursuer>.Instance.Player == localPlayer) {
+                setPlayerNameColor(Singleton<Pursuer>.Instance.Player, Singleton<Pursuer>.Instance.Color);
             }*/
 
             // No else if here, as a Lover of team Jackal needs the colors
-            if (Sidekick.sidekick != null && Sidekick.sidekick == localPlayer) {
+            if (Singleton<Sidekick>.Instance.Player != null && Singleton<Sidekick>.Instance.Player == localPlayer) {
                 // Sidekick can see the jackal
-                setPlayerNameColor(Sidekick.sidekick, Sidekick.color);
-                if (Jackal.jackal != null) {
-                    setPlayerNameColor(Jackal.jackal, Jackal.color);
+                setPlayerNameColor(Singleton<Sidekick>.Instance.Player, Singleton<Sidekick>.Instance.Color);
+                if (Singleton<Jackal>.Instance.Player != null) {
+                    setPlayerNameColor(Singleton<Jackal>.Instance.Player, Singleton<Jackal>.Instance.Color);
                 }
             }
 
             // No else if here, as the Impostors need the Spy name to be colored
-            if (Spy.spy != null && localPlayer.Data.Role.IsImpostor) {
-                setPlayerNameColor(Spy.spy, Spy.color);
+            if (Singleton<Spy>.Instance.Player != null && localPlayer.Data.Role.IsImpostor) {
+                setPlayerNameColor(Singleton<Spy>.Instance.Player, Singleton<Spy>.Instance.Color);
             }
-            if (Sidekick.sidekick != null && Sidekick.wasTeamRed && localPlayer.Data.Role.IsImpostor) {
-                setPlayerNameColor(Sidekick.sidekick, Spy.color);
+            if (Singleton<Sidekick>.Instance.Player != null && Sidekick.wasTeamRed && localPlayer.Data.Role.IsImpostor) {
+                setPlayerNameColor(Singleton<Sidekick>.Instance.Player, Singleton<Spy>.Instance.Color);
             }
-            if (Jackal.jackal != null && Jackal.wasTeamRed && localPlayer.Data.Role.IsImpostor) {
-                setPlayerNameColor(Jackal.jackal, Spy.color);
+            if (Singleton<Jackal>.Instance.Player != null && Jackal.wasTeamRed && localPlayer.Data.Role.IsImpostor) {
+                setPlayerNameColor(Singleton<Jackal>.Instance.Player, Singleton<Spy>.Instance.Color);
             }
 
             // Crewmate roles with no changes: Mini
@@ -206,9 +206,9 @@ namespace TheOtherRoles.Patches {
             }
 
             // Lawyer or Prosecutor
-            if ((Lawyer.lawyer != null && Lawyer.target != null && Lawyer.lawyer == CachedPlayer.LocalPlayer.PlayerControl)) {
-                Color color = Lawyer.color;
-                PlayerControl target = Lawyer.target;
+            if ((Singleton<Lawyer>.Instance.Player != null && Singleton<Lawyer>.Instance.Target != null && Singleton<Lawyer>.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl)) {
+                Color color = Singleton<Lawyer>.Instance.Color;
+                PlayerControl target = Singleton<Lawyer>.Instance.Target;
                 string suffix = Helpers.cs(color, " §");
                 target.cosmetics.nameText.text += suffix;
 
@@ -220,7 +220,7 @@ namespace TheOtherRoles.Patches {
 
             // Former Thief
             if (Thief.formerThief != null && (Thief.formerThief == CachedPlayer.LocalPlayer.PlayerControl || CachedPlayer.LocalPlayer.PlayerControl.Data.IsDead)) {
-                string suffix = Helpers.cs(Thief.color, " $");
+                string suffix = Helpers.cs(Singleton<Thief>.Instance.Color, " $");
                 Thief.formerThief.cosmetics.nameText.text += suffix;
                 if (MeetingHud.Instance != null)
                     foreach (PlayerVoteArea player in MeetingHud.Instance.playerStates)
@@ -240,14 +240,14 @@ namespace TheOtherRoles.Patches {
         static void updateShielded() {
             if (Medic.shielded == null) return;
 
-            if (Medic.shielded.Data.IsDead || Medic.medic == null || Medic.medic.Data.IsDead) {
+            if (Medic.shielded.Data.IsDead || Singleton<Medic>.Instance.Player == null || Singleton<Medic>.Instance.Player.Data.IsDead) {
                 Medic.shielded = null;
             }
         }
 
         static void timerUpdate() {
             var dt = Time.deltaTime;
-            Hacker.hackerTimer -= dt;
+            Singleton<Hacker>.Instance.PlayerTimer -= dt;
             Trickster.lightsOutTimer -= dt;
             Tracker.corpsesTrackingTimer -= dt;
             Ninja.invisibleTimer -= dt;
@@ -257,7 +257,7 @@ namespace TheOtherRoles.Patches {
         }
 
         public static void miniUpdate() {
-            if (Mini.mini == null || Camouflager.camouflageTimer > 0f || Mini.mini == Morphling.morphling && Morphling.morphTimer > 0f || Mini.mini == Ninja.ninja && Ninja.isInvisble || SurveillanceMinigamePatch.nightVisionIsActive) return;
+            if (Mini.mini == null || Camouflager.camouflageTimer > 0f || Mini.mini == Singleton<Morphling>.Instance.Player && Morphling.morphTimer > 0f || Mini.mini == Singleton<Ninja>.Instance.Player && Ninja.isInvisble || SurveillanceMinigamePatch.nightVisionIsActive) return;
                 
             float growingProgress = Mini.growingProgress();
             float scale = growingProgress * 0.35f + 0.35f;
@@ -274,8 +274,8 @@ namespace TheOtherRoles.Patches {
                         player.NameText.text += suffix;
             }
 
-            if (Morphling.morphling != null && Morphling.morphTarget == Mini.mini && Morphling.morphTimer > 0f)
-                Morphling.morphling.cosmetics.nameText.text += suffix;
+            if (Singleton<Morphling>.Instance.Player != null && Morphling.morphTarget == Mini.mini && Morphling.morphTimer > 0f)
+                Singleton<Morphling>.Instance.Player.cosmetics.nameText.text += suffix;
         }
 
         static void updateImpostorKillButton(HudManager __instance) {
@@ -285,7 +285,7 @@ namespace TheOtherRoles.Patches {
                 return;
             }
             bool enabled = true;
-            if (Vampire.vampire != null && Vampire.vampire == CachedPlayer.LocalPlayer.PlayerControl)
+            if (Singleton<Vampire>.Instance.Player != null && Singleton<Vampire>.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl)
                 enabled = false;
             else if (Mafioso.mafioso != null && Mafioso.mafioso == CachedPlayer.LocalPlayer.PlayerControl && Godfather.godfather != null && !Godfather.godfather.Data.IsDead)
                 enabled = false;
@@ -320,8 +320,8 @@ namespace TheOtherRoles.Patches {
         }
 
         static void updateMapButton(HudManager __instance) {
-            if (Trapper.trapper == null || !(CachedPlayer.LocalPlayer.PlayerId == Trapper.trapper.PlayerId) || __instance == null || __instance.MapButton.HeldButtonSprite == null) return;
-            __instance.MapButton.HeldButtonSprite.color = Trapper.playersOnMap.Any() ? Trapper.color : Color.white;
+            if (Singleton<Trapper>.Instance.Player == null || !(CachedPlayer.LocalPlayer.PlayerId == Singleton<Trapper>.Instance.Player.PlayerId) || __instance == null || __instance.MapButton.HeldButtonSprite == null) return;
+            __instance.MapButton.HeldButtonSprite.color = Trapper.playersOnMap.Any() ? Singleton<Trapper>.Instance.Color : Color.white;
         }
 
         static void Postfix(HudManager __instance)

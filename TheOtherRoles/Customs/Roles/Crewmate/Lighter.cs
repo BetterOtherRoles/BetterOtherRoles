@@ -19,9 +19,12 @@ public class Lighter : CustomRole
         Team = Teams.Crewmate;
         Color = new Color32(238, 229, 190, byte.MaxValue);
 
+        IntroDescription = "Your light never goes out";
+        ShortDescription = "Your light never goes out";
+
         LightsOnVision = OptionsTab.CreateFloatList(
             $"{Name}{nameof(LightsOnVision)}",
-            Colors.Cs(Color, "Vision when lights are on"),
+            Cs("Vision when lights are on"),
             0.25f,
             5f,
             1.5f,
@@ -29,7 +32,7 @@ public class Lighter : CustomRole
             SpawnRate);
         LightsOffVision = OptionsTab.CreateFloatList(
             $"{Name}{nameof(LightsOffVision)}",
-            Colors.Cs(Color, "Vision when lights are off"),
+            Cs("Vision when lights are off"),
             0.25f,
             5f,
             0.5f,
@@ -37,7 +40,7 @@ public class Lighter : CustomRole
             SpawnRate);
         VisionWidth = OptionsTab.CreateFloatList(
             $"{Name}{nameof(VisionWidth)}",
-            Colors.Cs(Color, "Flashlight width"),
+            Cs("Flashlight width"),
             0.1f,
             1f,
             0.3f,

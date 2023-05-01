@@ -24,7 +24,6 @@ namespace TheOtherRoles.Utilities {
         public static readonly float[] eventDurations = {0f, 1f, 5f, 0f};
         public static double[] eventProbabilities;
         private static bool knocked = false;
-        public static bool disableHorses = true;
 
         public static void Load() {
             if (!isEnabled) return;
@@ -42,8 +41,6 @@ namespace TheOtherRoles.Utilities {
         public static void clearAndReload() {
             eventQueue = new List<EventTypes>();
             eventInvert = false;
-            if (canBeEnabled && CustomOptionHolder.enableCodenameDisableHorses != null)
-                disableHorses = CustomOptionHolder.enableCodenameDisableHorses.getBool();
         }
 
         public static void Update() {
@@ -113,7 +110,7 @@ namespace TheOtherRoles.Utilities {
             meetingEndsUpdate();
             List<CachedPlayer> relevantPlayers = CachedPlayer.AllPlayers.Where(x => !x.Data.IsDead && x != CachedPlayer.LocalPlayer).ToList();
             foreach (CachedPlayer pc in relevantPlayers)
-                pc.PlayerControl.MyPhysics.SetBodyType(disableHorses ? PlayerBodyTypes.Normal : PlayerBodyTypes.Horse);
+                pc.PlayerControl.MyPhysics.SetBodyType(PlayerBodyTypes.Normal);
 
         }
 
@@ -128,10 +125,10 @@ namespace TheOtherRoles.Utilities {
             switch (eventToStart) {
                 case EventTypes.Animation:
                     CachedPlayer animationPlayer = relevantPlayers[rnd.Next(relevantPlayers.Count)];
-                    animationPlayer.PlayerPhysics.SetBodyType(rnd.Next(2) > 0 ? (disableHorses ? PlayerBodyTypes.Horse : PlayerBodyTypes.Normal) : PlayerBodyTypes.Seeker);
+                    animationPlayer.PlayerPhysics.SetBodyType(rnd.Next(2) > 0 ? (PlayerBodyTypes.Normal) : PlayerBodyTypes.Seeker);
                     FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(eventDurations[(int)EventTypes.Animation], new Action<float>((p) => {
                         if (p==1)
-                            animationPlayer.PlayerControl.MyPhysics.SetBodyType(disableHorses ? PlayerBodyTypes.Normal : PlayerBodyTypes.Horse);
+                            animationPlayer.PlayerControl.MyPhysics.SetBodyType(PlayerBodyTypes.Normal);
                     })));
                     break;
                 case EventTypes.Communication:

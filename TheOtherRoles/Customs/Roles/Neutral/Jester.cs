@@ -16,14 +16,17 @@ public class Jester: CustomRole
         Team = Teams.Neutral;
         Color = new Color32(236, 98, 165, byte.MaxValue);
 
+        IntroDescription = "Get voted out";
+        ShortDescription = "Get voted out";
+
         CanCallEmergencyMeeting = OptionsTab.CreateBool(
             $"{Name}{nameof(CanCallEmergencyMeeting)}",
-            Colors.Cs(Color, "Can call emergency meeting"),
+            Cs("Can call emergency meeting"),
             false,
             SpawnRate);
         HasImpostorVision = OptionsTab.CreateBool(
             $"{Name}{nameof(HasImpostorVision)}",
-            Colors.Cs(Color, "Has impostor vision"),
+            Cs("Has impostor vision"),
             true,
             SpawnRate);
     }

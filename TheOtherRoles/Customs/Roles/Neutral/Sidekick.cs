@@ -10,6 +10,9 @@ public class Sidekick : CustomRole
     {
         Team = Teams.Neutral;
         Color = new Color32(0, 180, 235, byte.MaxValue);
+
+        IntroDescription = "Help your Jackal to kill everyone";
+        ShortDescription = "Help your Jackal to kill everyone";
     }
 
     public void PromoteToJackal()

@@ -5,16 +5,14 @@ using System;
 using System.Linq;
 using HarmonyLib;
 using Hazel;
-using System.Reflection;
 using System.Text;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
-using static TheOtherRoles.TheOtherRoles;
-using static TheOtherRoles.CustomOption;
 using Reactor.Utilities.Extensions;
 using AmongUs.GameOptions;
-using TheOtherRoles.Customs.Roles.Crewmate;
-using TheOtherRoles.Customs.Roles.Neutral;
+using TheOtherRoles.EnoFramework;
+using TheOtherRoles.EnoFramework.Kernel;
+using Object = UnityEngine.Object;
 
 namespace TheOtherRoles {
     public class CustomOption {
@@ -187,419 +185,15 @@ namespace TheOtherRoles {
         public static void Postfix(GameOptionsMenu __instance) {
 
             switch (TORMapOptions.gameMode) {
-                case CustomGamemodes.Classic:
-                    createClassicTabs(__instance);
-                    break;
-                case CustomGamemodes.Guesser:
-                    createGuesserTabs(__instance);
-                    break;
                 case CustomGamemodes.HideNSeek:
-                    createHideNSeekTabs(__instance);
+                    // createHideNSeekTabs(__instance);
+                    adaptTaskCount(__instance);
                     break;
-            }            
-        }
-
-        private static void createClassicTabs(GameOptionsMenu __instance) {
-            bool isReturn = setNames(
-                new Dictionary<string, string>() {
-                    ["TORSettings"] = "The Other Roles Settings",
-                    ["ImpostorSettings"] = "Impostor Roles Settings",
-                    ["NeutralSettings"] = "Neutral Roles Settings",
-                    ["CrewmateSettings"] = "Crewmate Roles Settings",
-                    ["ModifierSettings"] = "Modifier Settings"
-                });
-
-            if (isReturn) return;
-
-            // Setup TOR tab
-            var template = UnityEngine.Object.FindObjectsOfType<StringOption>().FirstOrDefault();
-            if (template == null) return;
-            var gameSettings = GameObject.Find("Game Settings");
-            var gameSettingMenu = UnityEngine.Object.FindObjectsOfType<GameSettingMenu>().FirstOrDefault();
-
-            var torSettings = UnityEngine.Object.Instantiate(gameSettings, gameSettings.transform.parent);
-            var torMenu = getMenu(torSettings, "TORSettings");
-
-            var impostorSettings = UnityEngine.Object.Instantiate(gameSettings, gameSettings.transform.parent);
-            var impostorMenu = getMenu(impostorSettings, "ImpostorSettings");
-
-            var neutralSettings = UnityEngine.Object.Instantiate(gameSettings, gameSettings.transform.parent);
-            var neutralMenu = getMenu(neutralSettings, "NeutralSettings");
-
-            var crewmateSettings = UnityEngine.Object.Instantiate(gameSettings, gameSettings.transform.parent);
-            var crewmateMenu = getMenu(crewmateSettings, "CrewmateSettings");
-
-            var modifierSettings = UnityEngine.Object.Instantiate(gameSettings, gameSettings.transform.parent);
-            var modifierMenu = getMenu(modifierSettings, "ModifierSettings");
-
-            var roleTab = GameObject.Find("RoleTab");
-            var gameTab = GameObject.Find("GameTab");
-
-            var torTab = UnityEngine.Object.Instantiate(roleTab, roleTab.transform.parent);
-            var torTabHighlight = getTabHighlight(torTab, "TheOtherRolesTab", "TheOtherRoles.Resources.TabIcon.png");
-
-            var impostorTab = UnityEngine.Object.Instantiate(roleTab, torTab.transform);
-            var impostorTabHighlight = getTabHighlight(impostorTab, "ImpostorTab", "TheOtherRoles.Resources.TabIconImpostor.png");
-
-            var neutralTab = UnityEngine.Object.Instantiate(roleTab, impostorTab.transform);
-            var neutralTabHighlight = getTabHighlight(neutralTab, "NeutralTab", "TheOtherRoles.Resources.TabIconNeutral.png");
-
-            var crewmateTab = UnityEngine.Object.Instantiate(roleTab, neutralTab.transform);
-            var crewmateTabHighlight = getTabHighlight(crewmateTab, "CrewmateTab", "TheOtherRoles.Resources.TabIconCrewmate.png");
-
-            var modifierTab = UnityEngine.Object.Instantiate(roleTab, crewmateTab.transform);
-            var modifierTabHighlight = getTabHighlight(modifierTab, "ModifierTab", "TheOtherRoles.Resources.TabIconModifier.png");
-
-            // Position of Tab Icons
-            gameTab.transform.position += Vector3.left * 3f;
-            roleTab.transform.position += Vector3.left * 3f;
-            torTab.transform.position += Vector3.left * 2f;
-            impostorTab.transform.localPosition = Vector3.right * 1f;
-            neutralTab.transform.localPosition = Vector3.right * 1f;
-            crewmateTab.transform.localPosition = Vector3.right * 1f;
-            modifierTab.transform.localPosition = Vector3.right * 1f;
-
-            var tabs = new GameObject[] { gameTab, roleTab, torTab, impostorTab, neutralTab, crewmateTab, modifierTab };
-            var settingsHighlightMap = new Dictionary<GameObject, SpriteRenderer> {
-                [gameSettingMenu.RegularGameSettings] = gameSettingMenu.GameSettingsHightlight,
-                [gameSettingMenu.RolesSettings.gameObject] = gameSettingMenu.RolesSettingsHightlight,
-                [torSettings.gameObject] = torTabHighlight,
-                [impostorSettings.gameObject] = impostorTabHighlight,
-                [neutralSettings.gameObject] = neutralTabHighlight,
-                [crewmateSettings.gameObject] = crewmateTabHighlight,
-                [modifierSettings.gameObject] = modifierTabHighlight
-            };
-            for (int i = 0; i < tabs.Length; i++) {
-                var button = tabs[i].GetComponentInChildren<PassiveButton>();
-                if (button == null) continue;
-                int copiedIndex = i;
-                button.OnClick = new UnityEngine.UI.Button.ButtonClickedEvent();
-                button.OnClick.AddListener((System.Action)(() => {
-                    setListener(settingsHighlightMap, copiedIndex);
-                }));
-            }
-
-            destroyOptions(new List<List<OptionBehaviour>>{
-                torMenu.GetComponentsInChildren<OptionBehaviour>().ToList(),
-                impostorMenu.GetComponentsInChildren<OptionBehaviour>().ToList(),
-                neutralMenu.GetComponentsInChildren<OptionBehaviour>().ToList(),
-                crewmateMenu.GetComponentsInChildren<OptionBehaviour>().ToList(),
-                modifierMenu.GetComponentsInChildren<OptionBehaviour>().ToList()
-            });
-
-            List<OptionBehaviour> torOptions = new List<OptionBehaviour>();
-            List<OptionBehaviour> impostorOptions = new List<OptionBehaviour>();
-            List<OptionBehaviour> neutralOptions = new List<OptionBehaviour>();
-            List<OptionBehaviour> crewmateOptions = new List<OptionBehaviour>();
-            List<OptionBehaviour> modifierOptions = new List<OptionBehaviour>();
-
-
-            List<Transform> menus = new List<Transform>() { torMenu.transform, impostorMenu.transform, neutralMenu.transform, crewmateMenu.transform, modifierMenu.transform };
-            List<List<OptionBehaviour>> optionBehaviours = new List<List<OptionBehaviour>>() { torOptions, impostorOptions, neutralOptions, crewmateOptions, modifierOptions };
-
-            for (int i = 0; i < CustomOption.options.Count; i++) {
-                CustomOption option = CustomOption.options[i];
-                if ((int)option.type > 4) continue;
-                if (option.optionBehaviour == null) {
-                    StringOption stringOption = UnityEngine.Object.Instantiate(template, menus[(int)option.type]);
-                    optionBehaviours[(int)option.type].Add(stringOption);
-                    stringOption.OnValueChanged = new Action<OptionBehaviour>((o) => { });
-                    stringOption.TitleText.text = option.name;
-                    stringOption.Value = stringOption.oldValue = option.selection;
-                    stringOption.ValueText.text = option.selections[option.selection].ToString();
-
-                    option.optionBehaviour = stringOption;
-                }
-                option.optionBehaviour.gameObject.SetActive(true);
-            }
-
-            setOptions(
-                new List<GameOptionsMenu> { torMenu, impostorMenu, neutralMenu, crewmateMenu, modifierMenu },
-                new List<List<OptionBehaviour>> { torOptions, impostorOptions, neutralOptions, crewmateOptions, modifierOptions },
-                new List<GameObject> { torSettings, impostorSettings, neutralSettings, crewmateSettings, modifierSettings }
-            );
-
-            adaptTaskCount(__instance);
-        }
-
-        private static void createGuesserTabs(GameOptionsMenu __instance) {
-            bool isReturn = setNames(
-                new Dictionary<string, string>() {
-                    ["TORSettings"] = "The Other Roles Settings",
-                    ["GuesserSettings"] = "Guesser Mode Settings",
-                    ["ImpostorSettings"] = "Impostor Roles Settings",
-                    ["NeutralSettings"] = "Neutral Roles Settings",
-                    ["CrewmateSettings"] = "Crewmate Roles Settings",
-                    ["ModifierSettings"] = "Modifier Settings"
-                });
-
-            if (isReturn) return;
-
-            // Setup TOR tab
-            var template = UnityEngine.Object.FindObjectsOfType<StringOption>().FirstOrDefault();
-            if (template == null) return;
-            var gameSettings = GameObject.Find("Game Settings");
-            var gameSettingMenu = UnityEngine.Object.FindObjectsOfType<GameSettingMenu>().FirstOrDefault();
-
-            var torSettings = UnityEngine.Object.Instantiate(gameSettings, gameSettings.transform.parent);
-            var torMenu = getMenu(torSettings, "TORSettings");
-
-            var guesserSettings = UnityEngine.Object.Instantiate(gameSettings, gameSettings.transform.parent);
-            var guesserMenu = getMenu(guesserSettings, "GuesserSettings");
-
-            var impostorSettings = UnityEngine.Object.Instantiate(gameSettings, gameSettings.transform.parent);
-            var impostorMenu = getMenu(impostorSettings, "ImpostorSettings");
-
-            var neutralSettings = UnityEngine.Object.Instantiate(gameSettings, gameSettings.transform.parent);
-            var neutralMenu = getMenu(neutralSettings, "NeutralSettings");
-
-            var crewmateSettings = UnityEngine.Object.Instantiate(gameSettings, gameSettings.transform.parent);
-            var crewmateMenu = getMenu(crewmateSettings, "CrewmateSettings");
-
-            var modifierSettings = UnityEngine.Object.Instantiate(gameSettings, gameSettings.transform.parent);
-            var modifierMenu = getMenu(modifierSettings, "ModifierSettings");
-
-            var roleTab = GameObject.Find("RoleTab");
-            var gameTab = GameObject.Find("GameTab");
-
-            var torTab = UnityEngine.Object.Instantiate(roleTab, gameTab.transform.parent);
-            var torTabHighlight = getTabHighlight(torTab, "TheOtherRolesTab", "TheOtherRoles.Resources.TabIcon.png");
-
-            var guesserTab = UnityEngine.Object.Instantiate(roleTab, torTab.transform);
-            var guesserTabHighlight = getTabHighlight(guesserTab, "GuesserTab", "TheOtherRoles.Resources.TabIconGuesserSettings.png");
-
-            var impostorTab = UnityEngine.Object.Instantiate(roleTab, guesserTab.transform);
-            var impostorTabHighlight = getTabHighlight(impostorTab, "ImpostorTab", "TheOtherRoles.Resources.TabIconImpostor.png");
-
-            var neutralTab = UnityEngine.Object.Instantiate(roleTab, impostorTab.transform);
-            var neutralTabHighlight = getTabHighlight(neutralTab, "NeutralTab", "TheOtherRoles.Resources.TabIconNeutral.png");
-
-            var crewmateTab = UnityEngine.Object.Instantiate(roleTab, neutralTab.transform);
-            var crewmateTabHighlight = getTabHighlight(crewmateTab, "CrewmateTab", "TheOtherRoles.Resources.TabIconCrewmate.png");
-
-            var modifierTab = UnityEngine.Object.Instantiate(roleTab, crewmateTab.transform);
-            var modifierTabHighlight = getTabHighlight(modifierTab, "ModifierTab", "TheOtherRoles.Resources.TabIconModifier.png");
-
-            roleTab.active = false;
-            // Position of Tab Icons
-            gameTab.transform.position += Vector3.left * 3f;
-            torTab.transform.position += Vector3.left * 3f;
-            guesserTab.transform.localPosition = Vector3.right * 1f;
-            impostorTab.transform.localPosition = Vector3.right * 1f;
-            neutralTab.transform.localPosition = Vector3.right * 1f;
-            crewmateTab.transform.localPosition = Vector3.right * 1f;
-            modifierTab.transform.localPosition = Vector3.right * 1f;
-
-            var tabs = new GameObject[] { gameTab, torTab, impostorTab, neutralTab, crewmateTab, modifierTab, guesserTab };
-            var settingsHighlightMap = new Dictionary<GameObject, SpriteRenderer> {
-                [gameSettingMenu.RegularGameSettings] = gameSettingMenu.GameSettingsHightlight,
-                [torSettings.gameObject] = torTabHighlight,
-                [impostorSettings.gameObject] = impostorTabHighlight,
-                [neutralSettings.gameObject] = neutralTabHighlight,
-                [crewmateSettings.gameObject] = crewmateTabHighlight,
-                [modifierSettings.gameObject] = modifierTabHighlight,
-                [guesserSettings.gameObject] = guesserTabHighlight
-            };
-            for (int i = 0; i < tabs.Length; i++) {               
-                var button = tabs[i].GetComponentInChildren<PassiveButton>();
-                if (button == null) continue;
-                int copiedIndex = i;
-                button.OnClick = new UnityEngine.UI.Button.ButtonClickedEvent();
-                button.OnClick.AddListener((System.Action)(() => {
-                    setListener(settingsHighlightMap, copiedIndex);
-                }));
-            }
-
-            destroyOptions(new List<List<OptionBehaviour>>{
-                torMenu.GetComponentsInChildren<OptionBehaviour>().ToList(),
-                guesserMenu.GetComponentsInChildren<OptionBehaviour>().ToList(),
-                impostorMenu.GetComponentsInChildren<OptionBehaviour>().ToList(),
-                neutralMenu.GetComponentsInChildren<OptionBehaviour>().ToList(),
-                crewmateMenu.GetComponentsInChildren<OptionBehaviour>().ToList(),
-                modifierMenu.GetComponentsInChildren<OptionBehaviour>().ToList()
-            });
-
-            List<OptionBehaviour> torOptions = new List<OptionBehaviour>();
-            List<OptionBehaviour> guesserOptions = new List<OptionBehaviour>();
-            List<OptionBehaviour> impostorOptions = new List<OptionBehaviour>();
-            List<OptionBehaviour> neutralOptions = new List<OptionBehaviour>();
-            List<OptionBehaviour> crewmateOptions = new List<OptionBehaviour>();
-            List<OptionBehaviour> modifierOptions = new List<OptionBehaviour>();
-
-
-            List<Transform> menus = new List<Transform>() { torMenu.transform, impostorMenu.transform, neutralMenu.transform, crewmateMenu.transform, modifierMenu.transform, guesserMenu.transform };
-            List<List<OptionBehaviour>> optionBehaviours = new List<List<OptionBehaviour>>() { torOptions, impostorOptions, neutralOptions, crewmateOptions, modifierOptions, guesserOptions };
-            List<int> exludedIds = new List<int> { 310, 311, 312, 313, 314, 315, 316, 317, 318 };
-
-            for (int i = 0; i < CustomOption.options.Count; i++) {
-                CustomOption option = CustomOption.options[i];
-                if (exludedIds.Contains(option.id)) continue;
-                if ((int)option.type > 5) continue;
-                if (option.optionBehaviour == null) {
-                    StringOption stringOption = UnityEngine.Object.Instantiate(template, menus[(int)option.type]);
-                    optionBehaviours[(int)option.type].Add(stringOption);
-                    stringOption.OnValueChanged = new Action<OptionBehaviour>((o) => { });
-                    stringOption.TitleText.text = option.name;
-                    stringOption.Value = stringOption.oldValue = option.selection;
-                    stringOption.ValueText.text = option.selections[option.selection].ToString();
-
-                    option.optionBehaviour = stringOption;
-                }
-                option.optionBehaviour.gameObject.SetActive(true);
-            }
-
-            setOptions(
-                new List<GameOptionsMenu> { torMenu, impostorMenu, neutralMenu, crewmateMenu, modifierMenu, guesserMenu }, 
-                new List<List<OptionBehaviour>> { torOptions, impostorOptions, neutralOptions, crewmateOptions, modifierOptions, guesserOptions }, 
-                new List<GameObject> { torSettings, impostorSettings, neutralSettings, crewmateSettings, modifierSettings, guesserSettings }
-            );
-
-            adaptTaskCount(__instance);
-        }
-
-        private static void createHideNSeekTabs(GameOptionsMenu __instance) {
-            bool isReturn = setNames(
-                new Dictionary<string, string>(){ 
-                    ["TORSettings"] = "The Other Roles Settings", 
-                    ["HideNSeekSettings"] = "Hide 'N Seek Settings" 
-                });
-
-            if (isReturn) return;
-
-            // Setup TOR tab
-            var template = UnityEngine.Object.FindObjectsOfType<StringOption>().FirstOrDefault();
-            if (template == null) return;
-            var gameSettings = GameObject.Find("Game Settings");
-            var gameSettingMenu = UnityEngine.Object.FindObjectsOfType<GameSettingMenu>().FirstOrDefault();
-
-            var torSettings = UnityEngine.Object.Instantiate(gameSettings, gameSettings.transform.parent);
-            var torMenu = getMenu(torSettings, "TORSettings");
-
-            var hideNSeekSettings = UnityEngine.Object.Instantiate(gameSettings, gameSettings.transform.parent);
-            var hideNSeekMenu = getMenu(hideNSeekSettings, "HideNSeekSettings");
-
-            var roleTab = GameObject.Find("RoleTab");
-            var gameTab = GameObject.Find("GameTab");
-
-            var torTab = UnityEngine.Object.Instantiate(roleTab, gameTab.transform.parent);
-            var torTabHighlight = getTabHighlight(torTab, "TheOtherRolesTab", "TheOtherRoles.Resources.TabIconHideNSeekSettings.png");
-
-            var hideNSeekTab = UnityEngine.Object.Instantiate(roleTab, torTab.transform);
-            var hideNSeekTabHighlight = getTabHighlight(hideNSeekTab, "HideNSeekTab", "TheOtherRoles.Resources.TabIconHideNSeekRoles.png");
-
-            roleTab.active = false;
-            gameTab.active = false;
-
-            // Position of Tab Icons
-            torTab.transform.position += Vector3.left * 3f;
-            hideNSeekTab.transform.position += Vector3.right * 1f;
-
-            var tabs = new GameObject[] { torTab, hideNSeekTab};
-            var settingsHighlightMap = new Dictionary<GameObject, SpriteRenderer> { 
-                [torSettings.gameObject] = torTabHighlight,
-                [hideNSeekSettings.gameObject] = hideNSeekTabHighlight
-            };
-            for (int i = 0; i < tabs.Length; i++) {
-                var button = tabs[i].GetComponentInChildren<PassiveButton>();
-                if (button == null) continue;
-                int copiedIndex = i;
-                button.OnClick = new UnityEngine.UI.Button.ButtonClickedEvent();
-                button.OnClick.AddListener((System.Action)(() => {
-                    setListener(settingsHighlightMap, copiedIndex);                    
-                }));
-            }
-
-            destroyOptions(new List<List<OptionBehaviour>>{ 
-                torMenu.GetComponentsInChildren<OptionBehaviour>().ToList(), 
-                hideNSeekMenu.GetComponentsInChildren<OptionBehaviour>().ToList() 
-            });
-
-            List<OptionBehaviour> torOptions = new List<OptionBehaviour>();
-            List<OptionBehaviour> hideNSeekOptions = new List<OptionBehaviour>();
-
-            List<Transform> menus = new List<Transform>() { torMenu.transform, hideNSeekMenu.transform};
-            List<List<OptionBehaviour>> optionBehaviours = new List<List<OptionBehaviour>>() { torOptions, hideNSeekOptions };
-
-            for (int i = 0; i < CustomOption.options.Count; i++) {
-                CustomOption option = CustomOption.options[i];
-                if (option.type != CustomOptionType.HideNSeekMain && option.type != CustomOptionType.HideNSeekRoles) continue;
-                if (option.optionBehaviour == null) {
-                    int index = (int)option.type - 6;
-                    StringOption stringOption = UnityEngine.Object.Instantiate(template, menus[index]);
-                    optionBehaviours[index].Add(stringOption);
-                    stringOption.OnValueChanged = new Action<OptionBehaviour>((o) => { });
-                    stringOption.TitleText.text = option.name;
-                    stringOption.Value = stringOption.oldValue = option.selection;
-                    stringOption.ValueText.text = option.selections[option.selection].ToString();
-
-                    option.optionBehaviour = stringOption;
-                }
-                option.optionBehaviour.gameObject.SetActive(true);
-            }
-
-            setOptions(
-                new List<GameOptionsMenu>{torMenu, hideNSeekMenu},
-                new List<List<OptionBehaviour>> {torOptions, hideNSeekOptions}, 
-                new List<GameObject> {torSettings, hideNSeekSettings}
-            );
-
-            torSettings.gameObject.SetActive(true);
-            torTabHighlight.enabled = true;
-            gameSettingMenu.RegularGameSettings.SetActive(false);
-            gameSettingMenu.GameSettingsHightlight.enabled = false;
-        }
-
-        
-        private static void setListener(Dictionary<GameObject, SpriteRenderer> settingsHighlightMap, int index) {
-            foreach (KeyValuePair<GameObject, SpriteRenderer> entry in settingsHighlightMap) {
-                entry.Key.SetActive(false);
-                entry.Value.enabled = false;
-            }
-            settingsHighlightMap.ElementAt(index).Key.SetActive(true);
-            settingsHighlightMap.ElementAt(index).Value.enabled = true;
-        }
-
-        private static void destroyOptions (List<List<OptionBehaviour>> optionBehavioursList) {
-           foreach (List<OptionBehaviour> optionBehaviours in optionBehavioursList) {
-                foreach (OptionBehaviour option in optionBehaviours)
-                    UnityEngine.Object.Destroy(option.gameObject);
-            }
-        }
-
-        private static bool setNames (Dictionary<string, string> gameObjectNameDisplayNameMap) {
-            foreach (KeyValuePair <string, string> entry in gameObjectNameDisplayNameMap) {
-                if (GameObject.Find(entry.Key) != null) { // Settings setup has already been performed, fixing the title of the tab and returning
-                    GameObject.Find(entry.Key).transform.FindChild("GameGroup").FindChild("Text").GetComponent<TMPro.TextMeshPro>().SetText(entry.Value);
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private static GameOptionsMenu getMenu(GameObject setting, string settingName) {
-            var menu = setting.transform.FindChild("GameGroup").FindChild("SliderInner").GetComponent<GameOptionsMenu>();
-            setting.name = settingName;
-
-            return menu;
-        }
-
-        private static SpriteRenderer getTabHighlight (GameObject tab, string tabName, string tabSpritePath) {
-            var tabHighlight = tab.transform.FindChild("Hat Button").FindChild("Tab Background").GetComponent<SpriteRenderer>();
-            tab.transform.FindChild("Hat Button").FindChild("Icon").GetComponent<SpriteRenderer>().sprite = Helpers.loadSpriteFromResources(tabSpritePath, 100f);
-            tab.name = "tabName";
-
-            return tabHighlight;
-        }
-
-        private static void setOptions (List<GameOptionsMenu> menus, List<List<OptionBehaviour>> options, List<GameObject> settings) {
-            if (!(menus.Count == options.Count && options.Count == settings.Count)) {
-                TheOtherRolesPlugin.Logger.LogError("List counts are not equal");
-                return;
-            }
-            for (int i = 0; i < menus.Count; i++) {
-                menus[i].Children = options[i].ToArray();
-                settings[i].gameObject.SetActive(false);
+                case CustomGamemodes.Classic:
+                case CustomGamemodes.Guesser:
+                default:
+                    adaptTaskCount(__instance);
+                    break;
             }
         }
 
@@ -616,112 +210,6 @@ namespace TheOtherRoles {
         }
     }
 
-    [HarmonyPatch(typeof(StringOption), nameof(StringOption.OnEnable))]
-    public class StringOptionEnablePatch {
-        public static bool Prefix(StringOption __instance) {
-            CustomOption option = CustomOption.options.FirstOrDefault(option => option.optionBehaviour == __instance);
-            if (option == null) return true;
-
-            __instance.OnValueChanged = new Action<OptionBehaviour>((o) => {});
-            __instance.TitleText.text = option.name;
-            __instance.Value = __instance.oldValue = option.selection;
-            __instance.ValueText.text = option.selections[option.selection].ToString();
-            
-            return false;
-        }
-    }
-
-    [HarmonyPatch(typeof(StringOption), nameof(StringOption.Increase))]
-    public class StringOptionIncreasePatch
-    {
-        public static bool Prefix(StringOption __instance)
-        {
-            CustomOption option = CustomOption.options.FirstOrDefault(option => option.optionBehaviour == __instance);
-            if (option == null) return true;
-            option.updateSelection(option.selection + 1);
-            return false;
-        }
-    }
-
-    [HarmonyPatch(typeof(StringOption), nameof(StringOption.Decrease))]
-    public class StringOptionDecreasePatch
-    {
-        public static bool Prefix(StringOption __instance)
-        {
-            CustomOption option = CustomOption.options.FirstOrDefault(option => option.optionBehaviour == __instance);
-            if (option == null) return true;
-            option.updateSelection(option.selection - 1);
-            return false;
-        }
-    }
-
-    [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.RpcSyncSettings))]
-    public class RpcSyncSettingsPatch
-    {
-        public static void Postfix()
-        {
-            CustomOption.ShareOptionSelections();
-            CustomOption.saveVanillaOptions();
-        }
-    }
-
-    [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.CoSpawnPlayer))]
-    public class AmongUsClientOnPlayerJoinedPatch {
-        public static void Postfix() {
-            if (PlayerControl.LocalPlayer != null && AmongUsClient.Instance.AmHost) {
-                CustomOption.ShareOptionSelections();
-            }
-        }
-    }
-
-
-    [HarmonyPatch(typeof(GameOptionsMenu), nameof(GameOptionsMenu.Update))]
-    class GameOptionsMenuUpdatePatch
-    {
-        private static float timer = 1f;
-        public static void Postfix(GameOptionsMenu __instance) {
-            // Return Menu Update if in normal among us settings 
-            var gameSettingMenu = UnityEngine.Object.FindObjectsOfType<GameSettingMenu>().FirstOrDefault();
-            if (gameSettingMenu.RegularGameSettings.active || gameSettingMenu.RolesSettings.gameObject.active) return;
-
-            __instance.GetComponentInParent<Scroller>().ContentYBounds.max = -0.5F + __instance.Children.Length * 0.55F;
-            timer += Time.deltaTime;
-            if (timer < 0.1f) return;
-            timer = 0f;
-
-            float offset = 2.75f;
-            foreach (CustomOption option in CustomOption.options) {
-                if (GameObject.Find("TORSettings") && option.type != CustomOption.CustomOptionType.General && option.type != CustomOptionType.HideNSeekMain)
-                    continue;
-                if (GameObject.Find("ImpostorSettings") && option.type != CustomOption.CustomOptionType.Impostor)
-                    continue;
-                if (GameObject.Find("NeutralSettings") && option.type != CustomOption.CustomOptionType.Neutral)
-                    continue;
-                if (GameObject.Find("CrewmateSettings") && option.type != CustomOption.CustomOptionType.Crewmate)
-                    continue;
-                if (GameObject.Find("ModifierSettings") && option.type != CustomOption.CustomOptionType.Modifier)
-                    continue;
-                if (GameObject.Find("GuesserSettings") && option.type != CustomOption.CustomOptionType.Guesser)
-                    continue;
-                if (GameObject.Find("HideNSeekSettings") && option.type != CustomOption.CustomOptionType.HideNSeekRoles)
-                    continue;
-                if (option?.optionBehaviour != null && option.optionBehaviour.gameObject != null) {
-                    bool enabled = true;
-                    var parent = option.parent;
-                    while (parent != null && enabled) {
-                        enabled = parent.selection != 0;
-                        parent = parent.parent;
-                    }
-                    option.optionBehaviour.gameObject.SetActive(enabled);
-                    if (enabled) {
-                        offset -= option.isHeader ? 0.75f : 0.5f;
-                        option.optionBehaviour.transform.localPosition = new Vector3(option.optionBehaviour.transform.localPosition.x, offset, option.optionBehaviour.transform.localPosition.z);
-                    }
-                }
-            }
-        }
-    }
-
 
     [HarmonyPatch] 
     class GameOptionsDataPatch
@@ -730,153 +218,61 @@ namespace TheOtherRoles {
             return typeof(IGameOptionsExtensions.).GetMethods().Where(x => x.ReturnType == typeof(string) && x.GetParameters().Length == 1 && x.GetParameters()[0].ParameterType == typeof(int));
         }*/
 
-        private static string buildRoleOptions() {
-            var impRoles = buildOptionsOfType(CustomOption.CustomOptionType.Impostor, true) + "\n";
-            var neutralRoles = buildOptionsOfType(CustomOption.CustomOptionType.Neutral, true) + "\n";
-            var crewRoles = buildOptionsOfType(CustomOption.CustomOptionType.Crewmate, true) + "\n";
-            var modifiers = buildOptionsOfType(CustomOption.CustomOptionType.Modifier, true);
-            return impRoles + neutralRoles + crewRoles + modifiers;
-        }
-        private static string buildModifierExtras(CustomOption customOption) {
-            // find options children with quantity
-            var children = CustomOption.options.Where(o => o.parent == customOption);
-            var quantity = children.Where(o => o.name.Contains("Quantity")).ToList();
-            if (customOption.getSelection() == 0) return "";
-            if (quantity.Count == 1) return $" ({quantity[0].getQuantity()})";
-            if (customOption == CustomOptionHolder.modifierLover) {
-                return $" (1 Evil: {CustomOptionHolder.modifierLoverImpLoverRate.getSelection() * 10}%)";
-            }
-            return "";
-        }
+        private static string BuildOptionsOfTab(EnoFramework.CustomOption.Tab tab, bool headersOnly)
+        {
+            var result = new StringBuilder("\n");
 
-        private static string buildOptionsOfType(CustomOption.CustomOptionType type, bool headerOnly) {
-            StringBuilder sb = new StringBuilder("\n");
-            var options = CustomOption.options.Where(o => o.type == type);
-            if (TORMapOptions.gameMode == CustomGamemodes.Guesser) {
-                if (type == CustomOption.CustomOptionType.General)
-                    options = CustomOption.options.Where(o => o.type == type || o.type == CustomOption.CustomOptionType.Guesser);
-                List<int> remove = new List<int>{ 308, 310, 311, 312, 313, 314, 315, 316, 317, 318 };
-                options = options.Where(x => !remove.Contains(x.id));
-            } else if (TORMapOptions.gameMode == CustomGamemodes.Classic) 
-                options = options.Where(x => !(x.type == CustomOption.CustomOptionType.Guesser || x == CustomOptionHolder.crewmateRolesFill));
-            else if (TORMapOptions.gameMode == CustomGamemodes.HideNSeek)
-                options = options.Where(x => (x.type == CustomOption.CustomOptionType.HideNSeekMain || x.type == CustomOption.CustomOptionType.HideNSeekRoles));
-
-            foreach (var option in options) {
-                if (option.parent == null) {
-                    string line = $"{option.name}: {option.selections[option.selection].ToString()}";
-                    if (type == CustomOption.CustomOptionType.Modifier) line += buildModifierExtras(option);
-                    sb.AppendLine(line);
+            if (headersOnly)
+            {
+                foreach (var option in tab.Settings.Where(option => option.Parent == null))
+                {
+                    result.AppendLine($"{option.Name}: {(string)option}");
                 }
-                else if (option.parent.getSelection() > 0) {
-                    if (option.id == 103) //Deputy
-                        sb.AppendLine($"- {Helpers.cs(Deputy.color, "Deputy")}: {option.selections[option.selection].ToString()}");
-                    else if (option.id == 224) //Sidekick
-                        sb.AppendLine($"- {Helpers.cs(Sidekick.color, "Sidekick")}: {option.selections[option.selection].ToString()}");
-                    else if (option.id == 358) //Prosecutor
-                        sb.AppendLine($"- {Helpers.cs(Lawyer.color, "Prosecutor")}: {option.selections[option.selection].ToString()}");
-                }
-            }
-            if (headerOnly) return sb.ToString();
-            else sb = new StringBuilder();
 
-            foreach (CustomOption option in options) {
-                if (TORMapOptions.gameMode == CustomGamemodes.HideNSeek && option.type != CustomOptionType.HideNSeekMain && option.type != CustomOptionType.HideNSeekRoles) continue;
-                if (option.parent != null) {
-                    bool isIrrelevant = option.parent.getSelection() == 0 || (option.parent.parent != null && option.parent.parent.getSelection() == 0);
-
-                    Color c = isIrrelevant ? Color.grey : Color.white;  // No use for now
-                    if (isIrrelevant) continue;
-                    sb.AppendLine(Helpers.cs(c, $"{option.name}: {option.selections[option.selection].ToString()}"));
-                } else {
-                    if (option == CustomOptionHolder.crewmateRolesCountMin) {
-                        var optionName = CustomOptionHolder.cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Crewmate Roles");
-                        var min = CustomOptionHolder.crewmateRolesCountMin.getSelection();
-                        var max = CustomOptionHolder.crewmateRolesCountMax.getSelection();
-                        string optionValue = "";
-                        if (CustomOptionHolder.crewmateRolesFill.getBool()) {
-                            var crewCount = PlayerControl.AllPlayerControls.Count - GameOptionsManager.Instance.currentGameOptions.NumImpostors;
-                            min = crewCount - CustomOptionHolder.neutralRolesCountMax.getSelection();
-                            max = crewCount - CustomOptionHolder.neutralRolesCountMin.getSelection();
-                            if (min < 0) min = 0;
-                            if (max < 0) max = 0;
-                            optionValue = "Fill: ";
-                        }
-                        if (min > max) min = max;
-                        optionValue += (min == max) ? $"{max}" : $"{min} - {max}";
-                        sb.AppendLine($"{optionName}: {optionValue}");
-                    } else if (option == CustomOptionHolder.neutralRolesCountMin) {
-                        var optionName = CustomOptionHolder.cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Neutral Roles");
-                        var min = CustomOptionHolder.neutralRolesCountMin.getSelection();
-                        var max = CustomOptionHolder.neutralRolesCountMax.getSelection();
-                        if (min > max) min = max;
-                        var optionValue = (min == max) ? $"{max}" : $"{min} - {max}";
-                        sb.AppendLine($"{optionName}: {optionValue}");
-                    } else if (option == CustomOptionHolder.impostorRolesCountMin) {
-                        var optionName = CustomOptionHolder.cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Impostor Roles");
-                        var min = CustomOptionHolder.impostorRolesCountMin.getSelection();
-                        var max = CustomOptionHolder.impostorRolesCountMax.getSelection();
-                        if (min > max) min = max;
-                        var optionValue = (min == max) ? $"{max}" : $"{min} - {max}";
-                        sb.AppendLine($"{optionName}: {optionValue}");
-                    } else if (option == CustomOptionHolder.modifiersCountMin) {
-                        var optionName = CustomOptionHolder.cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Modifiers");
-                        var min = CustomOptionHolder.modifiersCountMin.getSelection();
-                        var max = CustomOptionHolder.modifiersCountMax.getSelection();
-                        if (min > max) min = max;
-                        var optionValue = (min == max) ? $"{max}" : $"{min} - {max}";
-                        sb.AppendLine($"{optionName}: {optionValue}");
-                    } else if ((option == CustomOptionHolder.crewmateRolesCountMax) || (option == CustomOptionHolder.neutralRolesCountMax) || (option == CustomOptionHolder.impostorRolesCountMax) || option == CustomOptionHolder.modifiersCountMax) {
-                        continue;
-                    } else {
-                        sb.AppendLine($"\n{option.name}: {option.selections[option.selection].ToString()}");
-                    }
-                }
+                return result.ToString();
             }
-            return sb.ToString();
+
+            foreach (var option in tab.Settings)
+            {
+                if (option.Parent != null)
+                {
+                    if (option.Parent == false ||
+                        (option.Parent.Parent != null && option.Parent.Parent == false)) continue;
+                    result.AppendLine($"{option.Name}: {(string)option}");
+                    continue;
+                }
+                result.AppendLine($"{option.Name}: {(string)option}");
+            }
+            
+
+            return result.ToString();
         }
 
         public static string buildAllOptions(string vanillaSettings = "", bool hideExtras = false) {
             if (vanillaSettings == "")
                 vanillaSettings = GameOptionsManager.Instance.CurrentGameOptions.ToHudString(PlayerControl.AllPlayerControls.Count);
-            int counter = TheOtherRolesPlugin.optionsPage;
-            string hudString = counter != 0 && !hideExtras ? Helpers.cs(DateTime.Now.Second % 2 == 0 ? Color.white : Color.red, "(Use scroll wheel if necessary)\n\n") : "";
-            int maxPage = 7;
-            if (TORMapOptions.gameMode == CustomGamemodes.HideNSeek) {
-                if (TheOtherRolesPlugin.optionsPage > 1) TheOtherRolesPlugin.optionsPage = 0;
-                maxPage = 2;
-                switch (counter) {
-                    case 0:
-                        hudString += "Page 1: Hide N Seek Settings \n\n" + buildOptionsOfType(CustomOption.CustomOptionType.HideNSeekMain, false);
-                        break;
-                    case 1:
-                        hudString += "Page 2: Hide N Seek Role Settings \n\n" + buildOptionsOfType(CustomOption.CustomOptionType.HideNSeekRoles, false);
-                        break;
-                }
-            } else {
-                switch (counter) {
-                    case 0:
-                        hudString += (!hideExtras ? "" :"Page 1: Vanilla Settings \n\n") + vanillaSettings;
-                        break;
-                    case 1:
-                        hudString += "Page 2: The Other Roles Settings \n" + buildOptionsOfType(CustomOption.CustomOptionType.General, false);
-                        break;
-                    case 2:
-                        hudString += "Page 3: Role and Modifier Rates \n" + buildRoleOptions();
-                        break;
-                    case 3:
-                        hudString += "Page 4: Impostor Role Settings \n" + buildOptionsOfType(CustomOption.CustomOptionType.Impostor, false);
-                        break;
-                    case 4:
-                        hudString += "Page 5: Neutral Role Settings \n" + buildOptionsOfType(CustomOption.CustomOptionType.Neutral, false);
-                        break;
-                    case 5:
-                        hudString += "Page 6: Crewmate Role Settings \n" + buildOptionsOfType(CustomOption.CustomOptionType.Crewmate, false);
-                        break;
-                    case 6:
-                        hudString += "Page 7: Modifier Settings \n" + buildOptionsOfType(CustomOption.CustomOptionType.Modifier, false);
-                        break;
-                }
+            var counter = TheOtherRolesPlugin.optionsPage;
+            var hudString = counter != 0 && !hideExtras ? Helpers.cs(DateTime.Now.Second % 2 == 0 ? Color.white : Color.red, "(Use scroll wheel if necessary)\n\n") : "";
+            const int maxPage = 6;
+            switch (counter) {
+                case 0:
+                    hudString += (!hideExtras ? "" :"Page 1: Vanilla Settings \n\n") + vanillaSettings;
+                    break;
+                case 1:
+                    hudString += "Page 2: Better Other Roles Settings \n" + BuildOptionsOfTab(Singleton<CustomOptionsHolder>.Instance.MainSettings, false);
+                    break;
+                case 2:
+                    hudString += "Page 3: Impostor Role Settings \n" + BuildOptionsOfTab(Singleton<CustomOptionsHolder>.Instance.ImpostorsSettings, false);
+                    break;
+                case 3:
+                    hudString += "Page 4: Neutral Role Settings \n" + BuildOptionsOfTab(Singleton<CustomOptionsHolder>.Instance.NeutralSettings, false);
+                    break;
+                case 4:
+                    hudString += "Page 5: Crewmate Role Settings \n" + BuildOptionsOfTab(Singleton<CustomOptionsHolder>.Instance.CrewmateSettings, false);
+                    break;
+                case 5:
+                    hudString += "Page 6: Modifier Settings \n" + BuildOptionsOfTab(Singleton<CustomOptionsHolder>.Instance.ModifierSettings, false);
+                    break;
             }
 
             if (!hideExtras || counter != 0) hudString += $"\n Press TAB or Page Number for more... ({counter + 1}/{maxPage})";
@@ -1024,11 +420,10 @@ namespace TheOtherRoles {
             foreach (var tmp in settingsTMPs) tmp.text = "";
             var settingsString = GameOptionsDataPatch.buildAllOptions(hideExtras: true);
             var blocks = settingsString.Split("\n\n", StringSplitOptions.RemoveEmptyEntries); ;
-            string curString = "";
-            string curBlock;
-            int j = 0;
-            for (int i = 0; i < blocks.Length; i++) {
-                curBlock = blocks[i];
+            var curString = "";
+            var j = 0;
+            foreach (var curBlock in blocks)
+            {
                 if (Helpers.lineCount(curBlock) + Helpers.lineCount(curString) < 40) {
                     curString += curBlock + "\n\n";
                 } else {
@@ -1048,13 +443,13 @@ namespace TheOtherRoles {
             if (__instance.FullScreen == null || MapBehaviour.Instance && MapBehaviour.Instance.IsOpen
                 /*|| AmongUsClient.Instance.GameState != InnerNet.InnerNetClient.GameStates.Started*/
                 || GameOptionsManager.Instance.currentGameOptions.GameMode == GameModes.HideNSeek) return;
-            settingsBackground = GameObject.Instantiate(__instance.FullScreen.gameObject, __instance.transform);
+            settingsBackground = Object.Instantiate(__instance.FullScreen.gameObject, __instance.transform);
             settingsBackground.SetActive(true);
             var renderer = settingsBackground.GetComponent<SpriteRenderer>();
             renderer.color = new Color(0.2f, 0.2f, 0.2f, 0.9f);
             renderer.enabled = true;
             for (int i = 0; i < 3; i++) {
-                settingsTMPs[i] = GameObject.Instantiate(__instance.KillButton.cooldownTimerText, __instance.transform);
+                settingsTMPs[i] = Object.Instantiate(__instance.KillButton.cooldownTimerText, __instance.transform);
                 settingsTMPs[i].alignment = TMPro.TextAlignmentOptions.TopLeft;
                 settingsTMPs[i].enableWordWrapping = false;
                 settingsTMPs[i].transform.localScale = Vector3.one * 0.25f;

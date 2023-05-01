@@ -30,7 +30,7 @@ namespace TheOtherRoles.Patches
             {
                 if (target == null || target.cosmetics?.currentBodySprite?.BodySprite == null) continue;
 
-                bool isMorphedMorphling = target == Morphling.morphling && Morphling.morphTarget != null &&
+                bool isMorphedMorphling = target == Singleton<Morphling>.Instance.Player && Morphling.morphTarget != null &&
                                           Morphling.morphTimer > 0f;
                 bool hasVisibleShield = false;
                 Color color = Medic.shieldedColor;
@@ -43,13 +43,13 @@ namespace TheOtherRoles.Patches
                                                 || (Medic.showShielded == 1 &&
                                                     (CachedPlayer.LocalPlayer.PlayerControl == Medic.shielded ||
                                                      CachedPlayer.LocalPlayer.PlayerControl ==
-                                                     Medic.medic)) // Shielded + Medic
+                                                     Singleton<Medic>.Instance.Player)) // Shielded + Medic
                                                 || (Medic.showShielded == 2 && CachedPlayer.LocalPlayer.PlayerControl ==
-                                                    Medic.medic); // Medic only
+                                                    Singleton<Medic>.Instance.Player); // Medic only
                     // Make shield invisible till after the next meeting if the option is set (the medic can already see the shield)
                     hasVisibleShield = hasVisibleShield && (Medic.meetingAfterShielding ||
                                                             !Medic.showShieldAfterMeeting ||
-                                                            CachedPlayer.LocalPlayer.PlayerControl == Medic.medic ||
+                                                            CachedPlayer.LocalPlayer.PlayerControl == Singleton<Medic>.Instance.Player ||
                                                             Helpers.shouldShowGhostInfo());
                 }
 
@@ -137,7 +137,7 @@ namespace TheOtherRoles.Patches
 
         static void medicSetTarget()
         {
-            if (Medic.medic == null || Medic.medic != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Singleton<Medic>.Instance.Player == null || Singleton<Medic>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
             Medic.currentTarget = Helpers.setTarget();
             if (!Medic.usedShield) Helpers.setPlayerOutline(Medic.currentTarget, Medic.shieldedColor);
         }
@@ -152,21 +152,21 @@ namespace TheOtherRoles.Patches
 
         static void morphlingSetTarget()
         {
-            if (Morphling.morphling == null || Morphling.morphling != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Singleton<Morphling>.Instance.Player == null || Singleton<Morphling>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
             Morphling.currentTarget = Helpers.setTarget();
-            Helpers.setPlayerOutline(Morphling.currentTarget, Morphling.color);
+            Helpers.setPlayerOutline(Morphling.currentTarget, Singleton<Morphling>.Instance.Color);
         }
 
         static void sheriffSetTarget()
         {
-            if (Sheriff.sheriff == null || Sheriff.sheriff != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Singleton<Sheriff>.Instance.Player == null || Singleton<Sheriff>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
             Sheriff.currentTarget = Helpers.setTarget();
-            Helpers.setPlayerOutline(Sheriff.currentTarget, Sheriff.color);
+            Helpers.setPlayerOutline(Sheriff.currentTarget, Singleton<Sheriff>.Instance.Color);
         }
 
         static void deputySetTarget()
         {
-            if (Deputy.deputy == null || Deputy.deputy != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Singleton<Deputy>.Instance.Player == null || Singleton<Deputy>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
             Deputy.currentTarget = Helpers.setTarget();
             Helpers.setPlayerOutline(Deputy.currentTarget, Deputy.color);
         }
@@ -174,10 +174,10 @@ namespace TheOtherRoles.Patches
         public static void deputyCheckPromotion(bool isMeeting = false)
         {
             // If LocalPlayer is Deputy, the Sheriff is disconnected and Deputy promotion is enabled, then trigger promotion
-            if (Deputy.deputy == null || Deputy.deputy != CachedPlayer.LocalPlayer.PlayerControl) return;
-            if (Deputy.promotesToSheriff == 0 || Deputy.deputy.Data.IsDead == true ||
+            if (Singleton<Deputy>.Instance.Player == null || Singleton<Deputy>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Deputy.promotesToSheriff == 0 || Singleton<Deputy>.Instance.Player.Data.IsDead == true ||
                 Deputy.promotesToSheriff == 2 && !isMeeting) return;
-            if (Sheriff.sheriff == null || Sheriff.sheriff?.Data?.Disconnected == true || Sheriff.sheriff.Data.IsDead)
+            if (Singleton<Sheriff>.Instance.Player == null || Singleton<Sheriff>.Instance.Player?.Data?.Disconnected == true || Singleton<Sheriff>.Instance.Player.Data.IsDead)
             {
                 MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
                     CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.DeputyPromotes,
@@ -189,17 +189,17 @@ namespace TheOtherRoles.Patches
 
         static void trackerSetTarget()
         {
-            if (Tracker.tracker == null || Tracker.tracker != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Singleton<Tracker>.Instance.Player == null || Singleton<Tracker>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
             Tracker.currentTarget = Helpers.setTarget();
-            if (!Tracker.usedTracker) Helpers.setPlayerOutline(Tracker.currentTarget, Tracker.color);
+            if (!Tracker.usedTracker) Helpers.setPlayerOutline(Tracker.currentTarget, Singleton<Tracker>.Instance.Color);
         }
 
         static void vampireSetTarget()
         {
-            if (Vampire.vampire == null || Vampire.vampire != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Singleton<Vampire>.Instance.Player == null || Singleton<Vampire>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
 
             PlayerControl target = null;
-            if (Spy.spy != null || Sidekick.wasSpy || Jackal.wasSpy)
+            if (Singleton<Spy>.Instance.Player != null || Sidekick.wasSpy || Jackal.wasSpy)
             {
                 if (Spy.impostorsCanKillAnyone)
                 {
@@ -210,8 +210,8 @@ namespace TheOtherRoles.Patches
                     target = Helpers.setTarget(true, true,
                         new List<PlayerControl>()
                         {
-                            Spy.spy, Sidekick.wasTeamRed ? Sidekick.sidekick : null,
-                            Jackal.wasTeamRed ? Jackal.jackal : null
+                            Singleton<Spy>.Instance.Player, Sidekick.wasTeamRed ? Singleton<Sidekick>.Instance.Player : null,
+                            Jackal.wasTeamRed ? Singleton<Jackal>.Instance.Player : null
                         });
                 }
             }
@@ -219,7 +219,7 @@ namespace TheOtherRoles.Patches
             {
                 target = Helpers.setTarget(true, true,
                     new List<PlayerControl>()
-                        { Sidekick.wasImpostor ? Sidekick.sidekick : null, Jackal.wasImpostor ? Jackal.jackal : null });
+                        { Sidekick.wasImpostor ? Singleton<Sidekick>.Instance.Player : null, Jackal.wasImpostor ? Singleton<Jackal>.Instance.Player : null });
             }
 
             bool targetNearGarlic = false;
@@ -236,17 +236,17 @@ namespace TheOtherRoles.Patches
 
             Vampire.targetNearGarlic = targetNearGarlic;
             Vampire.currentTarget = target;
-            Helpers.setPlayerOutline(Vampire.currentTarget, Vampire.color);
+            Helpers.setPlayerOutline(Vampire.currentTarget, Singleton<Vampire>.Instance.Color);
         }
 
         static void jackalSetTarget()
         {
-            if (Jackal.jackal == null || Jackal.jackal != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Singleton<Jackal>.Instance.Player == null || Singleton<Jackal>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
             var untargetablePlayers = new List<PlayerControl>();
             if (Jackal.canCreateSidekickFromImpostor)
             {
                 // Only exclude sidekick from beeing targeted if the jackal can create sidekicks from impostors
-                if (Sidekick.sidekick != null) untargetablePlayers.Add(Sidekick.sidekick);
+                if (Singleton<Sidekick>.Instance.Player != null) untargetablePlayers.Add(Singleton<Sidekick>.Instance.Player);
             }
 
             if (Mini.mini != null && !Mini.isGrownUp())
@@ -257,9 +257,9 @@ namespace TheOtherRoles.Patches
 
         static void sidekickSetTarget()
         {
-            if (Sidekick.sidekick == null || Sidekick.sidekick != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Singleton<Sidekick>.Instance.Player == null || Singleton<Sidekick>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
             var untargetablePlayers = new List<PlayerControl>();
-            if (Jackal.jackal != null) untargetablePlayers.Add(Jackal.jackal);
+            if (Singleton<Jackal>.Instance.Player != null) untargetablePlayers.Add(Singleton<Jackal>.Instance.Player);
             if (Mini.mini != null && !Mini.isGrownUp())
                 untargetablePlayers.Add(Mini.mini); // Exclude Sidekick from targeting the Mini unless it has grown up
             Sidekick.currentTarget = Helpers.setTarget(untargetablePlayers: untargetablePlayers);
@@ -269,9 +269,9 @@ namespace TheOtherRoles.Patches
         static void sidekickCheckPromotion()
         {
             // If LocalPlayer is Sidekick, the Jackal is disconnected and Sidekick promotion is enabled, then trigger promotion
-            if (Sidekick.sidekick == null || Sidekick.sidekick != CachedPlayer.LocalPlayer.PlayerControl) return;
-            if (Sidekick.sidekick.Data.IsDead == true || !Sidekick.promotesToJackal) return;
-            if (Jackal.jackal == null || Jackal.jackal?.Data?.Disconnected == true)
+            if (Singleton<Sidekick>.Instance.Player == null || Singleton<Sidekick>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Singleton<Sidekick>.Instance.Player.Data.IsDead == true || !Sidekick.promotesToJackal) return;
+            if (Singleton<Jackal>.Instance.Player == null || Singleton<Jackal>.Instance.Player?.Data?.Disconnected == true)
             {
                 MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
                     CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SidekickPromotes,
@@ -283,15 +283,15 @@ namespace TheOtherRoles.Patches
 
         static void eraserSetTarget()
         {
-            if (Eraser.eraser == null || Eraser.eraser != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Singleton<Eraser>.Instance.Player == null || Singleton<Eraser>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
 
             List<PlayerControl> untargetables = new List<PlayerControl>();
-            if (Spy.spy != null) untargetables.Add(Spy.spy);
-            if (Sidekick.wasTeamRed) untargetables.Add(Sidekick.sidekick);
-            if (Jackal.wasTeamRed) untargetables.Add(Jackal.jackal);
+            if (Singleton<Spy>.Instance.Player != null) untargetables.Add(Singleton<Spy>.Instance.Player);
+            if (Sidekick.wasTeamRed) untargetables.Add(Singleton<Sidekick>.Instance.Player);
+            if (Jackal.wasTeamRed) untargetables.Add(Singleton<Jackal>.Instance.Player);
             Eraser.currentTarget = Helpers.setTarget(onlyCrewmates: !Eraser.canEraseAnyone,
                 untargetablePlayers: Eraser.canEraseAnyone ? new List<PlayerControl>() : untargetables);
-            Helpers.setPlayerOutline(Eraser.currentTarget, Eraser.color);
+            Helpers.setPlayerOutline(Eraser.currentTarget, Singleton<Eraser>.Instance.Color);
         }
 
         static void deputyUpdate()
@@ -318,8 +318,8 @@ namespace TheOtherRoles.Patches
         static void engineerUpdate()
         {
             bool jackalHighlight = Engineer.highlightForTeamJackal &&
-                                   (CachedPlayer.LocalPlayer.PlayerControl == Jackal.jackal ||
-                                    CachedPlayer.LocalPlayer.PlayerControl == Sidekick.sidekick);
+                                   (CachedPlayer.LocalPlayer.PlayerControl == Singleton<Jackal>.Instance.Player ||
+                                    CachedPlayer.LocalPlayer.PlayerControl == Singleton<Sidekick>.Instance.Player);
             bool impostorHighlight = Engineer.highlightForImpostors && CachedPlayer.LocalPlayer.Data.Role.IsImpostor;
             if ((jackalHighlight || impostorHighlight) && MapUtilities.CachedShipStatus?.AllVents != null)
             {
@@ -329,10 +329,10 @@ namespace TheOtherRoles.Patches
                     {
                         if (vent?.myRend?.material != null)
                         {
-                            if (Engineer.engineer != null && Engineer.engineer.inVent)
+                            if (Singleton<Engineer>.Instance.Player != null && Singleton<Engineer>.Instance.Player.inVent)
                             {
                                 vent.myRend.material.SetFloat("_Outline", 1f);
-                                vent.myRend.material.SetColor("_OutlineColor", Engineer.color);
+                                vent.myRend.material.SetColor("_OutlineColor", Singleton<Engineer>.Instance.Color);
                             }
                             else if (vent.myRend.material.GetColor("_AddColor") != Color.red)
                             {
@@ -358,7 +358,7 @@ namespace TheOtherRoles.Patches
             }
 
             PlayerControl target = null;
-            if (Spy.spy != null || Sidekick.wasSpy || Jackal.wasSpy)
+            if (Singleton<Spy>.Instance.Player != null || Sidekick.wasSpy || Jackal.wasSpy)
             {
                 if (Spy.impostorsCanKillAnyone)
                 {
@@ -369,8 +369,8 @@ namespace TheOtherRoles.Patches
                     target = Helpers.setTarget(true, true,
                         new List<PlayerControl>()
                         {
-                            Spy.spy, Sidekick.wasTeamRed ? Sidekick.sidekick : null,
-                            Jackal.wasTeamRed ? Jackal.jackal : null
+                            Singleton<Spy>.Instance.Player, Sidekick.wasTeamRed ? Singleton<Sidekick>.Instance.Player : null,
+                            Jackal.wasTeamRed ? Singleton<Jackal>.Instance.Player : null
                         });
                 }
             }
@@ -378,7 +378,7 @@ namespace TheOtherRoles.Patches
             {
                 target = Helpers.setTarget(true, true,
                     new List<PlayerControl>()
-                        { Sidekick.wasImpostor ? Sidekick.sidekick : null, Jackal.wasImpostor ? Jackal.jackal : null });
+                        { Sidekick.wasImpostor ? Singleton<Sidekick>.Instance.Player : null, Jackal.wasImpostor ? Singleton<Jackal>.Instance.Player : null });
             }
 
             FastDestroyableSingleton<HudManager>.Instance.KillButton
@@ -387,57 +387,57 @@ namespace TheOtherRoles.Patches
 
         static void warlockSetTarget()
         {
-            if (Warlock.warlock == null || Warlock.warlock != CachedPlayer.LocalPlayer.PlayerControl) return;
-            if (Warlock.curseVictim != null &&
-                (Warlock.curseVictim.Data.Disconnected || Warlock.curseVictim.Data.IsDead))
+            if (Singleton<Warlock>.Instance.Player == null || Singleton<Warlock>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Singleton<Warlock>.Instance.CurseVictim != null &&
+                (Singleton<Warlock>.Instance.CurseVictim.Data.Disconnected || Singleton<Warlock>.Instance.CurseVictim.Data.IsDead))
             {
                 // If the cursed victim is disconnected or dead reset the curse so a new curse can be applied
                 Warlock.resetCurse();
             }
 
-            if (Warlock.curseVictim == null)
+            if (Singleton<Warlock>.Instance.CurseVictim == null)
             {
                 Warlock.currentTarget = Helpers.setTarget();
-                Helpers.setPlayerOutline(Warlock.currentTarget, Warlock.color);
+                Helpers.setPlayerOutline(Warlock.currentTarget, Singleton<Warlock>.Instance.Color);
             }
             else
             {
-                Warlock.curseVictimTarget = Helpers.setTarget(targetingPlayer: Warlock.curseVictim);
-                Helpers.setPlayerOutline(Warlock.curseVictimTarget, Warlock.color);
+                Singleton<Warlock>.Instance.CurseVictimTarget = Helpers.setTarget(targetingPlayer: Singleton<Warlock>.Instance.CurseVictim);
+                Helpers.setPlayerOutline(Singleton<Warlock>.Instance.CurseVictimTarget, Singleton<Warlock>.Instance.Color);
             }
         }
 
         static void ninjaUpdate()
         {
-            if (Ninja.isInvisble && Ninja.invisibleTimer <= 0 && Ninja.ninja == CachedPlayer.LocalPlayer.PlayerControl)
+            if (Ninja.isInvisble && Ninja.invisibleTimer <= 0 && Singleton<Ninja>.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl)
             {
                 MessageWriter invisibleWriter = AmongUsClient.Instance.StartRpcImmediately(
                     CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SetInvisible,
                     Hazel.SendOption.Reliable, -1);
-                invisibleWriter.Write(Ninja.ninja.PlayerId);
+                invisibleWriter.Write(Singleton<Ninja>.Instance.Player.PlayerId);
                 invisibleWriter.Write(byte.MaxValue);
                 AmongUsClient.Instance.FinishRpcImmediately(invisibleWriter);
-                RPCProcedure.setInvisible(Ninja.ninja.PlayerId, byte.MaxValue);
+                RPCProcedure.setInvisible(Singleton<Ninja>.Instance.Player.PlayerId, byte.MaxValue);
             }
 
             if (Ninja.arrow?.arrow != null)
             {
-                if (Ninja.ninja == null || Ninja.ninja != CachedPlayer.LocalPlayer.PlayerControl ||
+                if (Singleton<Ninja>.Instance.Player == null || Singleton<Ninja>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl ||
                     !Ninja.knowsTargetLocation)
                 {
                     Ninja.arrow.arrow.SetActive(false);
                     return;
                 }
 
-                if (Ninja.ninjaMarked != null && !CachedPlayer.LocalPlayer.Data.IsDead)
+                if (Singleton<Ninja>.Instance.PlayerMarked != null && !CachedPlayer.LocalPlayer.Data.IsDead)
                 {
-                    bool trackedOnMap = !Ninja.ninjaMarked.Data.IsDead;
-                    Vector3 position = Ninja.ninjaMarked.transform.position;
+                    bool trackedOnMap = !Singleton<Ninja>.Instance.PlayerMarked.Data.IsDead;
+                    Vector3 position = Singleton<Ninja>.Instance.PlayerMarked.transform.position;
                     if (!trackedOnMap)
                     {
                         // Check for dead body
                         DeadBody body = UnityEngine.Object.FindObjectsOfType<DeadBody>()
-                            .FirstOrDefault(b => b.ParentId == Ninja.ninjaMarked.PlayerId);
+                            .FirstOrDefault(b => b.ParentId == Singleton<Ninja>.Instance.PlayerMarked.PlayerId);
                         if (body != null)
                         {
                             trackedOnMap = true;
@@ -460,14 +460,14 @@ namespace TheOtherRoles.Patches
             // Handle player tracking
             if (Tracker.arrow?.arrow != null)
             {
-                if (Tracker.tracker == null || CachedPlayer.LocalPlayer.PlayerControl != Tracker.tracker)
+                if (Singleton<Tracker>.Instance.Player == null || CachedPlayer.LocalPlayer.PlayerControl != Singleton<Tracker>.Instance.Player)
                 {
                     Tracker.arrow.arrow.SetActive(false);
                     return;
                 }
 
-                if (Tracker.tracker != null && Tracker.tracked != null &&
-                    CachedPlayer.LocalPlayer.PlayerControl == Tracker.tracker && !Tracker.tracker.Data.IsDead)
+                if (Singleton<Tracker>.Instance.Player != null && Tracker.tracked != null &&
+                    CachedPlayer.LocalPlayer.PlayerControl == Singleton<Tracker>.Instance.Player && !Singleton<Tracker>.Instance.Player.Data.IsDead)
                 {
                     Tracker.timeUntilUpdate -= Time.fixedDeltaTime;
 
@@ -499,8 +499,8 @@ namespace TheOtherRoles.Patches
             }
 
             // Handle corpses tracking
-            if (Tracker.tracker != null && Tracker.tracker == CachedPlayer.LocalPlayer.PlayerControl &&
-                Tracker.corpsesTrackingTimer >= 0f && !Tracker.tracker.Data.IsDead)
+            if (Singleton<Tracker>.Instance.Player != null && Singleton<Tracker>.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl &&
+                Tracker.corpsesTrackingTimer >= 0f && !Singleton<Tracker>.Instance.Player.Data.IsDead)
             {
                 bool arrowsCountChanged = Tracker.localArrows.Count != Tracker.deadBodyPositions.Count();
                 int index = 0;
@@ -515,7 +515,7 @@ namespace TheOtherRoles.Patches
                 {
                     if (arrowsCountChanged)
                     {
-                        Tracker.localArrows.Add(new Arrow(Tracker.color));
+                        Tracker.localArrows.Add(new Arrow(Singleton<Tracker>.Instance.Color));
                         Tracker.localArrows[index].arrow.SetActive(true);
                     }
 
@@ -541,7 +541,7 @@ namespace TheOtherRoles.Patches
 
             // Set adapted player size to Mini and Morphling
             if (Mini.mini == null || Camouflager.camouflageTimer > 0f ||
-                Mini.mini == Morphling.morphling && Morphling.morphTimer > 0) return;
+                Mini.mini == Singleton<Morphling>.Instance.Player && Morphling.morphTimer > 0) return;
 
             float growingProgress = Mini.growingProgress();
             float scale = growingProgress * 0.35f + 0.35f;
@@ -556,7 +556,7 @@ namespace TheOtherRoles.Patches
                 collider.radius = correctedColliderRadius;
             }
 
-            if (Morphling.morphling != null && p == Morphling.morphling && Morphling.morphTarget == Mini.mini &&
+            if (Singleton<Morphling>.Instance.Player != null && p == Singleton<Morphling>.Instance.Player && Morphling.morphTarget == Mini.mini &&
                 Morphling.morphTimer > 0f)
             {
                 p.transform.localScale = new Vector3(scale, scale, 1f);
@@ -591,8 +591,8 @@ namespace TheOtherRoles.Patches
                     .SetLocalZ(-0.0001f); // This moves both the name AND the colorblindtext behind objects (if the player is behind the object), like the rock on polus
 
                 if (CustomGuid.IsDevMode ||
-                    (Lawyer.lawyerKnowsRole && CachedPlayer.LocalPlayer.PlayerControl == Lawyer.lawyer &&
-                     p == Lawyer.target) || p == CachedPlayer.LocalPlayer.PlayerControl ||
+                    (Singleton<Lawyer>.Instance.PlayerKnowsRole && CachedPlayer.LocalPlayer.PlayerControl == Singleton<Lawyer>.Instance.Player &&
+                     p == Singleton<Lawyer>.Instance.Target) || p == CachedPlayer.LocalPlayer.PlayerControl ||
                     CachedPlayer.LocalPlayer.Data.IsDead)
                 {
                     Transform playerInfoTransform = p.cosmetics.nameText.transform.parent.FindChild("Info");
@@ -642,8 +642,8 @@ namespace TheOtherRoles.Patches
                     {
                         if (p.Data.IsDead) roleNames = roleText;
                         playerInfoText = $"{roleNames}";
-                        if (p == Swapper.swapper)
-                            playerInfoText = $"{roleNames}" + Helpers.cs(Swapper.color, $" ({Swapper.charges})");
+                        if (p == Singleton<Swapper>.Instance.Player)
+                            playerInfoText = $"{roleNames}" + Helpers.cs(Singleton<Swapper>.Instance.Color, $" ({Swapper.charges})");
                         if (HudManager.Instance.TaskPanel != null)
                         {
                             TMPro.TextMeshPro tabText = HudManager.Instance.TaskPanel.tab.transform
@@ -663,9 +663,9 @@ namespace TheOtherRoles.Patches
                         playerInfoText = $"{taskInfo}".Trim();
                         meetingInfoText = playerInfoText;
                     }
-                    else if (TORMapOptions.ghostsSeeRoles || (Lawyer.lawyerKnowsRole &&
-                                                              CachedPlayer.LocalPlayer.PlayerControl == Lawyer.lawyer &&
-                                                              p == Lawyer.target))
+                    else if (TORMapOptions.ghostsSeeRoles || (Singleton<Lawyer>.Instance.PlayerKnowsRole &&
+                                                              CachedPlayer.LocalPlayer.PlayerControl == Singleton<Lawyer>.Instance.Player &&
+                                                              p == Singleton<Lawyer>.Instance.Target))
                     {
                         playerInfoText = $"{roleText}";
                         meetingInfoText = playerInfoText;
@@ -683,8 +683,8 @@ namespace TheOtherRoles.Patches
 
         public static void securityGuardSetTarget()
         {
-            if (SecurityGuard.securityGuard == null ||
-                SecurityGuard.securityGuard != CachedPlayer.LocalPlayer.PlayerControl ||
+            if (Singleton<SecurityGuard>.Instance.Player == null ||
+                Singleton<SecurityGuard>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl ||
                 MapUtilities.CachedShipStatus == null || MapUtilities.CachedShipStatus.AllVents == null) return;
 
             Vent target = null;
@@ -711,10 +711,10 @@ namespace TheOtherRoles.Patches
 
         public static void securityGuardUpdate()
         {
-            if (SecurityGuard.securityGuard == null ||
-                CachedPlayer.LocalPlayer.PlayerControl != SecurityGuard.securityGuard ||
-                SecurityGuard.securityGuard.Data.IsDead) return;
-            var (playerCompleted, _) = TasksHandler.taskInfo(SecurityGuard.securityGuard.Data);
+            if (Singleton<SecurityGuard>.Instance.Player == null ||
+                CachedPlayer.LocalPlayer.PlayerControl != Singleton<SecurityGuard>.Instance.Player ||
+                Singleton<SecurityGuard>.Instance.Player.Data.IsDead) return;
+            var (playerCompleted, _) = TasksHandler.taskInfo(Singleton<SecurityGuard>.Instance.Player.Data);
             if (playerCompleted == SecurityGuard.rechargedTasks)
             {
                 SecurityGuard.rechargedTasks += SecurityGuard.rechargeTasksNumber;
@@ -724,7 +724,7 @@ namespace TheOtherRoles.Patches
 
         public static void arsonistSetTarget()
         {
-            if (Arsonist.arsonist == null || Arsonist.arsonist != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Singleton<Arsonist>.Instance.Player == null || Singleton<Arsonist>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
             List<PlayerControl> untargetables;
             if (Arsonist.douseTarget != null)
             {
@@ -740,15 +740,15 @@ namespace TheOtherRoles.Patches
             else untargetables = Arsonist.dousedPlayers;
 
             Arsonist.currentTarget = Helpers.setTarget(untargetablePlayers: untargetables);
-            if (Arsonist.currentTarget != null) Helpers.setPlayerOutline(Arsonist.currentTarget, Arsonist.color);
+            if (Arsonist.currentTarget != null) Helpers.setPlayerOutline(Arsonist.currentTarget, Singleton<Arsonist>.Instance.Color);
         }
 
         static void snitchUpdate()
         {
-            if (Snitch.snitch == null || !Snitch.needsUpdate) return;
+            if (Singleton<Snitch>.Instance.Player == null || !Snitch.needsUpdate) return;
 
-            bool snitchIsDead = Snitch.snitch.Data.IsDead;
-            var (playerCompleted, playerTotal) = TasksHandler.taskInfo(Snitch.snitch.Data);
+            bool snitchIsDead = Singleton<Snitch>.Instance.Player.Data.IsDead;
+            var (playerCompleted, playerTotal) = TasksHandler.taskInfo(Singleton<Snitch>.Instance.Player.Data);
 
             if (playerTotal == 0) return;
 
@@ -767,11 +767,11 @@ namespace TheOtherRoles.Patches
                     if (Snitch.localArrows.Count != 0 && Snitch.localArrows[0] != null)
                     {
                         Snitch.localArrows[0].arrow.SetActive(true);
-                        Snitch.localArrows[0].Update(Snitch.snitch.transform.position);
+                        Snitch.localArrows[0].Update(Singleton<Snitch>.Instance.Player.transform.position);
                     }
                 }
                 else if (Snitch.arrowTargets != Snitch.ArrowTargets.Snitch && !snitchIsDead &&
-                         CachedPlayer.LocalPlayer.PlayerControl == Snitch.snitch &&
+                         CachedPlayer.LocalPlayer.PlayerControl == Singleton<Snitch>.Instance.Player &&
                          (playerTotal - playerCompleted) == 0)
                 {
                     int arrowIndex = 0;
@@ -790,7 +790,7 @@ namespace TheOtherRoles.Patches
                             {
                                 Snitch.localArrows[arrowIndex].arrow.SetActive(true);
                                 Snitch.localArrows[arrowIndex].Update(p.transform.position, Palette.ImpostorRed);
-                                // Snitch.localArrows[arrowIndex].Update(p.transform.position, (arrowForTeamJackal && Snitch.teamJackalUseDifferentArrowColor ? Jackal.color : Palette.ImpostorRed));
+                                // Snitch.localArrows[arrowIndex].Update(p.transform.position, (arrowForTeamJackal && Snitch.teamJackalUseDifferentArrowColor ? Singleton<Jackal>.Instance.Color : Palette.ImpostorRed));
                             }
 
                             arrowIndex++;
@@ -832,10 +832,10 @@ namespace TheOtherRoles.Patches
 
         static void bountyHunterUpdate()
         {
-            if (BountyHunter.bountyHunter == null ||
-                CachedPlayer.LocalPlayer.PlayerControl != BountyHunter.bountyHunter) return;
+            if (Singleton<BountyHunter>.Instance.Player == null ||
+                CachedPlayer.LocalPlayer.PlayerControl != Singleton<BountyHunter>.Instance.Player) return;
 
-            if (BountyHunter.bountyHunter.Data.IsDead)
+            if (Singleton<BountyHunter>.Instance.Player.Data.IsDead)
             {
                 if (BountyHunter.arrow != null || BountyHunter.arrow.arrow != null)
                     UnityEngine.Object.Destroy(BountyHunter.arrow.arrow);
@@ -866,11 +866,11 @@ namespace TheOtherRoles.Patches
                 foreach (PlayerControl p in CachedPlayer.AllPlayers)
                 {
                     if (p.Data.IsDead || p.Data.Disconnected) continue;
-                    if (p.Data.Role.IsImpostor || p == Spy.spy) continue;
+                    if (p.Data.Role.IsImpostor || p == Singleton<Spy>.Instance.Player) continue;
                     if (TORMapOptions.shieldFirstKill && TORMapOptions.firstKillPlayer == p) continue;
-                    if (Jackal.jackal == p && Jackal.wasTeamRed) continue;
-                    if (Sidekick.sidekick == p && Sidekick.wasTeamRed) continue;
-                    if (Lovers.getPartner(BountyHunter.bountyHunter) == p) continue;
+                    if (Singleton<Jackal>.Instance.Player == p && Jackal.wasTeamRed) continue;
+                    if (Singleton<Sidekick>.Instance.Player == p && Sidekick.wasTeamRed) continue;
+                    if (Lovers.getPartner(Singleton<BountyHunter>.Instance.Player) == p) continue;
                     possibleTargets.Add(p);
                 }
 
@@ -926,8 +926,8 @@ namespace TheOtherRoles.Patches
 
         public static void mediumSetTarget()
         {
-            if (Medium.medium == null || Medium.medium != CachedPlayer.LocalPlayer.PlayerControl ||
-                Medium.medium.Data.IsDead || Medium.deadBodies == null ||
+            if (Singleton<Medium>.Instance.Player == null || Singleton<Medium>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl ||
+                Singleton<Medium>.Instance.Player.Data.IsDead || Medium.deadBodies == null ||
                 MapUtilities.CachedShipStatus?.AllVents == null) return;
 
             DeadPlayer target = null;
@@ -959,10 +959,10 @@ namespace TheOtherRoles.Patches
             if (oldCamouflageTimer > 0f && Camouflager.camouflageTimer <= 0f)
             {
                 Camouflager.resetCamouflage();
-                if (Morphling.morphTimer > 0f && Morphling.morphling != null && Morphling.morphTarget != null)
+                if (Morphling.morphTimer > 0f && Singleton<Morphling>.Instance.Player != null && Morphling.morphTarget != null)
                 {
                     PlayerControl target = Morphling.morphTarget;
-                    Morphling.morphling.setLook(target.Data.PlayerName, target.Data.DefaultOutfit.ColorId,
+                    Singleton<Morphling>.Instance.Player.setLook(target.Data.PlayerName, target.Data.DefaultOutfit.ColorId,
                         target.Data.DefaultOutfit.HatId, target.Data.DefaultOutfit.VisorId,
                         target.Data.DefaultOutfit.SkinId, target.Data.DefaultOutfit.PetId);
                 }
@@ -970,16 +970,16 @@ namespace TheOtherRoles.Patches
 
             // Morphling reset (only if camouflage is inactive)
             if (Camouflager.camouflageTimer <= 0f && oldMorphTimer > 0f && Morphling.morphTimer <= 0f &&
-                Morphling.morphling != null)
+                Singleton<Morphling>.Instance.Player != null)
                 Morphling.resetMorph();
         }
 
         public static void lawyerUpdate()
         {
-            if (Lawyer.lawyer == null || Lawyer.lawyer != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Singleton<Lawyer>.Instance.Player == null || Singleton<Lawyer>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
 
             // Promote to Pursuer
-            if (Lawyer.target != null && Lawyer.target.Data.Disconnected && !Lawyer.lawyer.Data.IsDead)
+            if (Singleton<Lawyer>.Instance.Target != null && Singleton<Lawyer>.Instance.Target.Data.Disconnected && !Singleton<Lawyer>.Instance.Player.Data.IsDead)
             {
                 MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
                     CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.LawyerPromotesToPursuer,
@@ -992,9 +992,9 @@ namespace TheOtherRoles.Patches
 
         public static void hackerUpdate()
         {
-            if (Hacker.hacker == null || CachedPlayer.LocalPlayer.PlayerControl != Hacker.hacker ||
-                Hacker.hacker.Data.IsDead) return;
-            var (playerCompleted, _) = TasksHandler.taskInfo(Hacker.hacker.Data);
+            if (Singleton<Hacker>.Instance.Player == null || CachedPlayer.LocalPlayer.PlayerControl != Singleton<Hacker>.Instance.Player ||
+                Singleton<Hacker>.Instance.Player.Data.IsDead) return;
+            var (playerCompleted, _) = TasksHandler.taskInfo(Singleton<Hacker>.Instance.Player.Data);
             if (playerCompleted == Hacker.rechargedTasks)
             {
                 Hacker.rechargedTasks += Hacker.rechargeTasksNumber;
@@ -1006,7 +1006,7 @@ namespace TheOtherRoles.Patches
         // For swapper swap charges        
         public static void swapperUpdate()
         {
-            if (Swapper.swapper == null || CachedPlayer.LocalPlayer.PlayerControl != Swapper.swapper ||
+            if (Singleton<Swapper>.Instance.Player == null || CachedPlayer.LocalPlayer.PlayerControl != Singleton<Swapper>.Instance.Player ||
                 CachedPlayer.LocalPlayer.Data.IsDead) return;
             var (playerCompleted, _) = TasksHandler.taskInfo(CachedPlayer.LocalPlayer.Data);
             if (playerCompleted == Swapper.rechargedTasks)
@@ -1018,14 +1018,14 @@ namespace TheOtherRoles.Patches
 
         static void pursuerSetTarget()
         {
-            if (Pursuer.pursuer == null || Pursuer.pursuer != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Singleton<Pursuer>.Instance.Player == null || Singleton<Pursuer>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
             Pursuer.target = Helpers.setTarget();
-            Helpers.setPlayerOutline(Pursuer.target, Pursuer.color);
+            Helpers.setPlayerOutline(Pursuer.target, Singleton<Pursuer>.Instance.Color);
         }
 
         static void witchSetTarget()
         {
-            if (Witch.witch == null || Witch.witch != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Singleton<Witch>.Instance.Player == null || Singleton<Witch>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
             List<PlayerControl> untargetables;
             if (Witch.spellCastingTarget != null)
                 untargetables = PlayerControl.AllPlayerControls.ToArray()
@@ -1035,36 +1035,36 @@ namespace TheOtherRoles.Patches
             {
                 untargetables =
                     new List<PlayerControl>(); // Also target players that have already been spelled, to hide spells that were blanks/blocked by shields
-                if (Spy.spy != null && !Witch.canSpellAnyone) untargetables.Add(Spy.spy);
-                if (Sidekick.wasTeamRed && !Witch.canSpellAnyone) untargetables.Add(Sidekick.sidekick);
-                if (Jackal.wasTeamRed && !Witch.canSpellAnyone) untargetables.Add(Jackal.jackal);
+                if (Singleton<Spy>.Instance.Player != null && !Witch.canSpellAnyone) untargetables.Add(Singleton<Spy>.Instance.Player);
+                if (Sidekick.wasTeamRed && !Witch.canSpellAnyone) untargetables.Add(Singleton<Sidekick>.Instance.Player);
+                if (Jackal.wasTeamRed && !Witch.canSpellAnyone) untargetables.Add(Singleton<Jackal>.Instance.Player);
             }
 
             Witch.currentTarget =
                 Helpers.setTarget(onlyCrewmates: !Witch.canSpellAnyone, untargetablePlayers: untargetables);
-            Helpers.setPlayerOutline(Witch.currentTarget, Witch.color);
+            Helpers.setPlayerOutline(Witch.currentTarget, Singleton<Witch>.Instance.Color);
         }
 
         static void ninjaSetTarget()
         {
-            if (Ninja.ninja == null || Ninja.ninja != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Singleton<Ninja>.Instance.Player == null || Singleton<Ninja>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
             List<PlayerControl> untargetables = new List<PlayerControl>();
-            if (Spy.spy != null && !Spy.impostorsCanKillAnyone) untargetables.Add(Spy.spy);
+            if (Singleton<Spy>.Instance.Player != null && !Spy.impostorsCanKillAnyone) untargetables.Add(Singleton<Spy>.Instance.Player);
             if (Mini.mini != null && !Mini.isGrownUp()) untargetables.Add(Mini.mini);
-            if (Sidekick.wasTeamRed && !Spy.impostorsCanKillAnyone) untargetables.Add(Sidekick.sidekick);
-            if (Jackal.wasTeamRed && !Spy.impostorsCanKillAnyone) untargetables.Add(Jackal.jackal);
-            Ninja.currentTarget = Helpers.setTarget(onlyCrewmates: Spy.spy == null || !Spy.impostorsCanKillAnyone,
+            if (Sidekick.wasTeamRed && !Spy.impostorsCanKillAnyone) untargetables.Add(Singleton<Sidekick>.Instance.Player);
+            if (Jackal.wasTeamRed && !Spy.impostorsCanKillAnyone) untargetables.Add(Singleton<Jackal>.Instance.Player);
+            Ninja.currentTarget = Helpers.setTarget(onlyCrewmates: Singleton<Spy>.Instance.Player == null || !Spy.impostorsCanKillAnyone,
                 untargetablePlayers: untargetables);
-            Helpers.setPlayerOutline(Ninja.currentTarget, Ninja.color);
+            Helpers.setPlayerOutline(Ninja.currentTarget, Singleton<Ninja>.Instance.Color);
         }
 
         static void thiefSetTarget()
         {
-            if (Thief.thief == null || Thief.thief != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Singleton<Thief>.Instance.Player == null || Singleton<Thief>.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
             List<PlayerControl> untargetables = new List<PlayerControl>();
             if (Mini.mini != null && !Mini.isGrownUp()) untargetables.Add(Mini.mini);
             Thief.currentTarget = Helpers.setTarget(onlyCrewmates: false, untargetablePlayers: untargetables);
-            Helpers.setPlayerOutline(Thief.currentTarget, Thief.color);
+            Helpers.setPlayerOutline(Thief.currentTarget, Singleton<Thief>.Instance.Color);
         }
 
 
@@ -1138,9 +1138,9 @@ namespace TheOtherRoles.Patches
 
         public static void trapperUpdate()
         {
-            if (Trapper.trapper == null || CachedPlayer.LocalPlayer.PlayerControl != Trapper.trapper ||
-                Trapper.trapper.Data.IsDead) return;
-            var (playerCompleted, _) = TasksHandler.taskInfo(Trapper.trapper.Data);
+            if (Singleton<Trapper>.Instance.Player == null || CachedPlayer.LocalPlayer.PlayerControl != Singleton<Trapper>.Instance.Player ||
+                Singleton<Trapper>.Instance.Player.Data.IsDead) return;
+            var (playerCompleted, _) = TasksHandler.taskInfo(Singleton<Trapper>.Instance.Player.Data);
             if (playerCompleted == Trapper.rechargedTasks)
             {
                 Trapper.rechargedTasks += Trapper.rechargeTasksNumber;
@@ -1355,11 +1355,11 @@ namespace TheOtherRoles.Patches
         public static void Prefix(PlayerPhysics __instance)
         {
             bool correctOffset = Camouflager.camouflageTimer <= 0f && (__instance.myPlayer == Mini.mini ||
-                                                                       (Morphling.morphling != null &&
-                                                                        __instance.myPlayer == Morphling.morphling &&
+                                                                       (Singleton<Morphling>.Instance.Player != null &&
+                                                                        __instance.myPlayer == Singleton<Morphling>.Instance.Player &&
                                                                         Morphling.morphTarget == Mini.mini &&
                                                                         Morphling.morphTimer > 0f));
-            correctOffset = correctOffset && !(Mini.mini == Morphling.morphling && Morphling.morphTimer > 0f);
+            correctOffset = correctOffset && !(Mini.mini == Singleton<Morphling>.Instance.Player && Morphling.morphTimer > 0f);
             if (correctOffset)
             {
                 float currentScaling = (Mini.growingProgress() + 1) * 0.5f;
@@ -1385,11 +1385,11 @@ namespace TheOtherRoles.Patches
         static void Postfix(PlayerControl __instance, [HarmonyArgument(0)] GameData.PlayerInfo target)
         {
             // Medic or Detective report
-            bool isMedicReport = Medic.medic != null && Medic.medic == CachedPlayer.LocalPlayer.PlayerControl &&
-                                 __instance.PlayerId == Medic.medic.PlayerId;
-            bool isDetectiveReport = Detective.detective != null &&
-                                     Detective.detective == CachedPlayer.LocalPlayer.PlayerControl &&
-                                     __instance.PlayerId == Detective.detective.PlayerId;
+            bool isMedicReport = Singleton<Medic>.Instance.Player != null && Singleton<Medic>.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl &&
+                                 __instance.PlayerId == Singleton<Medic>.Instance.Player.PlayerId;
+            bool isDetectiveReport = Singleton<Detective>.Instance.Player != null &&
+                                     Singleton<Detective>.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl &&
+                                     __instance.PlayerId == Singleton<Detective>.Instance.Player.PlayerId;
             if (isMedicReport || isDetectiveReport)
             {
                 DeadPlayer deadPlayer =
@@ -1478,7 +1478,7 @@ namespace TheOtherRoles.Patches
             if (resetToDead) __instance.Data.IsDead = true;
 
             // Remove fake tasks when player dies
-            if (target.hasFakeTasks() || target == Lawyer.lawyer || target == Pursuer.pursuer || target == Thief.thief)
+            if (target.hasFakeTasks() || target == Singleton<Lawyer>.Instance.Player || target == Singleton<Pursuer>.Instance.Player || target == Singleton<Thief>.Instance.Player)
                 target.clearAllTasks();
 
             // First kill (set before lover suicide)
@@ -1496,8 +1496,8 @@ namespace TheOtherRoles.Patches
             }
 
             // Sidekick promotion trigger on murder
-            if (Sidekick.promotesToJackal && Sidekick.sidekick != null && !Sidekick.sidekick.Data.IsDead &&
-                target == Jackal.jackal && Jackal.jackal == CachedPlayer.LocalPlayer.PlayerControl)
+            if (Sidekick.promotesToJackal && Singleton<Sidekick>.Instance.Player != null && !Singleton<Sidekick>.Instance.Player.Data.IsDead &&
+                target == Singleton<Jackal>.Instance.Player && Singleton<Jackal>.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl)
             {
                 MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
                     CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SidekickPromotes,
@@ -1507,7 +1507,7 @@ namespace TheOtherRoles.Patches
             }
 
             // Pursuer promotion trigger on murder (the host sends the call such that everyone recieves the update before a possible game End)
-            if (target == Lawyer.target && AmongUsClient.Instance.AmHost && Lawyer.lawyer != null)
+            if (target == Singleton<Lawyer>.Instance.Target && AmongUsClient.Instance.AmHost && Singleton<Lawyer>.Instance.Player != null)
             {
                 MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
                     CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.LawyerPromotesToPursuer,
@@ -1517,9 +1517,9 @@ namespace TheOtherRoles.Patches
             }
 
             // Seer show flash and add dead player position
-            if (Seer.seer != null &&
-                (CachedPlayer.LocalPlayer.PlayerControl == Seer.seer || Helpers.shouldShowGhostInfo()) &&
-                !Seer.seer.Data.IsDead && Seer.seer != target && Seer.mode <= 1)
+            if (Singleton<Seer>.Instance.Player != null &&
+                (CachedPlayer.LocalPlayer.PlayerControl == Singleton<Seer>.Instance.Player || Helpers.shouldShowGhostInfo()) &&
+                !Singleton<Seer>.Instance.Player.Data.IsDead && Singleton<Seer>.Instance.Player != target && Seer.mode <= 1)
             {
                 Helpers.showFlash(new Color(42f / 255f, 187f / 255f, 245f / 255f), message: "Seer Info: Someone Died");
             }
@@ -1536,17 +1536,17 @@ namespace TheOtherRoles.Patches
             }
 
             // Set bountyHunter cooldown
-            if (BountyHunter.bountyHunter != null &&
-                CachedPlayer.LocalPlayer.PlayerControl == BountyHunter.bountyHunter &&
-                __instance == BountyHunter.bountyHunter)
+            if (Singleton<BountyHunter>.Instance.Player != null &&
+                CachedPlayer.LocalPlayer.PlayerControl == Singleton<BountyHunter>.Instance.Player &&
+                __instance == Singleton<BountyHunter>.Instance.Player)
             {
                 if (target == BountyHunter.bounty)
                 {
-                    BountyHunter.bountyHunter.SetKillTimer(BountyHunter.bountyKillCooldown);
+                    Singleton<BountyHunter>.Instance.Player.SetKillTimer(BountyHunter.bountyKillCooldown);
                     BountyHunter.bountyUpdateTimer = 0f; // Force bounty update
                 }
                 else
-                    BountyHunter.bountyHunter.SetKillTimer(
+                    Singleton<BountyHunter>.Instance.Player.SetKillTimer(
                         GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown +
                         BountyHunter.punishmentTime);
             }
@@ -1561,29 +1561,29 @@ namespace TheOtherRoles.Patches
             }
 
             // Cleaner Button Sync
-            if (Cleaner.cleaner != null && CachedPlayer.LocalPlayer.PlayerControl == Cleaner.cleaner &&
-                __instance == Cleaner.cleaner && HudManagerStartPatch.cleanerCleanButton != null)
-                HudManagerStartPatch.cleanerCleanButton.Timer = Cleaner.cleaner.killTimer;
+            if (Singleton<Cleaner>.Instance.Player != null && CachedPlayer.LocalPlayer.PlayerControl == Singleton<Cleaner>.Instance.Player &&
+                __instance == Singleton<Cleaner>.Instance.Player && HudManagerStartPatch.cleanerCleanButton != null)
+                HudManagerStartPatch.cleanerCleanButton.Timer = Singleton<Cleaner>.Instance.Player.killTimer;
 
             // Witch Button Sync
-            if (Witch.triggerBothCooldowns && Witch.witch != null &&
-                CachedPlayer.LocalPlayer.PlayerControl == Witch.witch && __instance == Witch.witch &&
+            if (Witch.triggerBothCooldowns && Singleton<Witch>.Instance.Player != null &&
+                CachedPlayer.LocalPlayer.PlayerControl == Singleton<Witch>.Instance.Player && __instance == Singleton<Witch>.Instance.Player &&
                 HudManagerStartPatch.witchSpellButton != null)
                 HudManagerStartPatch.witchSpellButton.Timer = HudManagerStartPatch.witchSpellButton.MaxTimer;
 
             // Warlock Button Sync
-            if (Warlock.warlock != null && CachedPlayer.LocalPlayer.PlayerControl == Warlock.warlock &&
-                __instance == Warlock.warlock && HudManagerStartPatch.warlockCurseButton != null)
+            if (Singleton<Warlock>.Instance.Player != null && CachedPlayer.LocalPlayer.PlayerControl == Singleton<Warlock>.Instance.Player &&
+                __instance == Singleton<Warlock>.Instance.Player && HudManagerStartPatch.warlockCurseButton != null)
             {
-                if (Warlock.warlock.killTimer > HudManagerStartPatch.warlockCurseButton.Timer)
+                if (Singleton<Warlock>.Instance.Player.killTimer > HudManagerStartPatch.warlockCurseButton.Timer)
                 {
-                    HudManagerStartPatch.warlockCurseButton.Timer = Warlock.warlock.killTimer;
+                    HudManagerStartPatch.warlockCurseButton.Timer = Singleton<Warlock>.Instance.Player.killTimer;
                 }
             }
 
             // Ninja Button Sync
-            if (Ninja.ninja != null && CachedPlayer.LocalPlayer.PlayerControl == Ninja.ninja &&
-                __instance == Ninja.ninja && HudManagerStartPatch.ninjaButton != null)
+            if (Singleton<Ninja>.Instance.Player != null && CachedPlayer.LocalPlayer.PlayerControl == Singleton<Ninja>.Instance.Player &&
+                __instance == Singleton<Ninja>.Instance.Player && HudManagerStartPatch.ninjaButton != null)
                 HudManagerStartPatch.ninjaButton.Timer = HudManagerStartPatch.ninjaButton.MaxTimer;
 
             // Bait
@@ -1645,7 +1645,7 @@ namespace TheOtherRoles.Patches
             }
 
             // Snitch
-            if (Snitch.snitch != null && CachedPlayer.LocalPlayer.PlayerId == Snitch.snitch.PlayerId &&
+            if (Singleton<Snitch>.Instance.Player != null && CachedPlayer.LocalPlayer.PlayerId == Singleton<Snitch>.Instance.Player.PlayerId &&
                 MapBehaviourPatch.herePoints.Keys.Any(x => x.PlayerId == target.PlayerId))
             {
                 foreach (var a in MapBehaviourPatch.herePoints.Where(x => x.Key.PlayerId == target.PlayerId))
@@ -1668,8 +1668,8 @@ namespace TheOtherRoles.Patches
             float addition = 0f;
             if (Mini.mini != null && CachedPlayer.LocalPlayer.PlayerControl == Mini.mini)
                 multiplier = Mini.isGrownUp() ? 0.66f : 2f;
-            if (BountyHunter.bountyHunter != null &&
-                CachedPlayer.LocalPlayer.PlayerControl == BountyHunter.bountyHunter)
+            if (Singleton<BountyHunter>.Instance.Player != null &&
+                CachedPlayer.LocalPlayer.PlayerControl == Singleton<BountyHunter>.Instance.Player)
                 addition = BountyHunter.punishmentTime;
 
             __instance.killTimer = Mathf.Clamp(time, 0f,
@@ -1702,7 +1702,7 @@ namespace TheOtherRoles.Patches
         public static void Prefix(PlayerControl source, bool canMove)
         {
             Color color = source.cosmetics.currentBodySprite.BodySprite.material.GetColor("_BodyColor");
-            if (Morphling.morphling != null && source.Data.PlayerId == Morphling.morphling.PlayerId)
+            if (Singleton<Morphling>.Instance.Player != null && source.Data.PlayerId == Singleton<Morphling>.Instance.Player.PlayerId)
             {
                 var index = Palette.PlayerColors.IndexOf(color);
                 if (index != -1) colorId = index;
@@ -1726,8 +1726,8 @@ namespace TheOtherRoles.Patches
             GameHistory.deadPlayers.Add(deadPlayer);
 
             // Remove fake tasks when player dies
-            if (__instance.hasFakeTasks() || __instance == Lawyer.lawyer || __instance == Pursuer.pursuer ||
-                __instance == Thief.thief)
+            if (__instance.hasFakeTasks() || __instance == Singleton<Lawyer>.Instance.Player || __instance == Singleton<Pursuer>.Instance.Player ||
+                __instance == Singleton<Thief>.Instance.Player)
                 __instance.clearAllTasks();
 
             // Lover suicide trigger on exile
@@ -1740,8 +1740,8 @@ namespace TheOtherRoles.Patches
             }
 
             // Sidekick promotion trigger on exile
-            if (Sidekick.promotesToJackal && Sidekick.sidekick != null && !Sidekick.sidekick.Data.IsDead &&
-                __instance == Jackal.jackal && Jackal.jackal == CachedPlayer.LocalPlayer.PlayerControl)
+            if (Sidekick.promotesToJackal && Singleton<Sidekick>.Instance.Player != null && !Singleton<Sidekick>.Instance.Player.Data.IsDead &&
+                __instance == Singleton<Jackal>.Instance.Player && Singleton<Jackal>.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl)
             {
                 MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
                     CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SidekickPromotes,
@@ -1751,10 +1751,10 @@ namespace TheOtherRoles.Patches
             }
 
             // Pursuer promotion trigger on exile & suicide (the host sends the call such that everyone recieves the update before a possible game End)
-            if (Lawyer.lawyer != null && __instance == Lawyer.target)
+            if (Singleton<Lawyer>.Instance.Player != null && __instance == Singleton<Lawyer>.Instance.Target)
             {
                 if (AmongUsClient.Instance.AmHost &&
-                    ((Lawyer.target != Jester.jester && !Lawyer.isProsecutor) || Lawyer.targetWasGuessed))
+                    ((Singleton<Lawyer>.Instance.Target != Singleton<Jester>.Instance.Player && !Lawyer.isProsecutor) || Singleton<Lawyer>.Instance.TargetWasGuessed))
                 {
                     MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
                         CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.LawyerPromotesToPursuer,
@@ -1763,10 +1763,10 @@ namespace TheOtherRoles.Patches
                     RPCProcedure.lawyerPromotesToPursuer();
                 }
 
-                if (!Lawyer.targetWasGuessed && !Lawyer.isProsecutor)
+                if (!Singleton<Lawyer>.Instance.TargetWasGuessed && !Lawyer.isProsecutor)
                 {
-                    if (Lawyer.lawyer != null) Lawyer.lawyer.Exiled();
-                    if (Pursuer.pursuer != null) Pursuer.pursuer.Exiled();
+                    if (Singleton<Lawyer>.Instance.Player != null) Singleton<Lawyer>.Instance.Player.Exiled();
+                    if (Singleton<Pursuer>.Instance.Player != null) Singleton<Pursuer>.Instance.Player.Exiled();
                 }
             }
         }

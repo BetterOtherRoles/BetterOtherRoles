@@ -1,12 +1,13 @@
 ﻿using System.Linq;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.Customs;
 using TheOtherRoles.Players;
 
 namespace TheOtherRoles.Modules;
 
 public static class MurderAttempt
 {
-    [MethodRpc((uint)CustomRpc.ShowFailedMurderAttempt)]
+    [MethodRpc((uint)Rpc.Id.ShowFailedMurderAttempt)]
     public static void ShowFailedMurderAttempt(PlayerControl sender, string rawData)
     {
         if (CachedPlayer.LocalPlayer == null) return;

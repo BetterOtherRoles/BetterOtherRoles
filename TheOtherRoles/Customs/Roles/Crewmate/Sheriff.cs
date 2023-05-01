@@ -20,9 +20,12 @@ public class Sheriff : CustomRole
         Color = new Color32(248, 205, 70, byte.MaxValue);
         CanTarget = true;
 
+        IntroDescription = $"Shoot the {Colors.Cs(Palette.ImpostorRed, "impostors")}";
+        ShortDescription = "Shoot the impostors";
+
         KillCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(KillCooldown)}",
-            Colors.Cs(Color, "Kill cooldown"),
+            Cs("Kill cooldown"),
             10f,
             60f,
             30f,
@@ -32,7 +35,7 @@ public class Sheriff : CustomRole
             "s");
         CanKillNeutrals = OptionsTab.CreateBool(
             $"{Name}{nameof(CanKillNeutrals)}",
-            Colors.Cs(Color, "Can kill neutral roles"),
+            Cs("Can kill neutral roles"),
             true,
             SpawnRate);
     }

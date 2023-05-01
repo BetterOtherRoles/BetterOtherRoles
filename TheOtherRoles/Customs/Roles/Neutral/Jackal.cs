@@ -34,9 +34,12 @@ public class Jackal : CustomRole
         CanTarget = true;
         IsSidekickPromoted = false;
         
+        IntroDescription = $"Kill all Crewmates and {Colors.Cs(Palette.ImpostorRed, "impostors")} to win";
+        ShortDescription = "Kill everyone";
+        
         KillCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(KillCooldown)}",
-            Colors.Cs(Color, "Kill cooldown"),
+            Cs("Kill cooldown"),
             10f,
             60f,
             30f,
@@ -46,22 +49,22 @@ public class Jackal : CustomRole
             "s");
         HasImpostorVision = OptionsTab.CreateBool(
             $"{Name}{nameof(HasImpostorVision)}",
-            Colors.Cs(Color, "Has impostor vision"),
+            Cs("Has impostor vision"),
             true,
             SpawnRate);
         CanUseVents = OptionsTab.CreateBool(
             $"{Name}{nameof(CanUseVents)}",
-            Colors.Cs(Color, "Can use vents"),
+            Cs("Can use vents"),
             true,
             SpawnRate);
         CanCreateSidekick = OptionsTab.CreateBool(
             $"{Name}{nameof(CanCreateSidekick)}",
-            Colors.Cs(Color, "Can create a sidekick"),
+            Cs("Can create a sidekick"),
             false,
             SpawnRate);
         CreateSidekickCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(CreateSidekickCooldown)}",
-            Colors.Cs(Color, "Create a sidekick cooldown"),
+            Cs("Create a sidekick cooldown"),
             10f,
             60f,
             30f,
@@ -71,12 +74,12 @@ public class Jackal : CustomRole
             "s");
         SidekickPromoteToJackal = OptionsTab.CreateBool(
             $"{Name}{nameof(SidekickPromoteToJackal)}",
-            Colors.Cs(Color, "Sidekick gets promoted to jackal on jackal death"),
+            Cs("Sidekick gets promoted to jackal on jackal death"),
             false,
             CanCreateSidekick);
         CanCreateSidekickWhenPromoted = OptionsTab.CreateBool(
             $"{Name}{nameof(CanCreateSidekickWhenPromoted)}",
-            Colors.Cs(Color, "Jackal promoted from sidekick can create a sidekick"),
+            Cs("Jackal promoted from sidekick can create a sidekick"),
             false,
             CanCreateSidekick);
     }

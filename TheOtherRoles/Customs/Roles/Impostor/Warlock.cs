@@ -31,9 +31,12 @@ public class Warlock : CustomRole
         CanTarget = true;
         IncompatibleRoles.Add(typeof(Vampire));
 
+        IntroDescription = "Curse other players and kill everyone";
+        ShortDescription = "Curse and kill everyone";
+
         CurseCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(CurseCooldown)}",
-            Colors.Cs(Color, $"{Name} cooldown"),
+            Cs($"{Name} cooldown"),
             10f,
             60f,
             30f,
@@ -43,7 +46,7 @@ public class Warlock : CustomRole
             "s");
         RootDuration = OptionsTab.CreateFloatList(
             $"{Name}{nameof(RootDuration)}",
-            Colors.Cs(Color, "Root duration"),
+            Cs("Root duration"),
             10f,
             60f,
             30f,

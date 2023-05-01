@@ -28,9 +28,12 @@ public class BountyHunter : CustomRole
         Color = Palette.ImpostorRed;
         CanTarget = true;
 
+        IntroDescription = "Hunt your bounty down";
+        ShortDescription = "Hunt your bounty down";
+
         BountyDuration = OptionsTab.CreateFloatList(
             $"{Name}{nameof(BountyDuration)}",
-            Colors.Cs(Color, "Bounty duration"),
+            Cs("Bounty duration"),
             10f,
             120f,
             30f,
@@ -40,7 +43,7 @@ public class BountyHunter : CustomRole
             "s");
         BountyKillCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(BountyKillCooldown)}",
-            Colors.Cs(Color, "Cooldown after killing bounty"),
+            Cs("Cooldown after killing bounty"),
             2.5f,
             60f,
             10f,
@@ -50,7 +53,7 @@ public class BountyHunter : CustomRole
             "s");
         PunishmentTime = OptionsTab.CreateFloatList(
             $"{Name}{nameof(PunishmentTime)}",
-            Colors.Cs(Color, "Additional cooldown after killing others"),
+            Cs("Additional cooldown after killing others"),
             2.5f,
             60f,
             10f,
@@ -60,12 +63,12 @@ public class BountyHunter : CustomRole
             "s");
         ShowArrow = OptionsTab.CreateBool(
             $"{Name}{nameof(ShowArrow)}",
-            Colors.Cs(Color, "Show arrow pointing towards the bounty"),
+            Cs("Show arrow pointing towards the bounty"),
             false,
             SpawnRate);
         ArrowUpdateInterval = OptionsTab.CreateFloatList(
             $"{Name}{nameof(ArrowUpdateInterval)}",
-            Colors.Cs(Color, "Arrow update interval"),
+            Cs("Arrow update interval"),
             2.5f,
             60f,
             10f,

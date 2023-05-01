@@ -23,14 +23,17 @@ public class Detective : CustomRole
         Team = Teams.Crewmate;
         Color = new Color32(45, 106, 165, byte.MaxValue);
 
+        IntroDescription = $"Find the {Colors.Cs(Palette.ImpostorRed, "impostors")} by examining footprints";
+        ShortDescription = "Examine footprints";
+
         AnonymousFootprint = OptionsTab.CreateBool(
             $"{Name}{nameof(AnonymousFootprint)}",
-            Colors.Cs(Color, "Anonymous footprints"),
+            Cs("Anonymous footprints"),
             false,
             SpawnRate);
         FootprintInterval = OptionsTab.CreateFloatList(
             $"{Name}{nameof(FootprintInterval)}",
-            Colors.Cs(Color, "Footprint interval"),
+            Cs("Footprint interval"),
             0.25f,
             10f,
             0.5f,
@@ -40,7 +43,7 @@ public class Detective : CustomRole
             "s");
         FootprintDuration = OptionsTab.CreateFloatList(
             $"{Name}{nameof(FootprintDuration)}",
-            Colors.Cs(Color, "Footprint duration"),
+            Cs("Footprint duration"),
             0.25f,
             10f,
             5f,
@@ -50,7 +53,7 @@ public class Detective : CustomRole
             "s");
         ReportNameDuration = OptionsTab.CreateFloatList(
             $"{Name}{nameof(ReportNameDuration)}",
-            Colors.Cs(Color, "Time where detective reports will have name"),
+            Cs("Time where detective reports will have name"),
             0f,
             60f,
             0f,
@@ -60,7 +63,7 @@ public class Detective : CustomRole
             "s");
         ReportColorDuration = OptionsTab.CreateFloatList(
             $"{Name}{nameof(ReportColorDuration)}",
-            Colors.Cs(Color, "Time where detective reports will have color type"),
+            Cs("Time where detective reports will have color type"),
             0f,
             120f,
             20f,

@@ -21,16 +21,18 @@ public class Camouflager : CustomRole
 
     public float CamouflagerTimer;
 
-
     public Camouflager() : base(nameof(Camouflager))
     {
         Team = Teams.Impostor;
         Color = Palette.ImpostorRed;
         CanTarget = true;
 
+        IntroDescription = "Camouflage and kill the Crewmates";
+        ShortDescription = "Hide among others";
+
         CamoCooldown = OptionsTab.CreateFloatList(
             nameof(CamoCooldown),
-            Colors.Cs(Color, $"{Name} cooldown"),
+            Cs($"{Name} cooldown"),
             10f,
             60f,
             30f,
@@ -40,7 +42,7 @@ public class Camouflager : CustomRole
             "s");
         CamoDuration = OptionsTab.CreateFloatList(
             nameof(CamoDuration),
-            Colors.Cs(Color, $"{Name} duration"),
+            Cs($"{Name} duration"),
             5f,
             60f,
             30f,

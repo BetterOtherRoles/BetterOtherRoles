@@ -47,8 +47,8 @@ namespace TheOtherRoles.Patches
                             continue;
 
                         int currentVotes;
-                        int additionalVotes = (Mayor.mayor != null &&
-                                               Mayor.mayor.PlayerId == playerVoteArea.TargetPlayerId && Mayor.voteTwice)
+                        int additionalVotes = (Singleton<Mayor>.Instance.Player != null &&
+                                               Singleton<Mayor>.Instance.Player.PlayerId == playerVoteArea.TargetPlayerId && Mayor.voteTwice)
                             ? 2
                             : 1; // Mayor vote
                         if (dictionary.TryGetValue(playerVoteArea.VotedFor, out currentVotes))
@@ -59,7 +59,7 @@ namespace TheOtherRoles.Patches
                 }
 
                 // Swapper swap votes
-                if (Swapper.swapper != null && !Swapper.swapper.Data.IsDead)
+                if (Singleton<Swapper>.Instance.Player != null && !Singleton<Swapper>.Instance.Player.Data.IsDead)
                 {
                     swapped1 = null;
                     swapped2 = null;
@@ -183,7 +183,7 @@ namespace TheOtherRoles.Patches
                 int cId = voterPlayer.DefaultOutfit.ColorId;
                 if (!(!GameOptionsManager.Instance.currentNormalGameOptions.AnonymousVotes ||
                       (CachedPlayer.LocalPlayer.Data.IsDead && TORMapOptions.ghostsSeeVotes) || CustomGuid.IsDevMode ||
-                      Mayor.mayor != null && CachedPlayer.LocalPlayer.PlayerControl == Mayor.mayor &&
+                      Singleton<Mayor>.Instance.Player != null && CachedPlayer.LocalPlayer.PlayerControl == Singleton<Mayor>.Instance.Player &&
                       Mayor.canSeeVoteColors && TasksHandler.taskInfo(CachedPlayer.LocalPlayer.Data).Item1 >=
                       Mayor.tasksNeededToSeeVoteColors))
                     voterPlayer.Object.SetColor(6);
@@ -212,8 +212,8 @@ namespace TheOtherRoles.Patches
                     if (playerVoteArea.TargetPlayerId == Swapper.playerId2) swapped2 = playerVoteArea;
                 }
 
-                bool doSwap = swapped1 != null && swapped2 != null && Swapper.swapper != null &&
-                              !Swapper.swapper.Data.IsDead;
+                bool doSwap = swapped1 != null && swapped2 != null && Singleton<Swapper>.Instance.Player != null &&
+                              !Singleton<Swapper>.Instance.Player.Data.IsDead;
                 if (doSwap)
                 {
                     __instance.StartCoroutine(Effects.Slide3D(swapped1.transform, swapped1.transform.localPosition,
@@ -260,7 +260,7 @@ namespace TheOtherRoles.Patches
                         }
 
                         // Major vote, redo this iteration to place a second vote
-                        if (Mayor.mayor != null && voterState.VoterId == (sbyte)Mayor.mayor.PlayerId &&
+                        if (Singleton<Mayor>.Instance.Player != null && voterState.VoterId == (sbyte)Singleton<Mayor>.Instance.Player.PlayerId &&
                             !mayorFirstVoteDisplayed && Mayor.voteTwice)
                         {
                             mayorFirstVoteDisplayed = true;
@@ -294,10 +294,10 @@ namespace TheOtherRoles.Patches
                     Lovers.notAckedExiledIsLover =
                         ((Lovers.lover1 != null && Lovers.lover1.PlayerId == exiled.PlayerId) ||
                          (Lovers.lover2 != null && Lovers.lover2.PlayerId == exiled.PlayerId));
-                    Pursuer.notAckedExiled = (Pursuer.pursuer != null && Pursuer.pursuer.PlayerId == exiled.PlayerId) ||
-                                             (Lawyer.lawyer != null && Lawyer.target != null &&
-                                              Lawyer.target.PlayerId == exiled.PlayerId &&
-                                              Lawyer.target != Jester.jester && !Lawyer.isProsecutor);
+                    Pursuer.notAckedExiled = (Singleton<Pursuer>.Instance.Player != null && Singleton<Pursuer>.Instance.Player.PlayerId == exiled.PlayerId) ||
+                                             (Singleton<Lawyer>.Instance.Player != null && Singleton<Lawyer>.Instance.Target != null &&
+                                              Singleton<Lawyer>.Instance.Target.PlayerId == exiled.PlayerId &&
+                                              Singleton<Lawyer>.Instance.Target != Singleton<Jester>.Instance.Player && !Lawyer.isProsecutor);
                 }
 
                 // Mini
@@ -306,7 +306,7 @@ namespace TheOtherRoles.Patches
                         .Add(DateTime.UtcNow.Subtract(Mini.timeOfMeetingStart)).AddSeconds(10);
 
                 // Snitch
-                if (Snitch.snitch != null && !Snitch.needsUpdate && Snitch.snitch.Data.IsDead && Snitch.text != null)
+                if (Singleton<Snitch>.Instance.Player != null && !Snitch.needsUpdate && Singleton<Snitch>.Instance.Player.Data.IsDead && Snitch.text != null)
                 {
                     UnityEngine.Object.Destroy(Snitch.text);
                 }
@@ -407,11 +407,11 @@ namespace TheOtherRoles.Patches
         {
             __instance.playerStates[0]
                 .Cancel(); // This will stop the underlying buttons of the template from showing up
-            if (__instance.state == MeetingHud.VoteStates.Results || Mayor.mayor.Data.IsDead) return;
-            if (Mayor.mayorChooseSingleVote == 1)
+            if (__instance.state == MeetingHud.VoteStates.Results || Singleton<Mayor>.Instance.Player.Data.IsDead) return;
+            if (Singleton<Mayor>.Instance.PlayerChooseSingleVote == 1)
             {
                 // Only accept changes until the mayor voted
-                var mayorPVA = __instance.playerStates.FirstOrDefault(x => x.TargetPlayerId == Mayor.mayor.PlayerId);
+                var mayorPVA = __instance.playerStates.FirstOrDefault(x => x.TargetPlayerId == Singleton<Mayor>.Instance.Player.PlayerId);
                 if (mayorPVA != null && mayorPVA.DidVote)
                 {
                     SoundEffectsManager.play("fail");
@@ -427,7 +427,7 @@ namespace TheOtherRoles.Patches
             writer.Write(Mayor.voteTwice);
             AmongUsClient.Instance.FinishRpcImmediately(writer);
 
-            meetingExtraButtonLabel.text = Helpers.cs(Mayor.color,
+            meetingExtraButtonLabel.text = Helpers.cs(Singleton<Mayor>.Instance.Color,
                 "Double Vote: " + (Mayor.voteTwice ? Helpers.cs(Color.green, "On ") : Helpers.cs(Color.red, "Off")));
         }
 
@@ -482,10 +482,10 @@ namespace TheOtherRoles.Patches
             foreach (RoleInfo roleInfo in RoleInfo.allRoleInfos)
             {
                 RoleId guesserRole =
-                    (Guesser.niceGuesser != null && CachedPlayer.LocalPlayer.PlayerId == Guesser.niceGuesser.PlayerId)
+                    (Singleton<NiceGuesser>.Instance.Player != null && CachedPlayer.LocalPlayer.PlayerId == Singleton<NiceGuesser>.Instance.Player.PlayerId)
                         ? RoleId.NiceGuesser
                         : RoleId.EvilGuesser;
-                if (roleInfo.isModifier || roleInfo.roleId == guesserRole || (!HandleGuesser.evilGuesserCanGuessSpy &&
+                if (roleInfo.isModifier || roleInfo.roleId == guesserRole || (!HandleSingleton<EvilGuesser>.Instance.PlayerCanGuessSpy &&
                                                                               guesserRole == RoleId.EvilGuesser &&
                                                                               roleInfo.roleId == RoleId.Spy &&
                                                                               !HandleGuesser.isGuesserGm))
@@ -494,7 +494,7 @@ namespace TheOtherRoles.Patches
                     (roleInfo.roleId == RoleId.NiceGuesser || roleInfo.roleId == RoleId.EvilGuesser))
                     continue; // remove Guesser for guesser game mode
                 if (HandleGuesser.isGuesserGm && CachedPlayer.LocalPlayer.PlayerControl.Data.Role.IsImpostor &&
-                    !HandleGuesser.evilGuesserCanGuessSpy && roleInfo.roleId == RoleId.Spy) continue;
+                    !HandleSingleton<EvilGuesser>.Instance.PlayerCanGuessSpy && roleInfo.roleId == RoleId.Spy) continue;
                 // remove all roles that cannot spawn due to the settings from the ui.
                 RoleManagerSelectRolesPatch.RoleAssignmentData roleData =
                     RoleManagerSelectRolesPatch.getRoleAssignmentData();
@@ -521,9 +521,9 @@ namespace TheOtherRoles.Patches
                 if (roleInfo.roleId == RoleId.Lawyer &&
                     (CustomOptionHolder.lawyerIsProsecutorChance.getSelection() == 10 ||
                      CustomOptionHolder.lawyerSpawnRate.getSelection() == 0)) continue;
-                if (Snitch.snitch != null && HandleGuesser.guesserCantGuessSnitch)
+                if (Singleton<Snitch>.Instance.Player != null && HandleGuesser.guesserCantGuessSnitch)
                 {
-                    var (playerCompleted, playerTotal) = TasksHandler.taskInfo(Snitch.snitch.Data);
+                    var (playerCompleted, playerTotal) = TasksHandler.taskInfo(Singleton<Snitch>.Instance.Player.Data);
                     int numberOfLeftTasks = playerTotal - playerCompleted;
                     if (numberOfLeftTasks <= 0 && roleInfo.roleId == RoleId.Snitch) continue;
                 }
@@ -639,11 +639,11 @@ namespace TheOtherRoles.Patches
         static void populateButtonsPostfix(MeetingHud __instance)
         {
             // Add Swapper Buttons
-            bool addSwapperButtons = Swapper.swapper != null &&
-                                     CachedPlayer.LocalPlayer.PlayerControl == Swapper.swapper &&
-                                     !Swapper.swapper.Data.IsDead;
-            bool addMayorButton = Mayor.mayor != null && CachedPlayer.LocalPlayer.PlayerControl == Mayor.mayor &&
-                                  !Mayor.mayor.Data.IsDead && Mayor.mayorChooseSingleVote > 0;
+            bool addSwapperButtons = Singleton<Swapper>.Instance.Player != null &&
+                                     CachedPlayer.LocalPlayer.PlayerControl == Singleton<Swapper>.Instance.Player &&
+                                     !Singleton<Swapper>.Instance.Player.Data.IsDead;
+            bool addMayorButton = Singleton<Mayor>.Instance.Player != null && CachedPlayer.LocalPlayer.PlayerControl == Singleton<Mayor>.Instance.Player &&
+                                  !Singleton<Mayor>.Instance.Player.Data.IsDead && Singleton<Mayor>.Instance.PlayerChooseSingleVote > 0;
             if (addSwapperButtons)
             {
                 selections = new bool[__instance.playerStates.Length];
@@ -653,7 +653,7 @@ namespace TheOtherRoles.Patches
                 for (int i = 0; i < __instance.playerStates.Length; i++)
                 {
                     PlayerVoteArea playerVoteArea = __instance.playerStates[i];
-                    if (playerVoteArea.AmDead || (playerVoteArea.TargetPlayerId == Swapper.swapper.PlayerId &&
+                    if (playerVoteArea.AmDead || (playerVoteArea.TargetPlayerId == Singleton<Swapper>.Instance.Player.PlayerId &&
                                                   Swapper.canOnlySwapOthers)) continue;
 
                     GameObject template = playerVoteArea.Buttons.transform.Find("CancelButton").gameObject;
@@ -724,7 +724,7 @@ namespace TheOtherRoles.Patches
                         meetingExtraButtonLabel.transform.localScale.x * 1.5f,
                         meetingExtraButtonLabel.transform.localScale.x * 1.7f,
                         meetingExtraButtonLabel.transform.localScale.x * 1.7f);
-                    meetingExtraButtonLabel.text = Helpers.cs(Mayor.color,
+                    meetingExtraButtonLabel.text = Helpers.cs(Singleton<Mayor>.Instance.Color,
                         "Double Vote: " +
                         (Mayor.voteTwice ? Helpers.cs(Color.green, "On ") : Helpers.cs(Color.red, "Off")));
                 }
@@ -759,7 +759,7 @@ namespace TheOtherRoles.Patches
             } */
 
             // Add overlay for spelled players
-            if (Witch.witch != null && Witch.futureSpelled != null)
+            if (Singleton<Witch>.Instance.Player != null && Witch.futureSpelled != null)
             {
                 foreach (PlayerVoteArea pva in __instance.playerStates)
                 {
@@ -785,7 +785,7 @@ namespace TheOtherRoles.Patches
                     PlayerVoteArea playerVoteArea = __instance.playerStates[i];
                     if (playerVoteArea.AmDead ||
                         playerVoteArea.TargetPlayerId == CachedPlayer.LocalPlayer.PlayerId) continue;
-                    if (CachedPlayer.LocalPlayer != null && CachedPlayer.LocalPlayer.PlayerControl == Eraser.eraser &&
+                    if (CachedPlayer.LocalPlayer != null && CachedPlayer.LocalPlayer.PlayerControl == Singleton<Eraser>.Instance.Player &&
                         Eraser.alreadyErased.Contains(playerVoteArea.TargetPlayerId)) continue;
 
                     GameObject template = playerVoteArea.Buttons.transform.Find("CancelButton").gameObject;
@@ -847,7 +847,7 @@ namespace TheOtherRoles.Patches
                     roomId = (byte)roomTracker.LastRoom?.RoomId;
                 }
 
-                if (Snitch.snitch != null && roomTracker != null)
+                if (Singleton<Snitch>.Instance.Player != null && roomTracker != null)
                 {
                     MessageWriter roomWriter = AmongUsClient.Instance.StartRpcImmediately(
                         CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareRoom,
@@ -885,9 +885,9 @@ namespace TheOtherRoles.Patches
 
 
                 // Add Portal info into Portalmaker Chat:
-                if (Portalmaker.portalmaker != null &&
-                    (CachedPlayer.LocalPlayer.PlayerControl == Portalmaker.portalmaker ||
-                     Helpers.shouldShowGhostInfo()) && !Portalmaker.portalmaker.Data.IsDead)
+                if (Singleton<Portalmaker>.Instance.Player != null &&
+                    (CachedPlayer.LocalPlayer.PlayerControl == Singleton<Portalmaker>.Instance.Player ||
+                     Helpers.shouldShowGhostInfo()) && !Singleton<Portalmaker>.Instance.Player.Data.IsDead)
                 {
                     if (Portal.teleportedPlayers.Count > 0)
                     {
@@ -899,17 +899,17 @@ namespace TheOtherRoles.Patches
                             msg = msg + $"{entry.name} used the teleporter\n";
                         }
 
-                        FastDestroyableSingleton<HudManager>.Instance.Chat.AddChat(Portalmaker.portalmaker, $"{msg}");
+                        FastDestroyableSingleton<HudManager>.Instance.Chat.AddChat(Singleton<Portalmaker>.Instance.Player, $"{msg}");
                     }
                 }
 
                 // Add trapped Info into Trapper chat
-                if (Trapper.trapper != null &&
-                    (CachedPlayer.LocalPlayer.PlayerControl == Trapper.trapper || Helpers.shouldShowGhostInfo()) &&
-                    !Trapper.trapper.Data.IsDead)
+                if (Singleton<Trapper>.Instance.Player != null &&
+                    (CachedPlayer.LocalPlayer.PlayerControl == Singleton<Trapper>.Instance.Player || Helpers.shouldShowGhostInfo()) &&
+                    !Singleton<Trapper>.Instance.Player.Data.IsDead)
                 {
                     if (Trap.traps.Any(x => x.revealed))
-                        FastDestroyableSingleton<HudManager>.Instance.Chat.AddChat(Trapper.trapper, "Trap Logs:");
+                        FastDestroyableSingleton<HudManager>.Instance.Chat.AddChat(Singleton<Trapper>.Instance.Player, "Trap Logs:");
                     foreach (Trap trap in Trap.traps)
                     {
                         if (!trap.revealed) continue;
@@ -926,18 +926,18 @@ namespace TheOtherRoles.Patches
                             else message += p.Data.PlayerName + "\n";
                         }
 
-                        FastDestroyableSingleton<HudManager>.Instance.Chat.AddChat(Trapper.trapper, $"{message}");
+                        FastDestroyableSingleton<HudManager>.Instance.Chat.AddChat(Singleton<Trapper>.Instance.Player, $"{message}");
                     }
                 }
 
                 // Add Snitch info
                 string output = "";
 
-                if (Snitch.snitch != null && Snitch.infoMode != Snitch.InfoMode.Map &&
-                    (CachedPlayer.LocalPlayer.PlayerControl == Snitch.snitch || Helpers.shouldShowGhostInfo()) &&
-                    !Snitch.snitch.Data.IsDead)
+                if (Singleton<Snitch>.Instance.Player != null && Snitch.infoMode != Snitch.InfoMode.Map &&
+                    (CachedPlayer.LocalPlayer.PlayerControl == Singleton<Snitch>.Instance.Player || Helpers.shouldShowGhostInfo()) &&
+                    !Singleton<Snitch>.Instance.Player.Data.IsDead)
                 {
-                    var (playerCompleted, playerTotal) = TasksHandler.taskInfo(Snitch.snitch.Data);
+                    var (playerCompleted, playerTotal) = TasksHandler.taskInfo(Singleton<Snitch>.Instance.Player.Data);
                     int numberOfTasks = playerTotal - playerCompleted;
                     if (numberOfTasks == 0)
                     {
@@ -967,7 +967,7 @@ namespace TheOtherRoles.Patches
                                                   ", was last seen " + roomName + "\n";
                                     }
 
-                                    FastDestroyableSingleton<HudManager>.Instance.Chat.AddChat(Snitch.snitch,
+                                    FastDestroyableSingleton<HudManager>.Instance.Chat.AddChat(Singleton<Snitch>.Instance.Player,
                                         $"{output}");
                                 }
                             })));

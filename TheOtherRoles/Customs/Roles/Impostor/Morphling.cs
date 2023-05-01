@@ -31,6 +31,9 @@ public class Morphling : CustomRole
         Color = Palette.ImpostorRed;
         CanTarget = true;
 
+        IntroDescription = "Change your look to not get caught";
+        ShortDescription = "Change your look";
+        
         MorphCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(MorphCooldown)}",
             Cs("Morph cooldown"),

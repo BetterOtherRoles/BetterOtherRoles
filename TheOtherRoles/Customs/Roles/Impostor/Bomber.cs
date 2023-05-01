@@ -33,9 +33,12 @@ public class Bomber : CustomRole
         Color = Palette.ImpostorRed;
         CanTarget = true;
 
+        IntroDescription = "Bomb all Crewmates";
+        ShortDescription = "Bomb all Crewmates";
+
         BombCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(BombCooldown)}",
-            Colors.Cs(Color, "Plant bomb cooldown"),
+            Cs("Plant bomb cooldown"),
             10f,
             60f,
             30f,
@@ -45,7 +48,7 @@ public class Bomber : CustomRole
             "s");
         BombDestructionTime = OptionsTab.CreateFloatList(
             $"{Name}{nameof(BombDestructionTime)}",
-            Colors.Cs(Color, "Bomb explosion time"),
+            Cs("Bomb explosion time"),
             2f,
             60f,
             20f,
@@ -55,7 +58,7 @@ public class Bomber : CustomRole
             "s");
         BombActivationTime = OptionsTab.CreateFloatList(
             $"{Name}{nameof(BombActivationTime)}",
-            Colors.Cs(Color, "Bomb activation time"),
+            Cs("Bomb activation time"),
             2f,
             30f,
             3f,
@@ -65,7 +68,7 @@ public class Bomber : CustomRole
             "s");
         BombDestructionRange = OptionsTab.CreateFloatList(
             $"{Name}{nameof(BombDestructionRange)}",
-            Colors.Cs(Color, "Bomb explosion range"),
+            Cs("Bomb explosion range"),
             5f,
             150f,
             50f,
@@ -73,7 +76,7 @@ public class Bomber : CustomRole
             SpawnRate);
         BombHearRange = OptionsTab.CreateFloatList(
             $"{Name}{nameof(BombHearRange)}",
-            Colors.Cs(Color, "Bomb hear range"),
+            Cs("Bomb hear range"),
             5f,
             150f,
             50f,
@@ -81,7 +84,7 @@ public class Bomber : CustomRole
             SpawnRate);
         BombDefuseDuration = OptionsTab.CreateFloatList(
             $"{Name}{nameof(BombDefuseDuration)}",
-            Colors.Cs(Color, "Bomb defuse duration"),
+            Cs("Bomb defuse duration"),
             0.5f,
             15f,
             3f,

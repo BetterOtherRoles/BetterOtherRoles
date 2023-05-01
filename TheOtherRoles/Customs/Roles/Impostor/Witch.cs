@@ -34,9 +34,12 @@ public class Witch : CustomRole
         Color = Palette.ImpostorRed;
         CanTarget = true;
 
+        IntroDescription = "Cast a spell upon your foes";
+        ShortDescription = "Cast a spell upon your foes";
+
         SpellCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(SpellCooldown)}",
-            Colors.Cs(Color, $"Spell cooldown"),
+            Cs($"Spell cooldown"),
             10f,
             60f,
             30f,
@@ -46,7 +49,7 @@ public class Witch : CustomRole
             "s");
         SpellCastingDuration = OptionsTab.CreateFloatList(
             $"{Name}{nameof(SpellCastingDuration)}",
-            Colors.Cs(Color, $"Spell casting duration"),
+            Cs($"Spell casting duration"),
             0f,
             10f,
             1f,
@@ -56,7 +59,7 @@ public class Witch : CustomRole
             "s");
         AdditionalCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(AdditionalCooldown)}",
-            Colors.Cs(Color, $"Spell additional cooldown"),
+            Cs($"Spell additional cooldown"),
             0f,
             60f,
             10f,
@@ -66,17 +69,17 @@ public class Witch : CustomRole
             "s");
         CanSpellAnyone = OptionsTab.CreateBool(
             $"{Name}{nameof(CanSpellAnyone)}",
-            Colors.Cs(Color, "Can spell anyone"),
+            Cs("Can spell anyone"),
             false,
             SpawnRate);
         TriggerBothCooldown = OptionsTab.CreateBool(
             $"{Name}{nameof(TriggerBothCooldown)}",
-            Colors.Cs(Color, "Trigger both cooldown"),
+            Cs("Trigger both cooldown"),
             false,
             SpawnRate);
         WitchVoteSaveTargets = OptionsTab.CreateBool(
             $"{Name}{nameof(WitchVoteSaveTargets)}",
-            Colors.Cs(Color, "Voting the witch saves all targets"),
+            Cs("Voting the witch saves all targets"),
             false,
             SpawnRate);
     }

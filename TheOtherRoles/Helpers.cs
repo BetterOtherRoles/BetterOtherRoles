@@ -244,11 +244,11 @@ namespace TheOtherRoles {
         }
 
         public static bool hasFakeTasks(this PlayerControl player) {
-            return (player == Jester.jester || player == Jackal.jackal || player == Sidekick.sidekick || player == Arsonist.arsonist || player == Vulture.vulture || Jackal.formerJackals.Any(x => x == player));
+            return (player == Singleton<Jester>.Instance.Player || player == Singleton<Jackal>.Instance.Player || player == Singleton<Sidekick>.Instance.Player || player == Singleton<Arsonist>.Instance.Player || player == Singleton<Vulture>.Instance.Player || Jackal.formerJackals.Any(x => x == player));
         }
 
         public static bool canBeErased(this PlayerControl player) {
-            return (player != Jackal.jackal && player != Sidekick.sidekick && !Jackal.formerJackals.Any(x => x == player));
+            return (player != Singleton<Jackal>.Instance.Player && player != Singleton<Sidekick>.Instance.Player && !Jackal.formerJackals.Any(x => x == player));
         }
 
         public static bool shouldShowGhostInfo()
@@ -315,14 +315,14 @@ namespace TheOtherRoles {
         public static bool hidePlayerName(PlayerControl source, PlayerControl target) {
             if (Camouflager.camouflageTimer > 0f) return true; // No names are visible
             if (Patches.SurveillanceMinigamePatch.nightVisionIsActive) return true;
-            else if (Ninja.isInvisble && Ninja.ninja == target) return true;
+            else if (Ninja.isInvisble && Singleton<Ninja>.Instance.Player == target) return true;
             else if (!TORMapOptions.hidePlayerNames) return false; // All names are visible
             else if (source == null || target == null) return true;
             else if (source == target) return false; // Player sees his own name
-            else if (source.Data.Role.IsImpostor && (target.Data.Role.IsImpostor || target == Spy.spy || target == Sidekick.sidekick && Sidekick.wasTeamRed || target == Jackal.jackal && Jackal.wasTeamRed)) return false; // Members of team Impostors see the names of Impostors/Spies
+            else if (source.Data.Role.IsImpostor && (target.Data.Role.IsImpostor || target == Singleton<Spy>.Instance.Player || target == Singleton<Sidekick>.Instance.Player && Sidekick.wasTeamRed || target == Singleton<Jackal>.Instance.Player && Jackal.wasTeamRed)) return false; // Members of team Impostors see the names of Impostors/Spies
             else if ((source == Lovers.lover1 || source == Lovers.lover2) && (target == Lovers.lover1 || target == Lovers.lover2)) return false; // Members of team Lovers see the names of each other
-            else if ((source == Jackal.jackal || source == Sidekick.sidekick) && (target == Jackal.jackal || target == Sidekick.sidekick || target == Jackal.fakeSidekick)) return false; // Members of team Jackal see the names of each other
-            else if (Deputy.knowsSheriff && (source == Sheriff.sheriff || source == Deputy.deputy) && (target == Sheriff.sheriff || target == Deputy.deputy)) return false; // Sheriff & Deputy see the names of each other
+            else if ((source == Singleton<Jackal>.Instance.Player || source == Singleton<Sidekick>.Instance.Player) && (target == Singleton<Jackal>.Instance.Player || target == Singleton<Sidekick>.Instance.Player || target == Jackal.fakeSidekick)) return false; // Members of team Jackal see the names of each other
+            else if (Deputy.knowsSheriff && (source == Singleton<Sheriff>.Instance.Player || source == Singleton<Deputy>.Instance.Player) && (target == Singleton<Sheriff>.Instance.Player || target == Singleton<Deputy>.Instance.Player)) return false; // Sheriff & Deputy see the names of each other
             return true;
         }
 
@@ -396,17 +396,17 @@ namespace TheOtherRoles {
 
         public static bool roleCanUseVents(this PlayerControl player) {
             bool roleCouldUse = false;
-            if (Engineer.engineer != null && Engineer.engineer == player)
+            if (Singleton<Engineer>.Instance.Player != null && Singleton<Engineer>.Instance.Player == player)
                 roleCouldUse = true;
-            else if (Jackal.canUseVents && Jackal.jackal != null && Jackal.jackal == player)
+            else if (Jackal.canUseVents && Singleton<Jackal>.Instance.Player != null && Singleton<Jackal>.Instance.Player == player)
                 roleCouldUse = true;
-            else if (Sidekick.canUseVents && Sidekick.sidekick != null && Sidekick.sidekick == player)
+            else if (Sidekick.canUseVents && Singleton<Sidekick>.Instance.Player != null && Singleton<Sidekick>.Instance.Player == player)
                 roleCouldUse = true;
-            else if (Spy.canEnterVents && Spy.spy != null && Spy.spy == player)
+            else if (Spy.canEnterVents && Singleton<Spy>.Instance.Player != null && Singleton<Spy>.Instance.Player == player)
                 roleCouldUse = true;
-            else if (Vulture.canUseVents && Vulture.vulture != null && Vulture.vulture == player)
+            else if (Vulture.canUseVents && Singleton<Vulture>.Instance.Player != null && Singleton<Vulture>.Instance.Player == player)
                 roleCouldUse = true;
-            else if (Thief.canUseVents &&  Thief.thief != null && Thief.thief == player)
+            else if (Thief.canUseVents &&  Singleton<Thief>.Instance.Player != null && Singleton<Thief>.Instance.Player == player)
                 roleCouldUse = true;
             else if (player.Data?.Role != null && player.Data.Role.CanVent)  {
                 if (Janitor.janitor != null && Janitor.janitor == CachedPlayer.LocalPlayer.PlayerControl)
@@ -462,7 +462,7 @@ namespace TheOtherRoles {
             }
 
             // Block Time Master with time shield kill
-            else if (TimeMaster.shieldActive && TimeMaster.timeMaster != null && TimeMaster.timeMaster == target) {
+            else if (TimeMaster.shieldActive && Singleton<TimeMaster>.Instance.Player != null && Singleton<TimeMaster>.Instance.Player == target) {
                 if (!blockRewind) { // Only rewind the attempt was not called because a meeting startet 
                     MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)CustomRPC.TimeMasterRewindTime, Hazel.SendOption.Reliable, -1);
                     AmongUsClient.Instance.FinishRpcImmediately(writer);
@@ -472,7 +472,7 @@ namespace TheOtherRoles {
             }
 
             // Thief if hit crew only kill if setting says so, but also kill the thief.
-            else if (killer == Thief.thief && !target.Data.Role.IsImpostor && !new List<RoleInfo> {RoleInfo.jackal, Thief.canKillSheriff ? RoleInfo.sheriff : null, RoleInfo.sidekick }.Contains(targetRole)) {
+            else if (killer == Singleton<Thief>.Instance.Player && !target.Data.Role.IsImpostor && !new List<RoleInfo> {RoleInfo.jackal, Thief.canKillSheriff ? RoleInfo.sheriff : null, RoleInfo.sidekick }.Contains(targetRole)) {
                 Thief.suicideFlag = true;
                 return MurderAttemptResult.SuppressKill;
             }
@@ -523,8 +523,8 @@ namespace TheOtherRoles {
             List<PlayerControl> team = new List<PlayerControl>();
             foreach(PlayerControl p in CachedPlayer.AllPlayers) {
                 if (player.Data.Role.IsImpostor && p.Data.Role.IsImpostor && player.PlayerId != p.PlayerId && team.All(x => x.PlayerId != p.PlayerId)) team.Add(p);
-                else if (player == Jackal.jackal && p == Sidekick.sidekick) team.Add(p); 
-                else if (player == Sidekick.sidekick && p == Jackal.jackal) team.Add(p);
+                else if (player == Singleton<Jackal>.Instance.Player && p == Singleton<Sidekick>.Instance.Player) team.Add(p); 
+                else if (player == Singleton<Sidekick>.Instance.Player && p == Singleton<Jackal>.Instance.Player) team.Add(p);
             }
             
             return team;
@@ -540,11 +540,11 @@ namespace TheOtherRoles {
         public static bool isKiller(PlayerControl player) {
             return player.Data.Role.IsImpostor || 
                 (isNeutral(player) && 
-                player != Jester.jester && 
-                player != Arsonist.arsonist && 
-                player != Vulture.vulture && 
-                player != Lawyer.lawyer && 
-                player != Pursuer.pursuer);
+                player != Singleton<Jester>.Instance.Player && 
+                player != Singleton<Arsonist>.Instance.Player && 
+                player != Singleton<Vulture>.Instance.Player && 
+                player != Singleton<Lawyer>.Instance.Player && 
+                player != Singleton<Pursuer>.Instance.Player);
 
         }
 
@@ -571,11 +571,11 @@ namespace TheOtherRoles {
 
         public static bool hasImpVision(GameData.PlayerInfo player) {
             return player.Role.IsImpostor
-                || ((Jackal.jackal != null && Jackal.jackal.PlayerId == player.PlayerId || Jackal.formerJackals.Any(x => x.PlayerId == player.PlayerId)) && Jackal.hasImpostorVision)
-                || (Sidekick.sidekick != null && Sidekick.sidekick.PlayerId == player.PlayerId && Sidekick.hasImpostorVision)
-                || (Spy.spy != null && Spy.spy.PlayerId == player.PlayerId && Spy.hasImpostorVision)
-                || (Jester.jester != null && Jester.jester.PlayerId == player.PlayerId && Jester.hasImpostorVision)
-                || (Thief.thief != null && Thief.thief.PlayerId == player.PlayerId && Thief.hasImpostorVision);
+                || ((Singleton<Jackal>.Instance.Player != null && Singleton<Jackal>.Instance.Player.PlayerId == player.PlayerId || Jackal.formerJackals.Any(x => x.PlayerId == player.PlayerId)) && Jackal.hasImpostorVision)
+                || (Singleton<Sidekick>.Instance.Player != null && Singleton<Sidekick>.Instance.Player.PlayerId == player.PlayerId && Sidekick.hasImpostorVision)
+                || (Singleton<Spy>.Instance.Player != null && Singleton<Spy>.Instance.Player.PlayerId == player.PlayerId && Spy.hasImpostorVision)
+                || (Singleton<Jester>.Instance.Player != null && Singleton<Jester>.Instance.Player.PlayerId == player.PlayerId && Jester.hasImpostorVision)
+                || (Singleton<Thief>.Instance.Player != null && Singleton<Thief>.Instance.Player.PlayerId == player.PlayerId && Thief.hasImpostorVision);
         }
         
         public static object TryCast(this Il2CppObjectBase self, Type type)

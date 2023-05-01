@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.Customs;
 using TheOtherRoles.Players;
 using Random = System.Random;
 
@@ -23,7 +24,7 @@ public static class RandomSeed
         ShareRandomizer(PlayerControl.LocalPlayer, string.Join("|", seedsList));
     }
 
-    [MethodRpc((uint) CustomRpc.ShareRandomSeeds)]
+    [MethodRpc((uint) Rpc.Id.ShareRandomSeeds)]
     private static void ShareRandomizer(PlayerControl sender, string rawData)
     {
         seeds = rawData.Split("|").Select(int.Parse).ToList();

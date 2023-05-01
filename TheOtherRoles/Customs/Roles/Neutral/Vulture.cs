@@ -30,9 +30,12 @@ public class Vulture : CustomRole
         Color = new Color32(139, 69, 19, byte.MaxValue);
         CanTarget = false;
 
+        IntroDescription = "Eat corpses to win";
+        ShortDescription = "Eat dead bodies";
+
         EatCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(EatCooldown)}",
-            Colors.Cs(Color, "Eat cooldown"),
+            Cs("Eat cooldown"),
             10f,
             60f,
             30f,
@@ -42,7 +45,7 @@ public class Vulture : CustomRole
             "s");
         EatNumberToWin = OptionsTab.CreateFloatList(
             $"{Name}{nameof(EatNumberToWin)}",
-            Colors.Cs(Color, "Number of corpses needed to be eaten"),
+            Cs("Number of corpses needed to be eaten"),
             1f,
             10f,
             4f,
@@ -52,12 +55,12 @@ public class Vulture : CustomRole
             "s");
         CanUseVents = OptionsTab.CreateBool(
             $"{Name}{nameof(CanUseVents)}",
-            Colors.Cs(Color, "Can use vents"),
+            Cs("Can use vents"),
             true,
             SpawnRate);
         ShowArrows = OptionsTab.CreateBool(
             $"{Name}{nameof(ShowArrows)}",
-            Colors.Cs(Color, "Show arrows pointing towards the corpses"),
+            Cs("Show arrows pointing towards the corpses"),
             true,
             SpawnRate);
     }

@@ -37,7 +37,9 @@ public abstract class CustomRole
     public PlayerControl? Player;
     public PlayerControl? CurrentTarget;
     public EnoFramework.CustomOption? SpawnRate { get; private set; }
-    protected readonly List<Type> IncompatibleRoles = new();
+    public readonly List<Type> IncompatibleRoles = new();
+    public string IntroDescription = "";
+    public string ShortDescription = "";
 
     public string NameText => DisplayName ?? Name;
 
@@ -51,6 +53,7 @@ public abstract class CustomRole
     public bool IsCrewmate => Team == Teams.Crewmate;
     public bool IsImpostor => Team == Teams.Impostor;
     public bool IsNeutral => Team == Teams.Neutral;
+    public readonly EnoFramework.RoleInfo Info;
 
     protected CustomRole(string name, bool hasSpawnRate = true)
     {
@@ -58,7 +61,7 @@ public abstract class CustomRole
         if (!hasSpawnRate) return;
         SpawnRate = OptionsTab.CreateFloatList(
             $"{Name}{nameof(SpawnRate)}",
-            Colors.Cs(Color, "Spawn rate"),
+            Cs("Spawn rate"),
             0f,
             100f,
             50f,
@@ -66,12 +69,18 @@ public abstract class CustomRole
             null,
             string.Empty,
             "%");
+        Info = new EnoFramework.RoleInfo(this);
         AllRoles.Add(this);
     }
 
     public bool Is(PlayerControl player)
     {
         return Player == player;
+    }
+
+    public bool Is(byte playerId)
+    {
+        return Player != null && Player.PlayerId == playerId;
     }
 
     public bool IsLocalPlayer()
@@ -86,7 +95,7 @@ public abstract class CustomRole
 
     public string Cs(string text)
     {
-        return Colors.Cs(Color, text);
+        return Cs(text);
     }
 
     public void SetPlayer(PlayerControl player)

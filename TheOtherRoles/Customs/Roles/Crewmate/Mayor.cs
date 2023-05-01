@@ -30,19 +30,22 @@ public class Mayor : CustomRole
         Team = Teams.Crewmate;
         Color = new Color32(32, 77, 66, byte.MaxValue);
 
+        IntroDescription = "Your vote counts twice";
+        ShortDescription = "Your vote counts twice";
+
         CanChooseSingleVote = OptionsTab.CreateBool(
             $"{Name}{nameof(CanChooseSingleVote)}",
-            Colors.Cs(Color, "Can choose single vote"),
+            Cs("Can choose single vote"),
             false,
             SpawnRate);
         CanSeeVoteColors = OptionsTab.CreateBool(
             $"{Name}{nameof(CanSeeVoteColors)}",
-            Colors.Cs(Color, "Can see vote colors"),
+            Cs("Can see vote colors"),
             false,
             SpawnRate);
         TasksNeededToSeeVoteColors = OptionsTab.CreateFloatList(
             $"{Name}{nameof(TasksNeededToSeeVoteColors)}",
-            Colors.Cs(Color, "Completed tasks needed to see vote colors"),
+            Cs("Completed tasks needed to see vote colors"),
             0f,
             20f,
             5f,
@@ -50,12 +53,12 @@ public class Mayor : CustomRole
             CanSeeVoteColors);
         HasRemoteMeetingButton = OptionsTab.CreateBool(
             $"{Name}{nameof(HasRemoteMeetingButton)}",
-            Colors.Cs(Color, "Has mobile emergency button"),
+            Cs("Has mobile emergency button"),
             false,
             SpawnRate);
         MaxRemoteMeetings = OptionsTab.CreateFloatList(
             $"{Name}{nameof(MaxRemoteMeetings)}",
-            Colors.Cs(Color, "Number of remote meetings"),
+            Cs("Number of remote meetings"),
             1f,
             5f,
             1f,

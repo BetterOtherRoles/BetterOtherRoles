@@ -30,9 +30,12 @@ public class Trickster : CustomRole
         Color = Palette.ImpostorRed;
         CanTarget = true;
 
+        IntroDescription = "Use your jack-in-the-boxes to surprise others";
+        ShortDescription = "Surprise your enemies";
+
         PlaceBoxCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(PlaceBoxCooldown)}",
-            Colors.Cs(Color, "Place box cooldown"),
+            Cs("Place box cooldown"),
             10f,
             60f,
             30f,
@@ -42,7 +45,7 @@ public class Trickster : CustomRole
             "s");
         LightsOutCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(LightsOutCooldown)}",
-            Colors.Cs(Color, "Lights out cooldown"),
+            Cs("Lights out cooldown"),
             10f,
             60f,
             30f,
@@ -52,7 +55,7 @@ public class Trickster : CustomRole
             "s");
         LightsOutDuration = OptionsTab.CreateFloatList(
             $"{Name}{nameof(LightsOutDuration)}",
-            Colors.Cs(Color, "Lights out duration"),
+            Cs("Lights out duration"),
             5f,
             60f,
             30f,

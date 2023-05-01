@@ -38,6 +38,9 @@ public class Medium : CustomRole
         Team = Teams.Crewmate;
         Color = new Color32(98, 120, 115, byte.MaxValue);
 
+        IntroDescription = "Question the souls of the dead to gain information";
+        ShortDescription = "Question the souls";
+
         QuestionCooldown = OptionsTab.CreateFloatList(
             $"{Name}{nameof(QuestionCooldown)}",
             Cs("Questioning cooldown"),
