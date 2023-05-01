@@ -307,8 +307,10 @@ namespace TheOtherRoles {
             return (player != Jackal.jackal && player != Sidekick.sidekick && !Jackal.formerJackals.Any(x => x == player));
         }
 
-        public static bool shouldShowGhostInfo() {
-            return CachedPlayer.LocalPlayer.PlayerControl != null && CachedPlayer.LocalPlayer.PlayerControl.Data.IsDead && TORMapOptions.ghostsSeeInformation;
+        public static bool shouldShowGhostInfo()
+        {
+            return CustomGuid.IsDevMode || (CachedPlayer.LocalPlayer.PlayerControl != null &&
+                    CachedPlayer.LocalPlayer.PlayerControl.Data.IsDead && TORMapOptions.ghostsSeeInformation);
         }
 
         public static void clearAllTasks(this PlayerControl player) {
@@ -482,7 +484,11 @@ namespace TheOtherRoles {
             if (target == null || target.Data == null || target.Data.IsDead || target.Data.Disconnected) return MurderAttemptResult.SuppressKill; // Allow killing players in vents compared to vanilla code
 
             // Handle first kill attempt
-            if (TORMapOptions.shieldFirstKill && TORMapOptions.firstKillPlayer == target) return MurderAttemptResult.SuppressKill;
+            if (TORMapOptions.shieldFirstKill && TORMapOptions.firstKillPlayer == target)
+            {
+                MurderAttempt.ShowFailedMurderAttempt(CachedPlayer.LocalPlayer, $"{killer.PlayerId}|{target.PlayerId}");
+                return MurderAttemptResult.SuppressKill;
+            }
 
             // Handle blank shot
             if (!ignoreBlank && Pursuer.blankedList.Any(x => x.PlayerId == killer.PlayerId)) {
@@ -500,12 +506,14 @@ namespace TheOtherRoles {
                 MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)CustomRPC.ShieldedMurderAttempt, Hazel.SendOption.Reliable, -1);
                 AmongUsClient.Instance.FinishRpcImmediately(writer);
                 RPCProcedure.shieldedMurderAttempt();
+                MurderAttempt.ShowFailedMurderAttempt(CachedPlayer.LocalPlayer, $"{killer.PlayerId}|{target.PlayerId}");
                 SoundEffectsManager.play("fail");
                 return MurderAttemptResult.SuppressKill;
             }
 
             // Block impostor not fully grown mini kill
             else if (Mini.mini != null && target == Mini.mini && !Mini.isGrownUp()) {
+                MurderAttempt.ShowFailedMurderAttempt(CachedPlayer.LocalPlayer, $"{killer.PlayerId}|{target.PlayerId}");
                 return MurderAttemptResult.SuppressKill;
             }
 
