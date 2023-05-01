@@ -339,6 +339,7 @@ namespace TheOtherRoles.Patches {
         }
     }
 
+    /*
     [HarmonyPatch(typeof(DeadBody), nameof(DeadBody.OnClick))]
     class DeadBodyOnClickPatch {
         public static bool Prefix(DeadBody __instance) {
@@ -368,6 +369,7 @@ namespace TheOtherRoles.Patches {
             return true;
         }
     }
+    */
 
     [HarmonyPatch(typeof(EmergencyMinigame), nameof(EmergencyMinigame.Update))]
     class EmergencyMinigameUpdatePatch {
