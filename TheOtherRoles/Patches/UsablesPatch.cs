@@ -352,15 +352,17 @@ namespace TheOtherRoles.Patches {
             {
                 PlayerControl @undertakerPlayer = Undertaker.undertaker;
 
-                if (Vector2.Distance(@undertakerPlayer.GetTruePosition() - new Vector2(-0.2f, -0.22f),  __instance.TruePosition) <= (Undertaker.distancesList[(int) Undertaker.dragDistance] + 0.1f)) return true;
+                if (Vector2.Distance(@undertakerPlayer.GetTruePosition() - new Vector2(-0.2f, -0.22f),  __instance.TruePosition) <= (Undertaker.distancesList[(int) Undertaker.dragDistance] + 0.1f))
+                {
+                    Undertaker.draggedBody = __instance;
 
-                Undertaker.draggedBody = __instance;
+                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDragBody, Hazel.SendOption.Reliable, -1);
+                    writer.Write(__instance.ParentId);
+                    AmongUsClient.Instance.FinishRpcImmediately(writer);
+                    
+                    return false;
+                }
 
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDragBody, Hazel.SendOption.Reliable, -1);
-                writer.Write(__instance.ParentId);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-
-                return false;
             }
             
             return true;
