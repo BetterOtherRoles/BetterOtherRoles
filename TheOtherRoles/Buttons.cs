@@ -1816,8 +1816,8 @@ namespace TheOtherRoles
                     CachedPlayer.LocalPlayer.NetTransform.Halt(); // Stop current movement 
                     Mayor.remoteMeetingsLeft--;
 	                Helpers.handleVampireBiteOnBodyReport(); // Manually call Vampire handling, since the CmdReportDeadBody Prefix won't be called
-                    Helpers.handleWhispererKillOnBodyReport();
-                    Helpers.handleUndertakerDropOnBodyReport();
+                    // Helpers.handleWhispererKillOnBodyReport();
+                    // Helpers.handleUndertakerDropOnBodyReport();
                     RPCProcedure.uncheckedCmdReportDeadBody(CachedPlayer.LocalPlayer.PlayerId, Byte.MaxValue);
 
                     MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UncheckedCmdReportDeadBody, Hazel.SendOption.Reliable, -1);

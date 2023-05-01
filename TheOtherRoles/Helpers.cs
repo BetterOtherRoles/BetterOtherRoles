@@ -184,7 +184,7 @@ namespace TheOtherRoles {
         }
 
         public static AudioClip loadAudioClipFromResources(string path, string clipName = "UNNAMED_TOR_AUDIO_CLIP") {
-            // must be "raw (headerless) 2-channel signed 32 bit pcm (le)" (can e.g. use Audacity� to export)
+            // must be "raw (headerless) 2-channel signed 32 bit pcm (le)" (can e.g. use Audacity® to export)
             try {
                 Assembly assembly = Assembly.GetExecutingAssembly();
                 Stream stream = assembly.GetManifestResourceStream(path);
@@ -230,40 +230,11 @@ namespace TheOtherRoles {
         public static void handleVampireBiteOnBodyReport() {
             // Murder the bitten player and reset bitten (regardless whether the kill was successful or not)
             Helpers.checkMurderAttemptAndKill(Vampire.vampire, Vampire.bitten, true, false);
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(Vampire.vampire.NetId, (byte)CustomRPC.VampireSetBitten, Hazel.SendOption.Reliable, -1);
+            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.VampireSetBitten, Hazel.SendOption.Reliable, -1);
             writer.Write(byte.MaxValue);
             writer.Write(byte.MaxValue);
             AmongUsClient.Instance.FinishRpcImmediately(writer);
             RPCProcedure.vampireSetBitten(byte.MaxValue, byte.MaxValue);
-        }
-
-        public static void handleUndertakerDropOnBodyReport() {
-            var position = Undertaker.undertaker.transform.position;
-                        
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(Undertaker.undertaker.NetId, (byte)CustomRPC.UndertakerDropBody, Hazel.SendOption.Reliable, -1);
-                writer.Write(position.x);
-                writer.Write(position.y);
-                writer.Write(position.z);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-
-                Undertaker.draggedBody = null;
-                Undertaker.LastDragged = DateTime.UtcNow;
-        }
-
-        public static void handleWhispererKillOnBodyReport() {
-            if (Whisperer.whisperVictimToKill != null && Whisperer.whisperVictimToKill != Medic.shielded && (!TORMapOptions.shieldFirstKill || Whisperer.whisperVictimToKill != TORMapOptions.firstKillPlayer)) 
-                Helpers.checkMurderAttemptAndKill(Whisperer.whisperer, Whisperer.whisperVictimToKill, true, false);
-            else 
-                Helpers.checkMurderAttemptAndKill(Whisperer.whisperer, Whisperer.whisperVictim, true, false);
-
-            // & reset anyway.
-            
-            Whisperer.currentTarget = null;
-            Whisperer.whisperVictim = null;
-            Whisperer.whisperVictimTarget = null;
-            Whisperer.whisperVictimToKill = null;
-            
-            HudManagerStartPatch.whispererKillButton.Timer = HudManagerStartPatch.whispererKillButton.MaxTimer;
         }
 
         public static void refreshRoleDescription(PlayerControl player) {
@@ -336,10 +307,8 @@ namespace TheOtherRoles {
             return (player != Jackal.jackal && player != Sidekick.sidekick && !Jackal.formerJackals.Any(x => x == player));
         }
 
-        public static bool shouldShowGhostInfo()
-        {
-            return CustomGuid.IsDevMode || (CachedPlayer.LocalPlayer.PlayerControl != null &&
-                    CachedPlayer.LocalPlayer.PlayerControl.Data.IsDead && TORMapOptions.ghostsSeeInformation);
+        public static bool shouldShowGhostInfo() {
+            return CachedPlayer.LocalPlayer.PlayerControl != null && CachedPlayer.LocalPlayer.PlayerControl.Data.IsDead && TORMapOptions.ghostsSeeInformation;
         }
 
         public static void clearAllTasks(this PlayerControl player) {
@@ -513,11 +482,7 @@ namespace TheOtherRoles {
             if (target == null || target.Data == null || target.Data.IsDead || target.Data.Disconnected) return MurderAttemptResult.SuppressKill; // Allow killing players in vents compared to vanilla code
 
             // Handle first kill attempt
-            if (TORMapOptions.shieldFirstKill && TORMapOptions.firstKillPlayer == target)
-            {
-                MurderAttempt.ShowFailedMurderAttempt(CachedPlayer.LocalPlayer, $"{killer.PlayerId}|{target.PlayerId}");
-                return MurderAttemptResult.SuppressKill;
-            }
+            if (TORMapOptions.shieldFirstKill && TORMapOptions.firstKillPlayer == target) return MurderAttemptResult.SuppressKill;
 
             // Handle blank shot
             if (!ignoreBlank && Pursuer.blankedList.Any(x => x.PlayerId == killer.PlayerId)) {
@@ -535,14 +500,12 @@ namespace TheOtherRoles {
                 MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)CustomRPC.ShieldedMurderAttempt, Hazel.SendOption.Reliable, -1);
                 AmongUsClient.Instance.FinishRpcImmediately(writer);
                 RPCProcedure.shieldedMurderAttempt();
-                MurderAttempt.ShowFailedMurderAttempt(CachedPlayer.LocalPlayer, $"{killer.PlayerId}|{target.PlayerId}");
                 SoundEffectsManager.play("fail");
                 return MurderAttemptResult.SuppressKill;
             }
 
             // Block impostor not fully grown mini kill
             else if (Mini.mini != null && target == Mini.mini && !Mini.isGrownUp()) {
-                MurderAttempt.ShowFailedMurderAttempt(CachedPlayer.LocalPlayer, $"{killer.PlayerId}|{target.PlayerId}");
                 return MurderAttemptResult.SuppressKill;
             }
 
@@ -653,6 +616,8 @@ namespace TheOtherRoles {
             }
             ResolutionManager.ResolutionChanged.Invoke((float)Screen.width / Screen.height); // This will move button positions to the correct position.
         }
+
+        
 
         public static bool hasImpVision(GameData.PlayerInfo player) {
             return player.Role.IsImpostor

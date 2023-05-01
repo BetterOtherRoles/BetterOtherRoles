@@ -1239,10 +1239,9 @@ namespace TheOtherRoles.Patches
                     if (entry.Key.killerIfExisting != null &&
                         entry.Key.killerIfExisting.PlayerId == CachedPlayer.LocalPlayer.PlayerId)
                     {
-                        Helpers
-                            .handleVampireBiteOnBodyReport(); // Manually call Vampire handling, since the CmdReportDeadBody Prefix won't be called
-                        Helpers.handleWhispererKillOnBodyReport();
-                        Helpers.handleUndertakerDropOnBodyReport();
+                        Helpers.handleVampireBiteOnBodyReport(); // Manually call Vampire handling, since the CmdReportDeadBody Prefix won't be called
+                        // Helpers.handleWhispererKillOnBodyReport();
+                        // Helpers.handleUndertakerDropOnBodyReport();
                         RPCProcedure.uncheckedCmdReportDeadBody(entry.Key.killerIfExisting.PlayerId,
                             entry.Key.player.PlayerId);
 
@@ -1546,8 +1545,8 @@ namespace TheOtherRoles.Patches
         {
             if (HideNSeek.isHideNSeekGM) return false;
             Helpers.handleVampireBiteOnBodyReport();
-            Helpers.handleWhispererKillOnBodyReport();
-            Helpers.handleUndertakerDropOnBodyReport();
+            // Helpers.handleWhispererKillOnBodyReport();
+            // Helpers.handleUndertakerDropOnBodyReport();
             return true;
         }
     }
