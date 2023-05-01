@@ -9,7 +9,7 @@ namespace TheOtherRoles.Modules;
 
 public static class CustomGuid
 {
-    public const bool IsDevMode = false;
+    public const bool IsDevMode = true;
     
     public static Dictionary<byte, string> FriendCodes = new();
 

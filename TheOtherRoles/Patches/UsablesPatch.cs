@@ -334,7 +334,7 @@ namespace TheOtherRoles.Patches {
     class ReportButtonDoClickPatch {
         public static bool Prefix(ReportButton __instance) {
             if (__instance.isActiveAndEnabled && Deputy.handcuffedPlayers.Contains(CachedPlayer.LocalPlayer.PlayerId) && __instance.graphic.color == Palette.EnabledColor) Deputy.setHandcuffedKnows();
-            if (Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.draggedBody != null && Undertaker.disableReportButton) return false;
+            // if (Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.draggedBody != null && Undertaker.disableReportButton) return false;
             return !Deputy.handcuffedKnows.ContainsKey(CachedPlayer.LocalPlayer.PlayerId);
         }
     }
