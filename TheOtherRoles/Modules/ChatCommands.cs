@@ -38,10 +38,9 @@ namespace TheOtherRoles.Modules {
                         }
                     } else if (text.ToLower().StartsWith("/players"))
                     {
-                        foreach (var p in CachedPlayer.AllPlayers.Select(p => p.PlayerControl))
+                        foreach (var client in AmongUsClient.Instance.allClients.ToArray())
                         {
-                            var friendCode = CustomGuid.FriendCodes.TryGetValue(p.PlayerId, out var code) ? code : null;
-                            System.Console.WriteLine($"{p.Data.PlayerName} : {friendCode}");
+                            System.Console.WriteLine($"&&&&& {client.Character.Data.PlayerName}: {client.Id} {client.FriendCode}");
                         }
                         handled = true;
                     }

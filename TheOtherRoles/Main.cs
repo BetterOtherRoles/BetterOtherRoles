@@ -32,12 +32,12 @@ namespace TheOtherRoles
     public class TheOtherRolesPlugin : BasePlugin
     {
         public const string Id = "me.eisbison.theotherroles";
-        public const string VersionString = "1.0.5";
+        public const string VersionString = "1.1.1";
 
         public static Version Version = Version.Parse(VersionString);
         internal static BepInEx.Logging.ManualLogSource Logger;
          
-        public Harmony Harmony { get; } = new Harmony(Id);
+        public Harmony Harmony { get; } = new(Id);
         public static TheOtherRolesPlugin Instance;
 
         public static int optionsPage = 2;
