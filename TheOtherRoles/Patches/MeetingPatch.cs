@@ -740,7 +740,7 @@ namespace TheOtherRoles.Patches {
                 if (target == null && blockSkippingInEmergencyMeetings)
                     __instance.SkipVoteButton.gameObject.SetActive(false);
 
-                if (__instance.state >= MeetingHud.VoteStates.Discussion)
+                if (__instance.state >= MeetingHud.VoteStates.Discussion && TORMapOptions.removeShieldOnFirstMeeting)
                 {
                     // Remove first kill shield
                     TORMapOptions.firstKillPlayer = null;

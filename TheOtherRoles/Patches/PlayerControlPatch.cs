@@ -1412,6 +1412,9 @@ namespace TheOtherRoles.Patches
 
             if (CachedPlayer.LocalPlayer.PlayerControl == __instance)
             {
+
+                // Update first kill shield if is timer
+                TORMapOptions.UpdateShield();
                 // Update player outlines
                 setBasePlayerOutlines();
 
