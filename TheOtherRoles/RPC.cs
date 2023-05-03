@@ -625,7 +625,7 @@ namespace TheOtherRoles
 
         public static void undertakerDragBody(byte draggedBodyId)
         {
-            if (Undertaker.undertaker == null || Undertaker.draggedBody != null) return;
+            if (Undertaker.undertaker == null) return;
             
             foreach (DeadBody body in UnityEngine.Object.FindObjectsOfType<DeadBody>()) {
                 if (body.ParentId == draggedBodyId) Undertaker.draggedBody = body;
@@ -639,6 +639,7 @@ namespace TheOtherRoles
             Undertaker.draggedBody.transform.position = new Vector3(vx, vy, vz);
             Undertaker.draggedBody = null;
             Undertaker.LastDragged = DateTime.UtcNow;
+            
 
         }
 
@@ -1085,6 +1086,24 @@ namespace TheOtherRoles
                 Fallen.clearAndReload();
                 Fallen.fallen = target; // Change target to Fallen ???
                 RoleManager.Instance.SetRole(target, RoleTypes.Crewmate);
+                
+                foreach(PlayerTask task in target.myTasks.GetFastEnumerator())
+                {
+                    // if (task.TaskType == TaskTypes.FixLights) continue;
+                    // if (task.TaskType == TaskTypes.RestoreOxy) continue;
+                    // if (task.TaskType == TaskTypes.ResetReactor) continue;
+                    // if (task.TaskType == TaskTypes.ResetSeismic) continue;
+                    // if (task.TaskType == TaskTypes.FixComms) continue;
+                    // if (task.TaskType == TaskTypes.StopCharles) continue;
+                    // if (SubmergedCompatibility.IsSubmerged && task.TaskType == SubmergedCompatibility.RetrieveOxygenMask) continue;
+
+                    // task.Complete();
+                    // task.IsComplete = true;
+
+                    task.OnRemove();
+                    target.myTasks.Remove(task);
+                    UnityEngine.Object.Destroy(task.gameObject);
+                }
             }
             
             if (Thief.thief == PlayerControl.LocalPlayer) CustomButton.ResetAllCooldowns();

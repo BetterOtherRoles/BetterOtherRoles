@@ -353,7 +353,7 @@ namespace TheOtherRoles.Patches {
                 roleSummaryText.AppendLine("Players and roles at the end of the game:");
                 foreach(AdditionalTempData.PlayerRoleInfo data in AdditionalTempData.playerRoles) {
                     var roles = string.Join(" ", data.Roles.Select(x => Helpers.cs(x.color, x.name)));
-                    var previousRole = data.PreviousRole != null ? $"{Helpers.cs(data.PreviousRole.color, data.PreviousRole.name)} ⮀ " : "";
+                    var previousRole = data.PreviousRole != null ? $"{Helpers.cs(data.PreviousRole.color, data.PreviousRole.name)} => " : "";
                     if (previousRole != "") {
                         string[] splittedRoles = roles.Split(" ");
                         splittedRoles[splittedRoles.Length - 1] = previousRole + splittedRoles[splittedRoles.Length - 1];

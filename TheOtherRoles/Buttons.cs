@@ -762,7 +762,16 @@ namespace TheOtherRoles
                     if (murder == MurderAttemptResult.PerformKill) {
                         
                         Whisperer.whisperVictim = Whisperer.currentTarget;
-                        
+
+                        /*
+                        // Notify players about bitten
+                            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(Vampire.vampire.NetId, (byte)CustomRPC.VampireSetBitten, Hazel.SendOption.Reliable, -1);
+                            writer.Write(Vampire.bitten.PlayerId);
+                            writer.Write((byte)0);
+                            AmongUsClient.Instance.FinishRpcImmediately(writer);
+                            RPCProcedure.vampireSetBitten(Vampire.bitten.PlayerId, 0);
+                        */
+
                         SoundEffectsManager.play("warlockCurse");
 
                         byte lastTimer = (byte)Whisperer.delay;
@@ -792,7 +801,15 @@ namespace TheOtherRoles
                                 else Helpers.checkMurderAttemptAndKill(Whisperer.whisperer, Whisperer.whisperVictim, showAnimation: false);
 
                                 // & reset anyway.
-
+                                
+                                /*
+                                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.VampireSetBitten, Hazel.SendOption.Reliable, -1);
+                                writer.Write(byte.MaxValue);
+                                writer.Write(byte.MaxValue);
+                                AmongUsClient.Instance.FinishRpcImmediately(writer);
+                                RPCProcedure.vampireSetBitten(byte.MaxValue, byte.MaxValue);
+                                */
+                                
                                 Whisperer.currentTarget = null;
                                 Whisperer.whisperVictim = null;
                                 Whisperer.whisperVictimTarget = null;
@@ -847,32 +864,35 @@ namespace TheOtherRoles
                     DeadBody @bodyComponent = Undertaker.currentDeadTarget;
                     PlayerControl @undertakerPlayer = Undertaker.undertaker;
 
-                    if (Undertaker.draggedBody == null && Undertaker.currentDeadTarget != null)
+                    if (Undertaker.draggedBody == null)
                     {
                         Undertaker.draggedBody = @bodyComponent;
 
-                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDragBody, Hazel.SendOption.Reliable, -1);
+                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(Undertaker.undertaker.NetId, (byte)CustomRPC.UndertakerDragBody, Hazel.SendOption.Reliable, -1);
                         writer.Write(@bodyComponent.ParentId);
                         AmongUsClient.Instance.FinishRpcImmediately(writer);
                         
-                    } else if (Undertaker.draggedBody)
+                    } else if (Undertaker.draggedBody != null && Undertaker.currentDeadTarget != null)
                     {
                         
-                        var position = CachedPlayer.LocalPlayer.PlayerControl.transform.position;
+                        var position = Undertaker.draggedBody.transform.position;
                         
-                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDropBody, Hazel.SendOption.Reliable, -1);
+                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(Undertaker.undertaker.NetId, (byte)CustomRPC.UndertakerDropBody, Hazel.SendOption.Reliable, -1);
                         writer.Write(position.x);
                         writer.Write(position.y);
                         writer.Write(position.z);
                         AmongUsClient.Instance.FinishRpcImmediately(writer);
+                        RPCProcedure.undertakerDropBody(position.x, position.y, position.z);
+
+                        Undertaker.draggedBody = null;
+                        Undertaker.currentDeadTarget = null;
+                        Undertaker.LastDragged = DateTime.UtcNow;
 
                     }
                 }, // Action OnClick
                 () => { return Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; }, // Bool HasButton
                 () => { 
-                    return (Undertaker.currentDeadTarget != null
-                            || Undertaker.draggedBody != null) 
-                            && CachedPlayer.LocalPlayer.PlayerControl.CanMove;
+                    return (Undertaker.currentDeadTarget != null || Undertaker.draggedBody != null) && CachedPlayer.LocalPlayer.PlayerControl.CanMove;
                 }, // Bool CouldUse
                 () => {}, // Action OnMeetingEnds
                 Undertaker.getButtonSprite(), // Sprite sprite,
@@ -1816,8 +1836,8 @@ namespace TheOtherRoles
                     CachedPlayer.LocalPlayer.NetTransform.Halt(); // Stop current movement 
                     Mayor.remoteMeetingsLeft--;
 	                Helpers.handleVampireBiteOnBodyReport(); // Manually call Vampire handling, since the CmdReportDeadBody Prefix won't be called
-                    // Helpers.handleWhispererKillOnBodyReport();
-                    // Helpers.handleUndertakerDropOnBodyReport();
+                    Helpers.handleWhispererKillOnBodyReport();
+                    Helpers.handleUndertakerDropOnBodyReport();
                     RPCProcedure.uncheckedCmdReportDeadBody(CachedPlayer.LocalPlayer.PlayerId, Byte.MaxValue);
 
                     MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UncheckedCmdReportDeadBody, Hazel.SendOption.Reliable, -1);
