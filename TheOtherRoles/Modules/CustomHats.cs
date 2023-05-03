@@ -410,9 +410,9 @@ namespace TheOtherRoles.Modules {
 
     public class CustomHatLoader {
         public static bool running = false;
-        private const string REPO = "https://raw.githubusercontent.com/Eisbison/TheOtherHats/master";
+        private const string REPO = "https://raw.githubusercontent.com/BetterOtherHats/BetterOtherHats/master";
 
-        public static List<CustomHatOnline> hatdetails = new List<CustomHatOnline>();
+        public static List<CustomHatOnline> hatdetails = new();
         private static Task hatFetchTask = null;
         public static void LaunchHatFetcher() {
             if (running)
@@ -429,7 +429,7 @@ namespace TheOtherRoles.Modules {
             } catch (System.Exception e) {
                 System.Console.WriteLine("Unable to fetch hats\n" + e.Message);
             }
-           running = false;
+            running = false;
         }
 
         private static string sanitizeResourcePath(string res) {

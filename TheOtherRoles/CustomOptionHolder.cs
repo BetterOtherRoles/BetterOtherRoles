@@ -436,7 +436,7 @@ namespace TheOtherRoles {
                 new[] { "First meeting ended", "Timer expired" }, shieldFirstKill);
             removeShieldTimer = CustomOption.Create(14, Types.General, "Shield duration (in seconds)", 60f, 10f, 600f, 10f,
                 removeFirstKillShield);
-            showShieldRemainingTime = CustomOption.Create(15, Types.General, "Show shield remaining time", false, removeFirstKillShield);
+            showShieldRemainingTime = CustomOption.Create(15, Types.General, "Show shield indicator", false, removeFirstKillShield);
             
             finishTasksBeforeHauntingOrZoomingOut = CustomOption.Create(9, Types.General, "Finish Tasks Before Haunting Or Zooming Out", true, null, true);
             camsNightVision = CustomOption.Create(11, Types.General, "Cams Switch To Night Vision If Lights Are Off", false, null, true);

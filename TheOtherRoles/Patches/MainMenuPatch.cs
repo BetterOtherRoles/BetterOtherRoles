@@ -22,26 +22,26 @@ namespace TheOtherRoles.Patches {
             var template = GameObject.Find("ExitGameButton");
             if (template == null) return;
 
-            var buttonDiscord = Object.Instantiate(template, null);
-            var localPosition = buttonDiscord.transform.localPosition;
+            var buttonGithub = Object.Instantiate(template, null);
+            var localPosition = buttonGithub.transform.localPosition;
             localPosition = new Vector3(localPosition.x, localPosition.y + 0.6f, localPosition.z);
-            buttonDiscord.transform.localPosition = localPosition;
+            buttonGithub.transform.localPosition = localPosition;
 
-            var textDiscord = buttonDiscord.transform.GetChild(0).GetComponent<TMPro.TMP_Text>();
+            var textGithub = buttonGithub.transform.GetChild(0).GetComponent<TMPro.TMP_Text>();
             __instance.StartCoroutine(Effects.Lerp(0.1f, new System.Action<float>((p) => {
-                textDiscord.SetText("Discord");
+                textGithub.SetText("Github");
             })));
 
-            PassiveButton passiveButtonDiscord = buttonDiscord.GetComponent<PassiveButton>();
-            SpriteRenderer buttonSpriteDiscord = buttonDiscord.GetComponent<SpriteRenderer>();
+            var passiveButtonGithub = buttonGithub.GetComponent<PassiveButton>();
+            var passiveSpriteGithub = buttonGithub.GetComponent<SpriteRenderer>();
 
-            passiveButtonDiscord.OnClick = new Button.ButtonClickedEvent();
-            passiveButtonDiscord.OnClick.AddListener((System.Action)(() => Application.OpenURL("https://discord.gg/77RkMJHWsM")));
+            passiveButtonGithub.OnClick = new Button.ButtonClickedEvent();
+            passiveButtonGithub.OnClick.AddListener((System.Action)(() => Application.OpenURL("https://discord.gg/77RkMJHWsM")));
 
             Color discordColor = new Color32(88, 101, 242, byte.MaxValue);
-            buttonSpriteDiscord.color = textDiscord.color = discordColor;
-            passiveButtonDiscord.OnMouseOut.AddListener((System.Action)delegate {
-                buttonSpriteDiscord.color = textDiscord.color = discordColor;
+            passiveSpriteGithub.color = textGithub.color = discordColor;
+            passiveButtonGithub.OnMouseOut.AddListener((System.Action)delegate {
+                passiveSpriteGithub.color = textGithub.color = discordColor;
             });
 
 
