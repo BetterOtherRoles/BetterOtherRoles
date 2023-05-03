@@ -324,6 +324,8 @@ namespace TheOtherRoles {
         public static CustomOption hidePlayerNames;
         public static CustomOption allowParallelMedBayScans;
         public static CustomOption shieldFirstKill;
+        public static CustomOption removeFirstKillShield;
+        public static CustomOption removeShieldTimer;
         public static CustomOption finishTasksBeforeHauntingOrZoomingOut;
         public static CustomOption camsNightVision;
         public static CustomOption camsNoNightVisionIfImpVision;
@@ -418,8 +420,13 @@ namespace TheOtherRoles {
             noVoteIsSelfVote = CustomOption.Create(5, Types.General, "No Vote Is Self Vote", false, blockSkippingInEmergencyMeetings);
             hidePlayerNames = CustomOption.Create(6, Types.General, "Hide Player Names", false);
             allowParallelMedBayScans = CustomOption.Create(7, Types.General, "Allow Parallel MedBay Scans", false);
-            shieldFirstKill = CustomOption.Create(8, Types.General, "Shield Last Game First Kill", false);
-            finishTasksBeforeHauntingOrZoomingOut = CustomOption.Create(9, Types.General, "Finish Tasks Before Haunting Or Zooming Out", true);
+            
+            shieldFirstKill = CustomOption.Create(8, Types.General, "Shield Last Game First Kill", false, null, true);
+            removeFirstKillShield = CustomOption.Create(13, Types.General, "Remove shield when",
+                new[] { "First meeting ended", "Timer expired" }, shieldFirstKill);
+            removeShieldTimer = CustomOption.Create(14, Types.General, "Shield duration (in seconds)", 60f, 10f, 600f, 10f,
+                removeFirstKillShield);
+            finishTasksBeforeHauntingOrZoomingOut = CustomOption.Create(9, Types.General, "Finish Tasks Before Haunting Or Zooming Out", true, null, true);
             camsNightVision = CustomOption.Create(11, Types.General, "Cams Switch To Night Vision If Lights Are Off", false, null, true);
             camsNoNightVisionIfImpVision = CustomOption.Create(12, Types.General, "Impostor Vision Ignores Night Vision Cams", false, camsNightVision, false);
 

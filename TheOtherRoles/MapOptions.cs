@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -18,6 +19,8 @@ namespace TheOtherRoles{
         public static bool enableSoundEffects = true;
         public static bool enableHorseMode = false;
         public static bool shieldFirstKill = false;
+        public static bool removeShieldOnFirstMeeting = false;
+        public static float shieldDuration;
         public static CustomGamemodes gameMode = CustomGamemodes.Classic;
 
         // Updating values
@@ -27,6 +30,22 @@ namespace TheOtherRoles{
         public static Dictionary<byte, PoolablePlayer> playerIcons = new Dictionary<byte, PoolablePlayer>();
         public static string firstKillName;
         public static PlayerControl firstKillPlayer;
+        
+        public static DateTime? ShieldExpiresAt;
+
+        public static void UpdateShield()
+        {
+            if (firstKillPlayer != null && !removeShieldOnFirstMeeting && ShieldExpiresAt == null)
+            {
+                ShieldExpiresAt = DateTime.UtcNow.AddSeconds(shieldDuration);
+            }
+
+            if (firstKillPlayer != null && !removeShieldOnFirstMeeting && ShieldExpiresAt != null && DateTime.UtcNow >= ShieldExpiresAt)
+            {
+                firstKillPlayer = null;
+                ShieldExpiresAt = null;
+            }
+        }
 
         public static void clearAndReloadMapOptions() {
             meetingsCount = 0;
@@ -40,7 +59,10 @@ namespace TheOtherRoles{
             hidePlayerNames = CustomOptionHolder.hidePlayerNames.getBool();
             allowParallelMedBayScans = CustomOptionHolder.allowParallelMedBayScans.getBool();
             shieldFirstKill = CustomOptionHolder.shieldFirstKill.getBool();
+            removeShieldOnFirstMeeting = CustomOptionHolder.removeFirstKillShield.getSelection() == 0;
+            shieldDuration = CustomOptionHolder.removeShieldTimer.getFloat();
             firstKillPlayer = null;
+            ShieldExpiresAt = null;
         }
 
         public static void reloadPluginOptions() {
