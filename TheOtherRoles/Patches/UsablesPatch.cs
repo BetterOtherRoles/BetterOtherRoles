@@ -50,9 +50,9 @@ namespace TheOtherRoles.Patches {
         public static bool Prefix(Vent __instance, ref float __result, [HarmonyArgument(0)] GameData.PlayerInfo pc, [HarmonyArgument(1)] ref bool canUse, [HarmonyArgument(2)] ref bool couldUse) {
             if (GameOptionsManager.Instance.currentGameOptions.GameMode == GameModes.HideNSeek) return true;
             float num = float.MaxValue;
-            PlayerControl @object = pc.Object;
+            PlayerControl playerObject = pc.Object;
 
-            bool roleCouldUse = @object.roleCanUseVents();
+            bool roleCouldUse = playerObject.roleCanUseVents();
 
             if (__instance.name.StartsWith("SealedVent_")) {
                 canUse = couldUse = false;
@@ -74,10 +74,10 @@ namespace TheOtherRoles.Patches {
                         return canUse = couldUse = false;                    
                     case 14: // Lower Central
                         __result = float.MaxValue;
-                        couldUse = roleCouldUse && !pc.IsDead && (@object.CanMove || @object.inVent);
+                        couldUse = roleCouldUse && !pc.IsDead && (playerObject.CanMove || playerObject.inVent);
                         canUse = couldUse;
                         if (canUse) {
-                            Vector3 center = @object.Collider.bounds.center;
+                            Vector3 center = playerObject.Collider.bounds.center;
                             Vector3 position = __instance.transform.position;
                             __result = Vector2.Distance(center, position);
                             canUse &= __result <= __instance.UsableDistance;
@@ -100,14 +100,14 @@ namespace TheOtherRoles.Patches {
                 }
             }
 
-            couldUse = (@object.inVent || roleCouldUse) && !pc.IsDead && (@object.CanMove || @object.inVent);
+            couldUse = (playerObject.inVent || roleCouldUse) && !pc.IsDead && (playerObject.CanMove || playerObject.inVent);
             canUse = couldUse;
             if (canUse)
             {
-                Vector3 center = @object.Collider.bounds.center;
+                Vector3 center = playerObject.Collider.bounds.center;
                 Vector3 position = __instance.transform.position;
                 num = Vector2.Distance(center, position);
-                canUse &= (num <= usableDistance && (!PhysicsHelpers.AnythingBetween(@object.Collider, center, position, Constants.ShipOnlyMask, false) || __instance.name.StartsWith("JackInTheBoxVent_")));
+                canUse &= (num <= usableDistance && (!PhysicsHelpers.AnythingBetween(playerObject.Collider, center, position, Constants.ShipOnlyMask, false) || __instance.name.StartsWith("JackInTheBoxVent_")));
             }
             __result = num;
             return false;
@@ -335,7 +335,7 @@ namespace TheOtherRoles.Patches {
     class ReportButtonDoClickPatch {
         public static bool Prefix(ReportButton __instance) {
             if (__instance.isActiveAndEnabled && Deputy.handcuffedPlayers.Contains(CachedPlayer.LocalPlayer.PlayerId) && __instance.graphic.color == Palette.EnabledColor) Deputy.setHandcuffedKnows();
-            // if (Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.draggedBody != null && Undertaker.disableReportButton) return false;
+            if (Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.draggedBody != null && Undertaker.disableReportButton) return false;
             return !Deputy.handcuffedKnows.ContainsKey(CachedPlayer.LocalPlayer.PlayerId);
         }
     }
@@ -351,15 +351,11 @@ namespace TheOtherRoles.Patches {
 
             if (Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.draggedBody != null)
             {
-                PlayerControl @undertakerPlayer = Undertaker.undertaker;
+                PlayerControl undertakerPlayer = Undertaker.undertaker;
 
-                if (Vector2.Distance(@undertakerPlayer.GetTruePosition() - new Vector2(-0.2f, -0.22f),  __instance.TruePosition) <= (Undertaker.distancesList[(int) Undertaker.dragDistance] + 0.1f))
+                if (Vector2.Distance(undertakerPlayer.GetTruePosition() - new Vector2(-0.2f, -0.22f),  __instance.TruePosition) <= Undertaker.distancesList[(int) Undertaker.dragDistance] + 0.1f)
                 {
-                    Undertaker.draggedBody = __instance;
-
-                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDragBody, Hazel.SendOption.Reliable, -1);
-                    writer.Write(__instance.ParentId);
-                    AmongUsClient.Instance.FinishRpcImmediately(writer);
+                    Undertaker.DragBody(CachedPlayer.LocalPlayer, $"{__instance.ParentId}");
                     
                     return false;
                 }

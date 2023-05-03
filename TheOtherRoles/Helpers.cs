@@ -64,21 +64,21 @@ namespace TheOtherRoles
                 if (!playerInfo.Disconnected && playerInfo.PlayerId != targetingPlayer.PlayerId && !playerInfo.IsDead &&
                     (!onlyCrewmates || !playerInfo.Role.IsImpostor))
                 {
-                    PlayerControl @object = playerInfo.Object;
-                    if (untargetablePlayers != null && untargetablePlayers.Any(x => x == @object))
+                    PlayerControl playerObject = playerInfo.Object;
+                    if (untargetablePlayers != null && untargetablePlayers.Any(x => x == playerObject))
                     {
                         // if that player is not targetable: skip check
                         continue;
                     }
 
-                    if (@object && (!@object.inVent || targetPlayersInVents))
+                    if (playerObject && (!playerObject.inVent || targetPlayersInVents))
                     {
-                        Vector2 vector = @object.GetTruePosition() - truePosition;
+                        Vector2 vector = playerObject.GetTruePosition() - truePosition;
                         float magnitude = vector.magnitude;
                         if (magnitude <= num && !PhysicsHelpers.AnyNonTriggersBetween(truePosition, vector.normalized,
                                 magnitude, Constants.ShipAndObjectsMask))
                         {
-                            result = @object;
+                            result = playerObject;
                             num = magnitude;
                         }
                     }
@@ -91,13 +91,13 @@ namespace TheOtherRoles
 
         public static DeadBody setDeadTarget(float maxDistance = 0f, PlayerControl targetingPlayer = null)
         {
-            DeadBody @result = null;
+            DeadBody result = null;
             float closestDistance = float.MaxValue;
 
-            if (!MapUtilities.CachedShipStatus) return @result;
+            if (!MapUtilities.CachedShipStatus) return null;
 
             if (targetingPlayer == null) targetingPlayer = CachedPlayer.LocalPlayer.PlayerControl;
-            if (targetingPlayer.Data.IsDead) return @result;
+            if (targetingPlayer.Data.IsDead) return null;
 
             maxDistance = maxDistance == 0f ? 1f : maxDistance + 0.1f;
 
@@ -107,29 +107,29 @@ namespace TheOtherRoles
                         && (!AmongUsClient.Instance || !AmongUsClient.Instance.IsGameOver);
 
             Collider2D[] allocs = Physics2D.OverlapCircleAll(truePosition, maxDistance,
-                LayerMask.GetMask(new[] { "Players", "Ghost" }));
+                LayerMask.GetMask("Players", "Ghost"));
 
 
             foreach (Collider2D collider2D in allocs)
             {
                 if (!flag || collider2D.tag != "DeadBody") continue;
-                DeadBody @component = collider2D.GetComponent<DeadBody>();
+                DeadBody component = collider2D.GetComponent<DeadBody>();
 
-                if (!(Vector2.Distance(truePosition, @component.TruePosition) <=
+                if (!(Vector2.Distance(truePosition, component.TruePosition) <=
                       maxDistance)) continue;
 
-                float distance = Vector2.Distance(truePosition, @component.TruePosition);
+                float distance = Vector2.Distance(truePosition, component.TruePosition);
 
                 if (!(distance < closestDistance)) continue;
 
-                @result = @component;
+                result = component;
                 closestDistance = distance;
             }
 
-            if (@result && Undertaker.undertaker == targetingPlayer)
-                Helpers.setDeadPlayerOutline(@result, Undertaker.color);
+            if (result && Undertaker.undertaker == targetingPlayer)
+                Helpers.setDeadPlayerOutline(result, Undertaker.color);
 
-            return @result;
+            return result;
         }
 
         public static void setPlayerOutline(PlayerControl target, Color color)
@@ -142,12 +142,11 @@ namespace TheOtherRoles
             target.cosmetics.currentBodySprite.BodySprite.material.SetColor("_OutlineColor", color);
         }
 
-        public static void setDeadPlayerOutline(DeadBody deadTarget, Color color)
+        public static void setDeadPlayerOutline(DeadBody deadTarget, Color? color)
         {
             if (deadTarget == null || deadTarget.bodyRenderers[0] == null) return;
-
-            deadTarget.bodyRenderers[0].material.SetFloat("_Outline", 1f);
-            deadTarget.bodyRenderers[0].material.SetColor("_OutlineColor", color);
+            deadTarget.bodyRenderers[0].material.SetFloat("_Outline", color == null ? 0f : 1f);
+            if (color != null) deadTarget.bodyRenderers[0].material.SetColor("_OutlineColor", color.Value);
         }
 
         public static Sprite loadSpriteFromResources(string path, float pixelsPerUnit)
@@ -284,17 +283,7 @@ namespace TheOtherRoles
         {
             if (Undertaker.undertaker == null) return;
             var position = Undertaker.undertaker.transform.position;
-
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDropBody,
-                Hazel.SendOption.Reliable, -1);
-            writer.Write(position.x);
-            writer.Write(position.y);
-            writer.Write(position.z);
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
-
-            Undertaker.draggedBody = null;
-            Undertaker.LastDragged = DateTime.UtcNow;
+            Undertaker.DropBody(CachedPlayer.LocalPlayer, position.Serialize());
         }
 
         public static void handleWhispererKillOnBodyReport()
