@@ -36,9 +36,9 @@ namespace TheOtherRoles.Patches {
             var passiveSpriteGithub = buttonGithub.GetComponent<SpriteRenderer>();
 
             passiveButtonGithub.OnClick = new Button.ButtonClickedEvent();
-            passiveButtonGithub.OnClick.AddListener((System.Action)(() => Application.OpenURL("https://discord.gg/77RkMJHWsM")));
+            passiveButtonGithub.OnClick.AddListener((System.Action)(() => Application.OpenURL("https://github.com/BetterOtherRoles/BetterOtherRoles")));
 
-            Color discordColor = new Color32(88, 101, 242, byte.MaxValue);
+            Color discordColor = new Color32(115, 115, 115, byte.MaxValue);
             passiveSpriteGithub.color = textGithub.color = discordColor;
             passiveButtonGithub.OnMouseOut.AddListener((System.Action)delegate {
                 passiveSpriteGithub.color = textGithub.color = discordColor;

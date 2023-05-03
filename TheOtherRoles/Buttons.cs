@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using TheOtherRoles.CustomGameModes;
-using Twitch;
 
 
 namespace TheOtherRoles
@@ -888,13 +887,21 @@ namespace TheOtherRoles
                     }
                 }, // Action OnClick
                 () => { return Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; }, // Bool HasButton
-                () => { 
+                () => {
+                    if (Undertaker.draggedBody != null)
+                    {
+                        undertakerDragButton.Sprite = Undertaker.getDropButtonSprite();
+                    }
+                    else
+                    {
+                        undertakerDragButton.Sprite = Undertaker.getDragButtonSprite();
+                    }
                     return (Undertaker.currentDeadTarget != null
                             || Undertaker.draggedBody != null) 
                             && CachedPlayer.LocalPlayer.PlayerControl.CanMove;
                 }, // Bool CouldUse
                 () => {}, // Action OnMeetingEnds
-                Undertaker.getButtonSprite(), // Sprite sprite,
+                Undertaker.getDragButtonSprite(), // Sprite sprite,
                 CustomButton.ButtonPositions.upperRowLeft, // Vector3 PositionOffset
                 __instance, // HudManager hudManager
                 "ActionQuaternary", // String actionName,
