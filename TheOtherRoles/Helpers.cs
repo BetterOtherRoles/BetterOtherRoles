@@ -237,6 +237,36 @@ namespace TheOtherRoles {
             RPCProcedure.vampireSetBitten(byte.MaxValue, byte.MaxValue);
         }
 
+        public static void handleUndertakerDropOnBodyReport() {
+
+            var position = Undertaker.undertaker.transform.position;
+
+            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDropBody, Hazel.SendOption.Reliable, -1);
+            writer.Write(position.x);
+            writer.Write(position.y);
+            writer.Write(position.z);
+            AmongUsClient.Instance.FinishRpcImmediately(writer);
+
+            Undertaker.draggedBody = null;
+            Undertaker.LastDragged = DateTime.UtcNow;
+        }
+
+        public static void handleWhispererKillOnBodyReport() {
+            if (Whisperer.whisperVictimToKill != null && Whisperer.whisperVictimToKill != Medic.shielded && (!TORMapOptions.shieldFirstKill || Whisperer.whisperVictimToKill != TORMapOptions.firstKillPlayer)) 
+                Helpers.checkMurderAttemptAndKill(Whisperer.whisperer, Whisperer.whisperVictimToKill, true, false);
+            else 
+                Helpers.checkMurderAttemptAndKill(Whisperer.whisperer, Whisperer.whisperVictim, true, false);
+
+            // & reset anyway.
+
+            Whisperer.currentTarget = null;
+            Whisperer.whisperVictim = null;
+            Whisperer.whisperVictimTarget = null;
+            Whisperer.whisperVictimToKill = null;
+
+            HudManagerStartPatch.whispererKillButton.Timer = HudManagerStartPatch.whispererKillButton.MaxTimer;
+        }
+
         public static void refreshRoleDescription(PlayerControl player) {
             List<RoleInfo> infos = RoleInfo.getRoleInfoForPlayer(player); 
             List<string> taskTexts = new(infos.Count); 
