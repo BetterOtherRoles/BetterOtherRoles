@@ -55,7 +55,7 @@ namespace TheOtherRoles.Patches
                         Morphling.morphTarget == TORMapOptions.firstKillPlayer)))
                 {
                     hasVisibleShield = true;
-                    color = Color.blue;
+                    color = TORMapOptions.ShieldColor;
                 }
 
                 if (hasVisibleShield)

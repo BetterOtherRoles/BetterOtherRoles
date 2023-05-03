@@ -314,13 +314,14 @@ namespace TheOtherRoles.Patches {
             {
                 __instance.ReportButton.Show();
             } 
-            
-            if(Undertaker.undertaker && CachedPlayer.LocalPlayer.PlayerControl == Undertaker.undertaker && Undertaker.draggedBody != null && Undertaker.disableReportButton) 
+            /*
+            if(Undertaker.undertaker != null && CachedPlayer.LocalPlayer.PlayerControl == Undertaker.undertaker && Undertaker.draggedBody != null && Undertaker.disableReportButton) 
             {
                 __instance.ReportButton.graphic.color = Palette.DisabledClear;
                 __instance.ReportButton.buttonLabelText.color = Palette.DisabledClear;
                 __instance.ReportButton.graphic.material.SetFloat(Shader.PropertyToID("_Desat"), 1f);
             }
+            */
         }
          
         static void updateVentButton(HudManager __instance)

@@ -800,7 +800,7 @@ namespace TheOtherRoles
 
         public static Sprite getButtonSprite() {
             if (buttonSprite) return buttonSprite;
-            buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.CurseButton.png", 115f);
+            buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.WhisperButton.png", 115f);
             return buttonSprite;
         }
 
@@ -850,9 +850,15 @@ namespace TheOtherRoles
         public static DeadBody  draggedBody;
 
         private static Sprite buttonSprite;
-        public static Sprite getButtonSprite() {
+        public static Sprite getDragButtonSprite() {
             if (buttonSprite) return buttonSprite;
-            buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.VampireButton.png", 115f);
+            buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.DragButton.png", 115f);
+            return buttonSprite;
+        }
+        
+        public static Sprite getDropButtonSprite() {
+            if (buttonSprite) return buttonSprite;
+            buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.DropButton.png", 115f);
             return buttonSprite;
         }
 

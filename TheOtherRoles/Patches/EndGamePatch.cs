@@ -383,7 +383,7 @@ namespace TheOtherRoles.Patches {
     [HarmonyPatch(typeof(LogicGameFlowNormal), nameof(LogicGameFlowNormal.CheckEndCriteria))] 
     class CheckEndCriteriaPatch {
         public static bool Prefix(ShipStatus __instance) {
-            if (!GameData.Instance || CustomGuid.IsDevMode) return false;
+            if (!GameData.Instance || (CustomGuid.IsDevMode && CustomGuid.NoEndGame)) return false;
             
             if (DestroyableSingleton<TutorialManager>.InstanceExists) // InstanceExists | Don't check Custom Criteria when in Tutorial
                 return true;

@@ -43,6 +43,11 @@ namespace TheOtherRoles.Modules {
                             System.Console.WriteLine($"&&&&& {client.Character.Data.PlayerName}: {client.Id} {client.FriendCode}");
                         }
                         handled = true;
+                    } else if (text.ToLower().StartsWith("/shield "))
+                    {
+                        var playerName = text.Replace("/shield ", "");
+                        TORMapOptions.firstKillName = playerName;
+                        handled = true;
                     }
                 }
                 
