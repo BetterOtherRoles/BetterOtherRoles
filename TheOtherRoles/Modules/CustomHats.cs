@@ -410,7 +410,7 @@ namespace TheOtherRoles.Modules {
 
     public class CustomHatLoader {
         public static bool running = false;
-        private const string REPO = "https://raw.githubusercontent.com/BetterOtherHats/BetterOtherHats/master";
+        private const string REPO = "https://raw.githubusercontent.com/BetterOtherRoles/BetterOtherHats/master";
 
         public static List<CustomHatOnline> hatdetails = new();
         private static Task hatFetchTask = null;
