@@ -239,6 +239,8 @@ namespace TheOtherRoles {
 
         public static void handleUndertakerDropOnBodyReport() {
 
+            if (Undertaker.undertaker == null) return;
+
             var position = Undertaker.undertaker.transform.position;
 
             MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDropBody, Hazel.SendOption.Reliable, -1);
@@ -252,6 +254,8 @@ namespace TheOtherRoles {
         }
 
         public static void handleWhispererKillOnBodyReport() {
+            if (Whisperer.whisperer == null) return;
+
             if (Whisperer.whisperVictimToKill != null && Whisperer.whisperVictimToKill != Medic.shielded && (!TORMapOptions.shieldFirstKill || Whisperer.whisperVictimToKill != TORMapOptions.firstKillPlayer)) 
                 Helpers.checkMurderAttemptAndKill(Whisperer.whisperer, Whisperer.whisperVictimToKill, true, false);
             else 
