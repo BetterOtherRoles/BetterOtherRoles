@@ -494,6 +494,21 @@ namespace TheOtherRoles
                 __instance,
                 "ActionQuaternary"
             );
+            
+            TORMapOptions.ShieldExpireButton = new CustomButton(
+                () => { },
+                () => TORMapOptions.firstKillPlayer != null &&
+                      TORMapOptions.firstKillPlayer == CachedPlayer.LocalPlayer.PlayerControl &&
+                      !TORMapOptions.removeShieldOnFirstMeeting &&
+                      CustomOptionHolder.showShieldRemainingTime.getBool(),
+                () => true,
+                () => { },
+                TORMapOptions.GetShieldSprite(),
+                new Vector3(0, 1f, 0),
+                __instance,
+                null,
+                mirror: true
+            );
 
             
             // Shifter shift
