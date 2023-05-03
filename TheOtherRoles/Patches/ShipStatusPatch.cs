@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using TheOtherRoles.Utilities;
@@ -59,6 +60,11 @@ namespace TheOtherRoles.Patches
         // TempCold Tweak
         public static Console TempCold;
         
+        // Random tasks positions
+        public static List<GameObject> Wires;
+        public static List<GameObject> Downloads;
+        public static GameObject Upload;
+
         // Rooms
         public static GameObject Comms;
         public static GameObject DropShip;
@@ -267,6 +273,15 @@ namespace TheOtherRoles.Patches
                 MoveVitals();
                 SwitchNavWifi();
                 MoveTempCold();
+                if (CustomOptionHolder.randomizeWirePositions.getBool())
+                {
+                    MoveWires();
+                }
+
+                if (CustomOptionHolder.randomizeUploadPosition.getBool())
+                {
+                    MoveUpload();
+                }
             }
             else
             {
@@ -276,6 +291,28 @@ namespace TheOtherRoles.Patches
             AdjustVents();
 
             IsAdjustmentsDone = true;
+        }
+
+        private static void MoveWires()
+        {
+            RandomSeed.RandomizePositions(Wires);
+        }
+
+        private static void MoveUpload()
+        {
+            RandomSeed.RandomizeUploadLocation(Downloads, Upload);
+        }
+        
+        private class RandomWire
+        {
+            public GameObject Wire;
+            public int Seed;
+
+            public RandomWire(GameObject wire, int seed)
+            {
+                Wire = wire;
+                Seed = seed;
+            }
         }
         
         // --------------------
@@ -326,10 +363,18 @@ namespace TheOtherRoles.Patches
 
             Vitals = Object.FindObjectsOfType<SystemConsole>().ToList()
                     .Find(console => console.name == "panel_vitals");
-            
-                
-            GameObject DvdScreenAdmin = Object.FindObjectsOfType<GameObject>().ToList()
-                    .Find(o => o.name == "dvdscreen");
+
+            var gameObjects = Object.FindObjectsOfType<GameObject>().ToList();
+            Wires = gameObjects.FindAll(o => o.name.StartsWith("panel_electrical"));
+            Downloads = gameObjects.FindAll(o => o.name == "panel_data");
+            Upload = gameObjects.Find(o => o.name == "panel_datahome");
+            foreach (var go in gameObjects)
+            {
+                System.Console.WriteLine($"GameObject name: {go.name}");
+            }
+
+
+            GameObject DvdScreenAdmin = gameObjects.Find(o => o.name == "dvdscreen");
 
             if (DvdScreenAdmin != null)
             {

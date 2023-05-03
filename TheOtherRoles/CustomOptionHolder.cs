@@ -318,14 +318,18 @@ namespace TheOtherRoles {
         public static CustomOption blockSkippingInEmergencyMeetings;
         public static CustomOption enableBetterPolus;
         public static CustomOption betterPolusReactorDuration;
+        public static CustomOption randomizeWirePositions;
+        public static CustomOption randomizeUploadPosition;
         public static CustomOption enableBetterSkeld;
         public static CustomOption randomizePlayersInMeeting;
         public static CustomOption noVoteIsSelfVote;
         public static CustomOption hidePlayerNames;
         public static CustomOption allowParallelMedBayScans;
+        public static CustomOption randomizePositionDuringScan;
         public static CustomOption shieldFirstKill;
         public static CustomOption removeFirstKillShield;
         public static CustomOption removeShieldTimer;
+        public static CustomOption showShieldRemainingTime;
         public static CustomOption finishTasksBeforeHauntingOrZoomingOut;
         public static CustomOption camsNightVision;
         public static CustomOption camsNoNightVisionIfImpVision;
@@ -410,22 +414,30 @@ namespace TheOtherRoles {
             modifiersCountMin = CustomOption.Create(306, Types.General, cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Minimum Modifiers"), 15f, 0f, 15f, 1f);
             modifiersCountMax = CustomOption.Create(307, Types.General, cs(new Color(204f / 255f, 204f / 255f, 0, 1f), "Maximum Modifiers"), 15f, 0f, 15f, 1f);
             
-            enableBetterPolus = CustomOption.Create(5001, Types.General, "Enable Better Polus Plugin", false);
+            randomizeWirePositions = CustomOption.Create(9001, Types.General, "Randomize wire tasks positions", false, null, true);
+            randomizeUploadPosition = CustomOption.Create(9002, Types.General, "Randomize upload task position", false);
+            
+            enableBetterPolus = CustomOption.Create(5001, Types.General, "Enable Better Polus Plugin", false, null, true);
             betterPolusReactorDuration = CustomOption.Create(5002, Types.General, "Reactor Duration On Polus In Sec", 5f, 1f, 60f, 1f, enableBetterPolus);
-            enableBetterSkeld = CustomOption.Create(5003, Types.General, "Enable Better Skeld Plugin", false);
-            randomizePlayersInMeeting = CustomOption.Create(5004, Types.General, "Randomize players in meeting", false);
+            
+            enableBetterSkeld = CustomOption.Create(5003, Types.General, "Enable Better Skeld Plugin", false, null, true);
+            
+            randomizePlayersInMeeting = CustomOption.Create(5004, Types.General, "Randomize players in meeting", false, null, true);
 
             maxNumberOfMeetings = CustomOption.Create(3, Types.General, "Number Of Meetings (excluding Mayor meeting)", 10, 0, 15, 1, null, true);
             blockSkippingInEmergencyMeetings = CustomOption.Create(4, Types.General, "Block Skipping In Emergency Meetings", false);
             noVoteIsSelfVote = CustomOption.Create(5, Types.General, "No Vote Is Self Vote", false, blockSkippingInEmergencyMeetings);
             hidePlayerNames = CustomOption.Create(6, Types.General, "Hide Player Names", false);
-            allowParallelMedBayScans = CustomOption.Create(7, Types.General, "Allow Parallel MedBay Scans", false);
-            
+            allowParallelMedBayScans = CustomOption.Create(7, Types.General, "Allow Parallel MedBay Scans", false, null, true);
+            randomizePositionDuringScan = CustomOption.Create(16, Types.General, "Randomize position during medbay scan", false);
+
             shieldFirstKill = CustomOption.Create(8, Types.General, "Shield Last Game First Kill", false, null, true);
             removeFirstKillShield = CustomOption.Create(13, Types.General, "Remove shield when",
                 new[] { "First meeting ended", "Timer expired" }, shieldFirstKill);
             removeShieldTimer = CustomOption.Create(14, Types.General, "Shield duration (in seconds)", 60f, 10f, 600f, 10f,
                 removeFirstKillShield);
+            showShieldRemainingTime = CustomOption.Create(15, Types.General, "Show shield remaining time", false, removeFirstKillShield);
+            
             finishTasksBeforeHauntingOrZoomingOut = CustomOption.Create(9, Types.General, "Finish Tasks Before Haunting Or Zooming Out", true, null, true);
             camsNightVision = CustomOption.Create(11, Types.General, "Cams Switch To Night Vision If Lights Are Off", false, null, true);
             camsNoNightVisionIfImpVision = CustomOption.Create(12, Types.General, "Impostor Vision Ignores Night Vision Cams", false, camsNightVision, false);

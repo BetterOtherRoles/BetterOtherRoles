@@ -183,6 +183,7 @@ namespace TheOtherRoles.Patches {
             __instance.RoleText.gameObject.SetActive(false);
             __instance.RoleBlurbText.gameObject.SetActive(false);
             __instance.ourCrewmate.gameObject.SetActive(false);
+            
            
         }
 

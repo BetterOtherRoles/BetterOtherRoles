@@ -1,5 +1,6 @@
 using HarmonyLib;
 using System;
+using System.Collections;
 using Hazel;
 using UnityEngine;
 using PowerTools;
@@ -861,6 +862,7 @@ namespace TheOtherRoles.Patches {
             }
         }
     }
+
     [HarmonyPatch(typeof(MapBehaviour), nameof(MapBehaviour.ShowSabotageMap))]
     class ShowSabotageMapPatch {
         static bool Prefix(MapBehaviour __instance) {
