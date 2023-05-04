@@ -783,6 +783,9 @@ namespace TheOtherRoles
                         Whisperer.whisperVictim = Whisperer.currentTarget;
                         
                         SoundEffectsManager.play("warlockCurse");
+                        
+                        // Notify players about whisper Victim
+                        Whisperer.SetWhisper(CachedPlayer.LocalPlayer, $"{Whisperer.whisperVictim.PlayerId}|{(byte)0}");
 
                         byte lastTimer = (byte)Whisperer.delay;
                         FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Whisperer.delay, new Action<float>((p) => { // Delayed action
@@ -797,9 +800,7 @@ namespace TheOtherRoles
                                         
                                         MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareGhostInfo, Hazel.SendOption.Reliable, -1);
                                         writer.Write(CachedPlayer.LocalPlayer.PlayerId);
-                                        writer.Write((byte)RPCProcedure.GhostInfoTypes.WhispererTimerAndTarget);
-                                        writer.Write(Whisperer.whisperVictim);
-                                        writer.Write(Whisperer.whisperVictimToKill);
+                                        writer.Write((byte)RPCProcedure.GhostInfoTypes.WhispererTimer);
                                         writer.Write(timer);
                                         AmongUsClient.Instance.FinishRpcImmediately(writer);
                                     }
@@ -812,10 +813,7 @@ namespace TheOtherRoles
 
                                 // & reset anyway.
 
-                                Whisperer.currentTarget = null;
-                                Whisperer.whisperVictim = null;
-                                Whisperer.whisperVictimTarget = null;
-                                Whisperer.whisperVictimToKill = null;
+                                Whisperer.SetWhisper(CachedPlayer.LocalPlayer, $"{byte.MaxValue}|{byte.MaxValue}");
                                 
                                 whispererKillButton.Timer = whispererKillButton.MaxTimer;
 

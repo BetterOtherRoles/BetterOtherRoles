@@ -825,6 +825,29 @@ namespace TheOtherRoles
             cooldown = CustomOptionHolder.whispererCooldown.getFloat();
             delay = CustomOptionHolder.whispererDelay.getFloat();
         }
+
+        [MethodRpc((uint)CustomRpc.WhispererSetWhisper)]
+        public static void SetWhisper(PlayerControl sender, string rawData)
+        {
+            if (whisperer == null) return;
+
+            var datas = rawData.Split("|").Select(byte.Parse).ToArray();
+            var targetId = datas[0];
+            var reset = datas[1];
+
+            if (reset != 0) {
+                whisperVictim = null;
+                whisperVictimTarget = null;
+                whisperVictimToKill = null;
+                return;
+            }
+
+            foreach (PlayerControl player in CachedPlayer.AllPlayers) {
+                if (player.PlayerId == targetId && !player.Data.IsDead) {
+                        whisperVictim = player;
+                }
+            }
+        }
     }
 
     public static class Undertaker {
@@ -877,15 +900,6 @@ namespace TheOtherRoles
             disableVentButton = CustomOptionHolder.undertakerDisableVentButtonWhileDragging.getBool();
         }
 
-        [MethodRpc((uint)CustomRpc.UndertakerDropBody)]
-        public static void DropBody(PlayerControl sender, string rawData)
-        {
-            if (undertaker == null || draggedBody == null) return;
-            draggedBody.transform.position = Vector3Extensions.Deserialize(rawData);
-            draggedBody = null;
-            LastDragged = DateTime.UtcNow;
-        }
-
         [MethodRpc((uint)CustomRpc.UndertakerDragBody)]
         public static void DragBody(PlayerControl sender, string rawData)
         {
@@ -894,6 +908,15 @@ namespace TheOtherRoles
             var body = UnityEngine.Object.FindObjectsOfType<DeadBody>().FirstOrDefault(b => b.ParentId == playerId);
             if (body == null) return;
             draggedBody = body;
+        }
+        
+        [MethodRpc((uint)CustomRpc.UndertakerDropBody)]
+        public static void DropBody(PlayerControl sender, string rawData)
+        {
+            if (undertaker == null || draggedBody == null) return;
+            draggedBody.transform.position = Vector3Extensions.Deserialize(rawData);
+            draggedBody = null;
+            LastDragged = DateTime.UtcNow;
         }
     }
 

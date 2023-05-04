@@ -7,7 +7,7 @@ public enum CustomRpc
     ShareRandomSeeds,
     ShowFailedMurderAttempt,
     ShareFriendCode,
-    
+    WhispererSetWhisper,
     UndertakerDragBody,
     UndertakerDropBody,
 }

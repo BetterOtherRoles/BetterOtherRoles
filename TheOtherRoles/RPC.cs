@@ -1156,7 +1156,7 @@ namespace TheOtherRoles
             BlankUsed,
             DetectiveOrMedicInfo,
             VampireTimer,
-            WhispererTimerAndTarget
+            WhispererTimer
         }
 
         public static void receiveGhostInfo (byte senderId, MessageReader reader) {
@@ -1198,9 +1198,7 @@ namespace TheOtherRoles
                 case GhostInfoTypes.VampireTimer:
                     HudManagerStartPatch.vampireKillButton.Timer = (float)reader.ReadByte();
                     break;
-                case GhostInfoTypes.WhispererTimerAndTarget:
-                    Whisperer.whisperVictim = Helpers.playerById(reader.ReadByte());
-                    Whisperer.whisperVictimToKill = Helpers.playerById(reader.ReadByte());
+                case GhostInfoTypes.WhispererTimer:
                     HudManagerStartPatch.whispererKillButton.Timer = (float)reader.ReadByte();
                     break;
             }

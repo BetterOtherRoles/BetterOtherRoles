@@ -11,9 +11,9 @@ public static class MurderAttempt
     {
         if (CachedPlayer.LocalPlayer == null) return;
         var data = rawData.Split("|").Select(byte.Parse).ToArray();
-        var murderId = data[0];
+        var murdererId = data[0];
         var targetId = data[1];
-        if (CachedPlayer.LocalPlayer.PlayerId != murderId) return;
+        if (CachedPlayer.LocalPlayer.PlayerId != murdererId) return;
         Helpers.playerById(targetId)?.ShowFailedMurder();
     }
 }
