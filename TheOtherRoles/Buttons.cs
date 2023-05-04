@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using TheOtherRoles.CustomGameModes;
+using TheOtherRoles.Modules;
 
 
 namespace TheOtherRoles
@@ -862,27 +863,17 @@ namespace TheOtherRoles
 
             undertakerDragButton = new CustomButton(
                 () => {
-                    DeadBody @bodyComponent = Undertaker.currentDeadTarget;
-                    PlayerControl @undertakerPlayer = Undertaker.undertaker;
+                    var bodyComponent = Undertaker.currentDeadTarget;
 
                     if (Undertaker.draggedBody == null && Undertaker.currentDeadTarget != null)
                     {
-                        Undertaker.draggedBody = @bodyComponent;
-
-                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDragBody, Hazel.SendOption.Reliable, -1);
-                        writer.Write(@bodyComponent.ParentId);
-                        AmongUsClient.Instance.FinishRpcImmediately(writer);
+                        Undertaker.DragBody(CachedPlayer.LocalPlayer, $"{bodyComponent.ParentId}");
                         
-                    } else if (Undertaker.draggedBody)
+                    } else if (Undertaker.draggedBody != null)
                     {
                         
-                        var position = CachedPlayer.LocalPlayer.PlayerControl.transform.position;
-                        
-                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDropBody, Hazel.SendOption.Reliable, -1);
-                        writer.Write(position.x);
-                        writer.Write(position.y);
-                        writer.Write(position.z);
-                        AmongUsClient.Instance.FinishRpcImmediately(writer);
+                        var position = Undertaker.draggedBody.transform.position;
+                        Undertaker.DropBody(CachedPlayer.LocalPlayer, position.Serialize());
 
                     }
                 }, // Action OnClick

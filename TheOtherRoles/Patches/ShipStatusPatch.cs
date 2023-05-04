@@ -368,10 +368,12 @@ namespace TheOtherRoles.Patches
             Wires = gameObjects.FindAll(o => o.name.StartsWith("panel_electrical"));
             Downloads = gameObjects.FindAll(o => o.name == "panel_data");
             Upload = gameObjects.Find(o => o.name == "panel_datahome");
+            /*
             foreach (var go in gameObjects)
             {
                 System.Console.WriteLine($"GameObject name: {go.name}");
             }
+            */
 
 
             GameObject DvdScreenAdmin = gameObjects.Find(o => o.name == "dvdscreen");

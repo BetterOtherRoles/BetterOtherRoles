@@ -30,7 +30,7 @@ namespace TheOtherRoles.Patches {
                 var player = data.Object;
                 string text = data.PlayerName;
                 Color color;
-                if (player)
+                if (player != null)
                 {
                     var playerName = text;
                     if (morphTimerNotUp && morphTargetNotNull && Morphling.morphling == player) playerName = Morphling.morphTarget.Data.PlayerName;

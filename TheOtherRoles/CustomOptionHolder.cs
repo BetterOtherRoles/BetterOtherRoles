@@ -467,13 +467,13 @@ namespace TheOtherRoles {
             whispererCooldown = CustomOption.Create(8001, Types.Impostor, "Ability Cooldown", 20f, 10f, 60f, 2.5f, whispererSpawnRate);
             whispererDelay = CustomOption.Create(8002, Types.Impostor, "Ability Effect Delay", 5f, 3f, 15f, 1f, whispererSpawnRate);
             
-            undertakerSpawnRate = CustomOption.Create(8010, Types.Impostor, cs(Undertaker.color, "[BETA] Undertaker"), rates, null, true);
+            undertakerSpawnRate = CustomOption.Create(8010, Types.Impostor, cs(Undertaker.color, "Undertaker"), rates, null, true);
             undertakerAbilityCooldown = CustomOption.Create(8011, Types.Impostor, "Ability Cooldown", 20f, 10f, 60f, 2.5f, undertakerSpawnRate);
             undertakerDragSpeedModifier = CustomOption.Create(8012, Types.Impostor, "Speed Modifier While Dragging", rates, undertakerSpawnRate);
-            undertakerDragDistance = CustomOption.Create(8013, Types.Impostor, "Undertaker Drag Distance", new string[] { "Short", "Medium", "Long" }, undertakerSpawnRate);
-            undertakerDisableKillButtonWhileDragging = CustomOption.Create(8014, Types.Impostor, "Disable KillButton While Dragging", true, undertakerSpawnRate);
-            undertakerDisableReportButtonWhileDragging = CustomOption.Create(8015, Types.Impostor, "Disable ReportButton While Dragging", true, undertakerSpawnRate);
-            undertakerDisableVentButtonWhileDragging = CustomOption.Create(8016, Types.Impostor, "Disable VentButton While Dragging", true, undertakerSpawnRate);
+            undertakerDragDistance = CustomOption.Create(8013, Types.Impostor, "Undertaker Drag Distance", new[] { "Short", "Medium", "Long" }, undertakerSpawnRate);
+            undertakerDisableKillButtonWhileDragging = CustomOption.Create(8014, Types.Impostor, "Can't kill while dragging", true, undertakerSpawnRate);
+            undertakerDisableReportButtonWhileDragging = CustomOption.Create(8015, Types.Impostor, "Can't report while dragging", true, undertakerSpawnRate);
+            undertakerDisableVentButtonWhileDragging = CustomOption.Create(8016, Types.Impostor, "Can't vent while dragging", true, undertakerSpawnRate);
 
 
             eraserSpawnRate = CustomOption.Create(230, Types.Impostor, cs(Eraser.color, "Eraser"), rates, null, true);

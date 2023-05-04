@@ -279,38 +279,38 @@ namespace TheOtherRoles.Patches
 
         static void undertakerSetTarget()
         {
-            if (!Undertaker.undertaker || Undertaker.undertaker != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Undertaker.undertaker == null || Undertaker.undertaker != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Undertaker.currentDeadTarget != null)
+            {
+                Helpers.setDeadPlayerOutline(Undertaker.currentDeadTarget, null);
+            }
 
-            if (!Undertaker.draggedBody)
+            if (Undertaker.draggedBody == null)
             {
                 Undertaker.currentDeadTarget =
                     Helpers.setDeadTarget(Undertaker.distancesList[(int)Undertaker.dragDistance]);
+                Helpers.setDeadPlayerOutline(Undertaker.currentDeadTarget, Undertaker.color);
             }
         }
 
 
         static void undertakerUpdate()
         {
-            var @undertakerPlayer = Undertaker.undertaker;
-            DeadBody @bodyComponent = Undertaker.draggedBody;
+            var undertakerPlayer = Undertaker.undertaker;
+            var bodyComponent = Undertaker.draggedBody;
 
-            if (!@undertakerPlayer || @bodyComponent == null) return;
+            if (undertakerPlayer == null || bodyComponent == null) return;
 
-            var undertakerPos = @undertakerPlayer.transform.position;
-            var bodyLastPos = @bodyComponent.transform.position;
+            var undertakerPos = undertakerPlayer.transform.position;
+            var bodyLastPos = bodyComponent.transform.position;
 
-            var direction = @undertakerPlayer.gameObject.GetComponent<Rigidbody2D>().velocity.normalized;
-
-            if (direction != Undertaker.LastDirection)
-            {
-                Undertaker.LastDirection = direction;
-                return;
-            }
-
-            var newBodyPos = direction == new Vector2(0f, 0f)
+            var direction = undertakerPlayer.gameObject.GetComponent<Rigidbody2D>().velocity.normalized;
+            
+            var newBodyPos = direction == Vector2.zero
                 ? bodyLastPos
-                : undertakerPos - ((Vector3)(direction * (2f / 3f))) + (Vector3)@bodyComponent.myCollider.offset;
-            newBodyPos.z = bodyLastPos.z - 0.01f;
+                : undertakerPos - (Vector3)(direction * (2f / 3f)) + (Vector3)bodyComponent.myCollider.offset;
+            newBodyPos.z = undertakerPos.z - 0.01f;
+            bodyComponent.transform.position.Set(newBodyPos.x, newBodyPos.y, newBodyPos.z);
 
             if (direction == Direction.right) newBodyPos += new Vector3(0.3f, 0, 0);
             if (direction == Direction.up) newBodyPos += new Vector3(0.15f, 0.2f, 0);
@@ -321,8 +321,8 @@ namespace TheOtherRoles.Patches
             if (direction == Direction.downleft) newBodyPos += new Vector3(0f, -0.2f, 0);
 
             if (PhysicsHelpers.AnythingBetween(
-                    @undertakerPlayer.GetTruePosition(),
-                    (Vector2)newBodyPos,
+                    undertakerPlayer.GetTruePosition(),
+                    newBodyPos,
                     Constants.ShipAndObjectsMask,
                     false
                 ))
@@ -330,27 +330,21 @@ namespace TheOtherRoles.Patches
                 newBodyPos = new Vector3(undertakerPos.x, undertakerPos.y, bodyLastPos.z);
             }
 
-            if (@undertakerPlayer.Data.IsDead)
+            if (undertakerPlayer.Data.IsDead)
             {
-                if (@undertakerPlayer.AmOwner)
+                if (undertakerPlayer.AmOwner)
                 {
-                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                        CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UndertakerDropBody,
-                        Hazel.SendOption.Reliable, -1);
-                    writer.Write(newBodyPos.x);
-                    writer.Write(newBodyPos.y);
-                    writer.Write(newBodyPos.z);
-                    AmongUsClient.Instance.FinishRpcImmediately(writer);
+                    Undertaker.DropBody(CachedPlayer.LocalPlayer, newBodyPos.Serialize());
                 }
 
                 return;
             }
 
-            @bodyComponent.transform.position = newBodyPos;
+            bodyComponent.transform.position = newBodyPos;
 
-            if (!@undertakerPlayer.AmOwner) return;
+            if (!undertakerPlayer.AmOwner) return;
 
-            Helpers.setDeadPlayerOutline(@bodyComponent, Color.green);
+            Helpers.setDeadPlayerOutline(bodyComponent, Color.green);
         }
 
         static void jackalSetTarget()
@@ -1978,8 +1972,8 @@ namespace TheOtherRoles.Patches
             {
                 if (shouldInvert) __instance.body.velocity *= -1;
 
-                if (CachedPlayer.LocalPlayer.PlayerControl == Undertaker.undertaker && Undertaker.draggedBody != null)
-                    __instance.body.velocity *= (1f - (Undertaker.dragSpeedModifier / 10f));
+                if (Undertaker.undertaker != null && Undertaker.draggedBody != null)
+                    __instance.body.velocity *= 1f - Undertaker.dragSpeedModifier / 10f;
             }
         }
     }

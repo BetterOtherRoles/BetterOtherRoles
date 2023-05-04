@@ -10,6 +10,8 @@ using TheOtherRoles.CustomGameModes;
 using static TheOtherRoles.TheOtherRoles;
 using AmongUs.Data;
 using Hazel;
+using Reactor.Networking.Attributes;
+using TheOtherRoles.Modules;
 
 namespace TheOtherRoles
 {
@@ -845,21 +847,21 @@ namespace TheOtherRoles
 
         
         public static DateTime LastDragged { get; set; }
-        public static Vector2 LastDirection = new Vector2(0, 0);
         public static DeadBody  currentDeadTarget;
         public static DeadBody  draggedBody;
 
-        private static Sprite buttonSprite;
+        private static Sprite dragSprite;
+        private static Sprite dropSprite;
         public static Sprite getDragButtonSprite() {
-            if (buttonSprite) return buttonSprite;
-            buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.DragButton.png", 115f);
-            return buttonSprite;
+            if (dragSprite) return dragSprite;
+            dragSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.DragButton.png", 115f);
+            return dragSprite;
         }
         
         public static Sprite getDropButtonSprite() {
-            if (buttonSprite) return buttonSprite;
-            buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.DropButton.png", 115f);
-            return buttonSprite;
+            if (dropSprite) return dropSprite;
+            dropSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.DropButton.png", 115f);
+            return dropSprite;
         }
 
         public static void clearAndReload()
@@ -873,6 +875,25 @@ namespace TheOtherRoles
             disableKillButton = CustomOptionHolder.undertakerDisableKillButtonWhileDragging.getBool();
             disableReportButton = CustomOptionHolder.undertakerDisableReportButtonWhileDragging.getBool();
             disableVentButton = CustomOptionHolder.undertakerDisableVentButtonWhileDragging.getBool();
+        }
+
+        [MethodRpc((uint)CustomRpc.UndertakerDropBody)]
+        public static void DropBody(PlayerControl sender, string rawData)
+        {
+            if (undertaker == null || draggedBody == null) return;
+            draggedBody.transform.position = Vector3Extensions.Deserialize(rawData);
+            draggedBody = null;
+            LastDragged = DateTime.UtcNow;
+        }
+
+        [MethodRpc((uint)CustomRpc.UndertakerDragBody)]
+        public static void DragBody(PlayerControl sender, string rawData)
+        {
+            if (undertaker == null) return;
+            var playerId = byte.Parse(rawData);
+            var body = UnityEngine.Object.FindObjectsOfType<DeadBody>().FirstOrDefault(b => b.ParentId == playerId);
+            if (body == null) return;
+            draggedBody = body;
         }
     }
 
