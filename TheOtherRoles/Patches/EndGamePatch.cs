@@ -9,6 +9,10 @@ using System.Text;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using TheOtherRoles.CustomGameModes;
+using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.EnoFw.Roles.Crewmate;
+using TheOtherRoles.EnoFw.Roles.Modifiers;
+using TheOtherRoles.EnoFw.Roles.Neutral;
 using TheOtherRoles.Modules;
 
 namespace TheOtherRoles.Patches {
@@ -235,7 +239,7 @@ namespace TheOtherRoles.Patches {
 
             // Reset Settings
             if (TORMapOptions.gameMode == CustomGamemodes.HideNSeek) ShipStatusPatch.resetVanillaSettings();
-            RPCProcedure.resetVariables();
+            KernelRpc.Local_ResetVariables();
             EventUtility.gameEndsUpdate();
         }
     }

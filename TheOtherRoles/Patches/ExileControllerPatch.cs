@@ -5,6 +5,11 @@ using System.Linq;
 using static TheOtherRoles.TheOtherRoles;
 using TheOtherRoles.Objects;
 using System;
+using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.EnoFw.Roles.Crewmate;
+using TheOtherRoles.EnoFw.Roles.Impostor;
+using TheOtherRoles.EnoFw.Roles.Modifiers;
+using TheOtherRoles.EnoFw.Roles.Neutral;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using UnityEngine;
@@ -19,10 +24,7 @@ namespace TheOtherRoles.Patches {
 
             // Medic shield
             if (Medic.medic != null && AmongUsClient.Instance.AmHost && Medic.futureShielded != null && !Medic.medic.Data.IsDead) { // We need to send the RPC from the host here, to make sure that the order of shifting and setting the shield is correct(for that reason the futureShifted and futureShielded are being synced)
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.MedicSetShielded, Hazel.SendOption.Reliable, -1);
-                writer.Write(Medic.futureShielded.PlayerId);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.medicSetShielded(Medic.futureShielded.PlayerId);
+                Medic.MedicSetShielded(Medic.futureShielded.PlayerId);
             }
             if (Medic.usedShield) Medic.meetingAfterShielding = true;  // Has to be after the setting of the shield
 
@@ -67,10 +69,7 @@ namespace TheOtherRoles.Patches {
                     {
                         if (exiled != null && Lawyer.lawyer != null && (target == Lawyer.lawyer || target == Lovers.otherLover(Lawyer.lawyer)) && Lawyer.target != null && Lawyer.isProsecutor && Lawyer.target.PlayerId == exiled.PlayerId)
                             continue;
-                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UncheckedExilePlayer, Hazel.SendOption.Reliable, -1);
-                        writer.Write(target.PlayerId);
-                        AmongUsClient.Instance.FinishRpcImmediately(writer);
-                        RPCProcedure.uncheckedExilePlayer(target.PlayerId);
+                        KernelRpc.UncheckedExilePlayer(target.PlayerId);
                         if (target == Lawyer.target && Lawyer.lawyer != null) {
                             MessageWriter writer2 = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.LawyerPromotesToPursuer, Hazel.SendOption.Reliable, -1);
                             AmongUsClient.Instance.FinishRpcImmediately(writer2);
@@ -208,7 +207,7 @@ namespace TheOtherRoles.Patches {
             }
 
             // Deputy check Promotion, see if the sheriff still exists. The promotion will be after the meeting.
-            if (Deputy.deputy != null)
+            if (Deputy.Player != null)
             {
                 PlayerControlFixedUpdatePatch.deputyCheckPromotion(isMeeting: true);
             }

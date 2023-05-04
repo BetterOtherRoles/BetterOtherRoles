@@ -11,6 +11,11 @@ using TheOtherRoles.Utilities;
 using UnityEngine;
 using TheOtherRoles.CustomGameModes;
 using AmongUs.GameOptions;
+using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.EnoFw.Roles.Crewmate;
+using TheOtherRoles.EnoFw.Roles.Impostor;
+using TheOtherRoles.EnoFw.Roles.Modifiers;
+using TheOtherRoles.EnoFw.Roles.Neutral;
 using TheOtherRoles.Modules;
 
 namespace TheOtherRoles.Patches
@@ -162,16 +167,16 @@ namespace TheOtherRoles.Patches
 
         static void deputySetTarget()
         {
-            if (Deputy.deputy == null || Deputy.deputy != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Deputy.Player == null || Deputy.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
             Deputy.currentTarget = Helpers.setTarget();
-            Helpers.setPlayerOutline(Deputy.currentTarget, Deputy.color);
+            Helpers.setPlayerOutline(Deputy.currentTarget, Deputy.Color);
         }
 
         public static void deputyCheckPromotion(bool isMeeting = false)
         {
             // If LocalPlayer is Deputy, the Sheriff is disconnected and Deputy promotion is enabled, then trigger promotion
-            if (Deputy.deputy == null || Deputy.deputy != CachedPlayer.LocalPlayer.PlayerControl) return;
-            if (Deputy.promotesToSheriff == 0 || Deputy.deputy.Data.IsDead == true ||
+            if (Deputy.Player == null || Deputy.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
+            if (Deputy.promotesToSheriff == 0 || Deputy.Player.Data.IsDead == true ||
                 Deputy.promotesToSheriff == 2 && !isMeeting) return;
             if (Sheriff.sheriff == null || Sheriff.sheriff?.Data?.Disconnected == true || Sheriff.sheriff.Data.IsDead)
             {
@@ -1224,29 +1229,17 @@ namespace TheOtherRoles.Patches
             if (!Bait.active.Any()) return;
 
             // Bait report
-            foreach (KeyValuePair<DeadPlayer, float> entry in new Dictionary<DeadPlayer, float>(Bait.active))
+            foreach (var entry in new Dictionary<DeadPlayer, float>(Bait.active))
             {
                 Bait.active[entry.Key] = entry.Value - Time.fixedDeltaTime;
-                if (entry.Value <= 0)
-                {
-                    Bait.active.Remove(entry.Key);
-                    if (entry.Key.killerIfExisting != null &&
-                        entry.Key.killerIfExisting.PlayerId == CachedPlayer.LocalPlayer.PlayerId)
-                    {
-                        Helpers.handleVampireBiteOnBodyReport(); // Manually call Vampire handling, since the CmdReportDeadBody Prefix won't be called
-                        Helpers.handleWhispererKillOnBodyReport();
-                        Helpers.handleUndertakerDropOnBodyReport();
-                        RPCProcedure.uncheckedCmdReportDeadBody(entry.Key.killerIfExisting.PlayerId,
-                            entry.Key.player.PlayerId);
-
-                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                            CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UncheckedCmdReportDeadBody,
-                            Hazel.SendOption.Reliable, -1);
-                        writer.Write(entry.Key.killerIfExisting.PlayerId);
-                        writer.Write(entry.Key.player.PlayerId);
-                        AmongUsClient.Instance.FinishRpcImmediately(writer);
-                    }
-                }
+                if (!(entry.Value > 0)) continue;
+                Bait.active.Remove(entry.Key);
+                if (entry.Key.killerIfExisting == null ||
+                    entry.Key.killerIfExisting.PlayerId != CachedPlayer.LocalPlayer.PlayerId) continue;
+                Helpers.handleVampireBiteOnBodyReport(); // Manually call Vampire handling, since the CmdReportDeadBody Prefix won't be called
+                Helpers.handleWhispererKillOnBodyReport();
+                Helpers.handleUndertakerDropOnBodyReport();
+                KernelRpc.UncheckedCmdReportDeadBody(entry.Key.killerIfExisting.PlayerId, entry.Key.player.PlayerId);
             }
         }
 
@@ -1964,6 +1957,7 @@ namespace TheOtherRoles.Patches
                 EventUtility.eventInvert; // xor. if already invert, eventInvert will turn it off for 10s
 
             if (__instance.AmOwner &&
+                CachedPlayer.LocalPlayer.PlayerControl == Undertaker.undertaker &&
                 AmongUsClient.Instance &&
                 AmongUsClient.Instance.GameState == InnerNet.InnerNetClient.GameStates.Started &&
                 !CachedPlayer.LocalPlayer.Data.IsDead &&

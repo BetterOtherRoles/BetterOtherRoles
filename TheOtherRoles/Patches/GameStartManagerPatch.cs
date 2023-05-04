@@ -6,6 +6,7 @@ using System;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using System.Linq;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Modules;
 
 namespace TheOtherRoles.Patches {
@@ -104,9 +105,7 @@ namespace TheOtherRoles.Patches {
 
                     // Make starting info available to clients:
                     if (startingTimer <= 0 && __instance.startState == GameStartManager.StartingStates.Countdown) {
-                        var writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SetGameStarting, Hazel.SendOption.Reliable, -1);
-                        AmongUsClient.Instance.FinishRpcImmediately(writer);
-                        RPCProcedure.setGameStarting();
+                        KernelRpc.SetGameStarting();
                     }
                 }
 
@@ -157,10 +156,7 @@ namespace TheOtherRoles.Patches {
                 __instance.PlayerCounter.autoSizeTextContainer = true;
 
                 if (AmongUsClient.Instance.AmHost) {
-                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareGamemode, Hazel.SendOption.Reliable, -1);
-                    writer.Write((byte) TORMapOptions.gameMode);
-                    AmongUsClient.Instance.FinishRpcImmediately(writer);
-                    RPCProcedure.shareGamemode((byte) TORMapOptions.gameMode);
+                    KernelRpc.ShareGameMode((byte) TORMapOptions.gameMode);
                 }
             }
         }
@@ -193,10 +189,7 @@ namespace TheOtherRoles.Patches {
                     if (continueStart && TORMapOptions.gameMode == CustomGamemodes.HideNSeek) {
                         byte mapId = (byte) CustomOptionHolder.hideNSeekMap.getSelection();
                         if (mapId >= 3) mapId++;
-                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.DynamicMapOption, Hazel.SendOption.Reliable, -1);
-                        writer.Write(mapId);
-                        AmongUsClient.Instance.FinishRpcImmediately(writer);
-                        RPCProcedure.dynamicMapOption(mapId);
+                        KernelRpc.DynamicMapOption(mapId);
                     }            
                     else if (CustomOptionHolder.dynamicMap.getBool() && continueStart) {
                         // 0 = Skeld
@@ -240,11 +233,7 @@ namespace TheOtherRoles.Patches {
                             CustomOptionHolder.presetSelection.updateSelection(chosenMapId + 2);
                         }
                         if (chosenMapId >= 3) chosenMapId++;  // Skip dlekS
-                                                              
-                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.DynamicMapOption, Hazel.SendOption.Reliable, -1);
-                        writer.Write(chosenMapId);
-                        AmongUsClient.Instance.FinishRpcImmediately(writer);
-                        RPCProcedure.dynamicMapOption(chosenMapId);
+                        KernelRpc.DynamicMapOption(chosenMapId);
                     }
                 }
                 return continueStart;

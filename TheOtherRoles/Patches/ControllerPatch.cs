@@ -38,8 +38,8 @@ public static class ControllerPatch
             _modifierKey2 = ModifierKey.None,
             _modifierKey3 = ModifierKey.None
         };
-        self.keyboardMaps[0].actionElementMaps.Add(a);
-        self.joystickMaps[0].actionElementMaps.Add(a);
+        self.keyboardMaps._items[0].actionElementMaps.Add(a);
+        self.joystickMaps._items[0].actionElementMaps.Add(a);
             
         return action.id;
     }

@@ -75,7 +75,7 @@ namespace TheOtherRoles.Patches {
                         if (item != popUp.ErrorPanel) Object.Destroy(item.gameObject);
                     }
                     popUp.CreateAnnouncementList();
-                    popUp.visibleAnnouncements[0].PassiveButton.OnClick.RemoveAllListeners();
+                    popUp.visibleAnnouncements._items[0].PassiveButton.OnClick.RemoveAllListeners();
                     DataManager.Player.Announcements.allAnnouncements = backup;
                     var titleText = GameObject.Find("Title_Text").GetComponent<TMPro.TextMeshPro>();
                     if (titleText != null) titleText.text = "";

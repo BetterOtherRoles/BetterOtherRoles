@@ -15,6 +15,11 @@ using TheOtherRoles.Objects;
 using TheOtherRoles.CustomGameModes;
 using Reactor.Utilities.Extensions;
 using AmongUs.GameOptions;
+using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.EnoFw.Roles.Crewmate;
+using TheOtherRoles.EnoFw.Roles.Impostor;
+using TheOtherRoles.EnoFw.Roles.Modifiers;
+using TheOtherRoles.EnoFw.Roles.Neutral;
 using TheOtherRoles.Modules;
 
 namespace TheOtherRoles.Patches {
@@ -144,12 +149,7 @@ namespace TheOtherRoles.Patches {
             
             if (__instance.name.StartsWith("JackInTheBoxVent_")) {
                 __instance.SetButtons(isEnter && canMoveInVents);
-                MessageWriter writer = AmongUsClient.Instance.StartRpc(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UseUncheckedVent, Hazel.SendOption.Reliable);
-                writer.WritePacked(__instance.Id);
-                writer.Write(CachedPlayer.LocalPlayer.PlayerId);
-                writer.Write(isEnter ? byte.MaxValue : (byte)0);
-                writer.EndMessage();
-                RPCProcedure.useUncheckedVent(__instance.Id, CachedPlayer.LocalPlayer.PlayerId, isEnter ? byte.MaxValue : (byte)0);
+                KernelRpc.UseUncheckedVent(__instance.Id, CachedPlayer.LocalPlayer.PlayerId, isEnter);
                 SoundEffectsManager.play("tricksterUseBoxVent");
                 return false;
             }

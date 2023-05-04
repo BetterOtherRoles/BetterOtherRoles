@@ -9,6 +9,10 @@ using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using TheOtherRoles.CustomGameModes;
 using AmongUs.GameOptions;
+using TheOtherRoles.EnoFw.Roles.Crewmate;
+using TheOtherRoles.EnoFw.Roles.Impostor;
+using TheOtherRoles.EnoFw.Roles.Modifiers;
+using TheOtherRoles.EnoFw.Roles.Neutral;
 
 namespace TheOtherRoles.Patches {
     [HarmonyPatch(typeof(HudManager), nameof(HudManager.Update))]
@@ -86,8 +90,8 @@ namespace TheOtherRoles.Patches {
                     setPlayerNameColor(Deputy.deputy, Deputy.color);
                 }
             } else*/
-            if (Deputy.deputy != null && Deputy.deputy == localPlayer) {
-                setPlayerNameColor(Deputy.deputy, Deputy.color);
+            if (Deputy.Player != null && Deputy.Player == localPlayer) {
+                setPlayerNameColor(Deputy.Player, Deputy.Color);
                 if (Sheriff.sheriff != null && Deputy.knowsSheriff) {
                     setPlayerNameColor(Sheriff.sheriff, Sheriff.color);
                 }

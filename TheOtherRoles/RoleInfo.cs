@@ -6,6 +6,10 @@ using static TheOtherRoles.TheOtherRoles;
 using UnityEngine;
 using TheOtherRoles.Utilities;
 using TheOtherRoles.CustomGameModes;
+using TheOtherRoles.EnoFw.Roles.Crewmate;
+using TheOtherRoles.EnoFw.Roles.Impostor;
+using TheOtherRoles.EnoFw.Roles.Modifiers;
+using TheOtherRoles.EnoFw.Roles.Neutral;
 
 namespace TheOtherRoles
 {
@@ -189,7 +193,7 @@ namespace TheOtherRoles
             if (p == Portalmaker.portalmaker) infos.Add(portalmaker);
             if (p == Engineer.engineer) infos.Add(engineer);
             if (p == Sheriff.sheriff || p == Sheriff.formerSheriff) infos.Add(sheriff);
-            if (p == Deputy.deputy) infos.Add(deputy);
+            if (p == Deputy.Player) infos.Add(deputy);
             if (p == Lighter.lighter) infos.Add(lighter);
             if (p == Godfather.godfather) infos.Add(godfather);
             if (p == Mafioso.mafioso) infos.Add(mafioso);
@@ -268,7 +272,7 @@ namespace TheOtherRoles
                     if (Deputy.handcuffedPlayers.Contains(p.PlayerId))
                         roleName = Helpers.cs(Color.gray, "(cuffed) ") + roleName;
                     if (Deputy.handcuffedKnows.ContainsKey(p.PlayerId))  // Active cuff
-                        roleName = Helpers.cs(Deputy.color, "(cuffed) ") + roleName;
+                        roleName = Helpers.cs(Deputy.Color, "(cuffed) ") + roleName;
                     if (p == Warlock.curseVictim)
                         roleName = Helpers.cs(Warlock.color, "(cursed) ") + roleName;
                     if (p == Ninja.ninjaMarked)

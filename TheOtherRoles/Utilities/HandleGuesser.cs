@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using TheOtherRoles.CustomGameModes;
+using TheOtherRoles.EnoFw.Roles.Neutral;
 using UnityEngine;
 
 namespace TheOtherRoles.Utilities {

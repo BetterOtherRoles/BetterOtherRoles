@@ -2,6 +2,7 @@
 using System;
 using TheOtherRoles;
 using TheOtherRoles.CustomGameModes;
+using TheOtherRoles.EnoFw.Roles.Modifiers;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using UnityEngine;

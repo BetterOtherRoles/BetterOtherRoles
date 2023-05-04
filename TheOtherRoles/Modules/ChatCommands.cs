@@ -2,6 +2,9 @@ using System;
 using HarmonyLib;
 using System.Linq;
 using AmongUs.Data;
+using TheOtherRoles.EnoFw.Roles.Crewmate;
+using TheOtherRoles.EnoFw.Roles.Modifiers;
+using TheOtherRoles.EnoFw.Roles.Neutral;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 

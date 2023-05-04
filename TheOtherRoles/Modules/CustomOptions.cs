@@ -7,12 +7,16 @@ using HarmonyLib;
 using Hazel;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using static TheOtherRoles.TheOtherRoles;
 using static TheOtherRoles.CustomOption;
 using Reactor.Utilities.Extensions;
 using AmongUs.GameOptions;
+using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.EnoFw.Roles.Crewmate;
+using TheOtherRoles.EnoFw.Roles.Neutral;
 
 namespace TheOtherRoles {
     public class CustomOption {
@@ -112,30 +116,13 @@ namespace TheOtherRoles {
         public static void ShareOptionChange(uint optionId) {
             var option = options.FirstOrDefault(x => x.id == optionId);
             if (option == null) return;
-            var writer = AmongUsClient.Instance!.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareOptions, SendOption.Reliable, -1);
-            writer.Write((byte)1);
-            writer.WritePacked((uint)option.id);
-            writer.WritePacked(Convert.ToUInt32(option.selection));
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
+            KernelRpc.ShareOptions(new Dictionary<int, int> { {option.id, option.selection} });
         }
 
         public static void ShareOptionSelections() {
             if (CachedPlayer.AllPlayers.Count <= 1 || AmongUsClient.Instance!.AmHost == false && CachedPlayer.LocalPlayer.PlayerControl == null) return;
-            var optionsList = new List<CustomOption>(CustomOption.options);
-            while (optionsList.Any())
-            {
-                byte amount = (byte) Math.Min(optionsList.Count, 200); // takes less than 3 bytes per option on average
-                var writer = AmongUsClient.Instance!.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareOptions, SendOption.Reliable, -1);
-                writer.Write(amount);
-                for (int i = 0; i < amount; i++)
-                {
-                    var option = optionsList[0];
-                    optionsList.RemoveAt(0);
-                    writer.WritePacked((uint) option.id);
-                    writer.WritePacked(Convert.ToUInt32(option.selection));
-                }
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-            }
+            var optionsList = options.ToDictionary(option => option.id, option => option.selection);
+            KernelRpc.ShareOptions(optionsList);
         }
 
         // Getter
@@ -768,7 +755,7 @@ namespace TheOtherRoles {
                 }
                 else if (option.parent.getSelection() > 0) {
                     if (option.id == 103) //Deputy
-                        sb.AppendLine($"- {Helpers.cs(Deputy.color, "Deputy")}: {option.selections[option.selection].ToString()}");
+                        sb.AppendLine($"- {Helpers.cs(Deputy.Color, "Deputy")}: {option.selections[option.selection].ToString()}");
                     else if (option.id == 224) //Sidekick
                         sb.AppendLine($"- {Helpers.cs(Sidekick.color, "Sidekick")}: {option.selections[option.selection].ToString()}");
                     else if (option.id == 358) //Prosecutor

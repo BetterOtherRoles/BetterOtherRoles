@@ -7,6 +7,10 @@ using TheOtherRoles.Modules;
 using UnityEngine;
 using TheOtherRoles.CustomGameModes;
 using AmongUs.GameOptions;
+using TheOtherRoles.EnoFw.Roles.Crewmate;
+using TheOtherRoles.EnoFw.Roles.Impostor;
+using TheOtherRoles.EnoFw.Roles.Modifiers;
+using TheOtherRoles.EnoFw.Roles.Neutral;
 
 namespace TheOtherRoles.Patches 
 {

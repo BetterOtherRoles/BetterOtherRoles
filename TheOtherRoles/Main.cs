@@ -21,6 +21,7 @@ using Il2CppSystem.Security.Cryptography;
 using Il2CppSystem.Text;
 using Reactor.Networking.Attributes;
 using AmongUs.Data;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Patches;
 
 namespace TheOtherRoles
@@ -197,9 +198,7 @@ namespace TheOtherRoles
 
             // Terminate round
             if(Input.GetKeyDown(KeyCode.L)) {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ForceEnd, Hazel.SendOption.Reliable, -1);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.forceEnd();
+                KernelRpc.ForceEnd();
             }
         }
 

@@ -15,10 +15,14 @@ using TheOtherRoles.Utilities;
 using TheOtherRoles.CustomGameModes;
 using AmongUs.Data;
 using AmongUs.GameOptions;
+using TheOtherRoles.EnoFw.Roles.Crewmate;
+using TheOtherRoles.EnoFw.Roles.Impostor;
+using TheOtherRoles.EnoFw.Roles.Modifiers;
+using TheOtherRoles.EnoFw.Roles.Neutral;
 
 namespace TheOtherRoles
 {
-    enum RoleId {
+    public enum RoleId {
         Jester,
         Mayor,
         Portalmaker,
@@ -84,16 +88,7 @@ namespace TheOtherRoles
     enum CustomRPC
     {
         // Main Controls
-
-        ResetVaribles = 60,
-        ShareOptions,
-        ForceEnd,
-        WorkaroundSetRoles,
-        SetRole,
-        SetModifier,
-        VersionHandshake,
-        UseUncheckedVent,
-        UncheckedMurderPlayer,
+        UncheckedMurderPlayer = 62,
         UncheckedCmdReportDeadBody,
         UncheckedExilePlayer,
         DynamicMapOption,
@@ -165,396 +160,7 @@ namespace TheOtherRoles
 
         // Main Controls
 
-        public static void resetVariables() {
-            Garlic.clearGarlics();
-            JackInTheBox.clearJackInTheBoxes();
-            NinjaTrace.clearTraces();
-            Portal.clearPortals();
-            Bloodytrail.resetSprites();
-            Trap.clearTraps();
-            clearAndReloadMapOptions();
-            clearAndReloadRoles();
-            clearGameHistory();
-            setCustomButtonCooldowns();
-            reloadPluginOptions();
-            Helpers.toggleZoom(reset : true);
-            GameStartManagerPatch.GameStartManagerUpdatePatch.startingTimer = 0;
-            SurveillanceMinigamePatch.nightVisionOverlays = null;
-            EventUtility.clearAndReload();
-        }
-
-    public static void HandleShareOptions(byte numberOfOptions, MessageReader reader) {            
-            try {
-                for (int i = 0; i < numberOfOptions; i++) {
-                    uint optionId = reader.ReadPackedUInt32();
-                    uint selection = reader.ReadPackedUInt32();
-                    CustomOption option = CustomOption.options.First(option => option.id == (int)optionId);
-                    option.updateSelection((int)selection);
-                }
-            } catch (Exception e) {
-                TheOtherRolesPlugin.Logger.LogError("Error while deserializing options: " + e.Message);
-            }
-        }
-
-        public static void forceEnd() {
-            if (AmongUsClient.Instance.GameState != InnerNet.InnerNetClient.GameStates.Started) return;
-            foreach (PlayerControl player in CachedPlayer.AllPlayers)
-            {
-                if (!player.Data.Role.IsImpostor)
-                {
-                    
-                    GameData.Instance.GetPlayerById(player.PlayerId); // player.RemoveInfected(); (was removed in 2022.12.08, no idea if we ever need that part again, replaced by these 2 lines.) 
-                    player.SetRole(RoleTypes.Crewmate);
-
-                    player.MurderPlayer(player);
-                    player.Data.IsDead = true;
-                }
-            }
-        }
-
-        public static void shareGamemode(byte gm) {
-            TORMapOptions.gameMode = (CustomGamemodes) gm;
-        }
-
-        public static void workaroundSetRoles(byte numberOfRoles, MessageReader reader)
-        {
-                for (int i = 0; i < numberOfRoles; i++)
-                {                   
-                    byte playerId = (byte) reader.ReadPackedUInt32();
-                    byte roleId = (byte) reader.ReadPackedUInt32();
-                    try {
-                        setRole(roleId, playerId);
-                    } catch (Exception e) {
-                        TheOtherRolesPlugin.Logger.LogError("Error while deserializing roles: " + e.Message);
-                    }
-            }
-            
-        }
-
-        public static void setRole(byte roleId, byte playerId) {
-            foreach (PlayerControl player in CachedPlayer.AllPlayers)
-                if (player.PlayerId == playerId) {
-                    switch((RoleId)roleId) {
-                    case RoleId.Jester:
-                        Jester.jester = player;
-                        break;
-                    case RoleId.Mayor:
-                        Mayor.mayor = player;
-                        break;
-                    case RoleId.Portalmaker:
-                        Portalmaker.portalmaker = player;
-                        break;
-                        case RoleId.Engineer:
-                        Engineer.engineer = player;
-                        break;
-                    case RoleId.Sheriff:
-                        Sheriff.sheriff = player;
-                        break;
-                    case RoleId.Deputy:
-                        Deputy.deputy = player;
-                        break;
-                    case RoleId.Lighter:
-                        Lighter.lighter = player;
-                        break;
-                    case RoleId.Godfather:
-                        Godfather.godfather = player;
-                        break;
-                    case RoleId.Mafioso:
-                        Mafioso.mafioso = player;
-                        break;
-                    case RoleId.Janitor:
-                        Janitor.janitor = player;
-                        break;
-                    case RoleId.Detective:
-                        Detective.detective = player;
-                        break;
-                    case RoleId.TimeMaster:
-                        TimeMaster.timeMaster = player;
-                        break;
-                    case RoleId.Medic:
-                        Medic.medic = player;
-                        break;
-                    case RoleId.Shifter:
-                        Shifter.shifter = player;
-                        break;
-                    case RoleId.Swapper:
-                        Swapper.swapper = player;
-                        break;
-                    case RoleId.Seer:
-                        Seer.seer = player;
-                        break;
-                    case RoleId.Morphling:
-                        Morphling.morphling = player;
-                        break;
-                    case RoleId.Camouflager:
-                        Camouflager.camouflager = player;
-                        break;
-                    case RoleId.Hacker:
-                        Hacker.hacker = player;
-                        break;
-                    case RoleId.Tracker:
-                        Tracker.tracker = player;
-                        break;
-                    case RoleId.Vampire:
-                        Vampire.vampire = player;
-                        break;
-                    case RoleId.Snitch:
-                        Snitch.snitch = player;
-                        break;
-                    case RoleId.Jackal:
-                        Jackal.jackal = player;
-                        break;
-                    case RoleId.Sidekick:
-                        Sidekick.sidekick = player;
-                        break;
-                    case RoleId.Eraser:
-                        Eraser.eraser = player;
-                        break;
-                    case RoleId.Spy:
-                        Spy.spy = player;
-                        break;
-                    case RoleId.Trickster:
-                        Trickster.trickster = player;
-                        break;
-                    case RoleId.Cleaner:
-                        Cleaner.cleaner = player;
-                        break;
-                    case RoleId.Warlock:
-                        Warlock.warlock = player;
-                        break;
-                    case RoleId.SecurityGuard:
-                        SecurityGuard.securityGuard = player;
-                        break;
-                    case RoleId.Arsonist:
-                        Arsonist.arsonist = player;
-                        break;
-                    case RoleId.EvilGuesser:
-                        Guesser.evilGuesser = player;
-                        break;
-                    case RoleId.NiceGuesser:
-                        Guesser.niceGuesser = player;
-                        break;
-                    case RoleId.BountyHunter:
-                        BountyHunter.bountyHunter = player;
-                        break;
-                    case RoleId.Vulture:
-                        Vulture.vulture = player;
-                        break;
-                    case RoleId.Medium:
-                        Medium.medium = player;
-                        break;
-                    case RoleId.Trapper:
-                        Trapper.trapper = player;
-                        break;
-                    case RoleId.Lawyer:
-                        Lawyer.lawyer = player;
-                        break;
-                    case RoleId.Prosecutor:
-                        Lawyer.lawyer = player;
-                        Lawyer.isProsecutor = true;
-                        break;
-                    case RoleId.Pursuer:
-                        Pursuer.pursuer = player;
-                        break;
-                    case RoleId.Witch:
-                        Witch.witch = player;
-                        break;
-                    case RoleId.Ninja:
-                        Ninja.ninja = player;
-                        break;
-                    case RoleId.Thief:
-                        Thief.thief = player;
-                        break;
-                    case RoleId.Bomber:
-                        Bomber.bomber = player;
-                        break;
-                    case RoleId.Whisperer:
-                        Whisperer.whisperer = player;
-                        break;
-                    case RoleId.Undertaker:
-                        Undertaker.undertaker = player;
-                        break;
-                    }
-            }
-        }
-
-        public static void setModifier(byte modifierId, byte playerId, byte flag) {
-            PlayerControl player = Helpers.playerById(playerId); 
-            switch ((RoleId)modifierId) {
-                case RoleId.Bait:
-                    Bait.bait.Add(player);
-                    break;
-                case RoleId.Lover:
-                    if (flag == 0) Lovers.lover1 = player;
-                    else Lovers.lover2 = player;
-                    break;
-                case RoleId.Bloody:
-                    Bloody.bloody.Add(player);
-                    break;
-                case RoleId.AntiTeleport:
-                    AntiTeleport.antiTeleport.Add(player);
-                    break;
-                case RoleId.Tiebreaker:
-                    Tiebreaker.tiebreaker = player;
-                    break;
-                case RoleId.Sunglasses:
-                    Sunglasses.sunglasses.Add(player);
-                    break;
-                case RoleId.Mini:
-                    Mini.mini = player;
-                    break;
-                case RoleId.Vip:
-                    Vip.vip.Add(player);
-                    break;
-                case RoleId.Invert:
-                    Invert.invert.Add(player);
-                    break;
-                case RoleId.Chameleon:
-                    Chameleon.chameleon.Add(player);
-                    break;
-                case RoleId.Shifter:
-                    Shifter.shifter = player;
-                    break;
-            }
-        }
-
-        public static void versionHandshake(int major, int minor, int build, int revision, Guid guid, int clientId) {
-            System.Version ver;
-            if (revision < 0) 
-                ver = new System.Version(major, minor, build);
-            else 
-                ver = new System.Version(major, minor, build, revision);
-            GameStartManagerPatch.playerVersions[clientId] = new GameStartManagerPatch.PlayerVersion(ver, guid);
-        }
-
-        public static void useUncheckedVent(int ventId, byte playerId, byte isEnter) {
-            PlayerControl player = Helpers.playerById(playerId);
-            if (player == null) return;
-            // Fill dummy MessageReader and call MyPhysics.HandleRpc as the corountines cannot be accessed
-            MessageReader reader = new MessageReader();
-            byte[] bytes = BitConverter.GetBytes(ventId);
-            if (!BitConverter.IsLittleEndian)
-                Array.Reverse(bytes);
-            reader.Buffer = bytes;
-            reader.Length = bytes.Length;
-
-            JackInTheBox.startAnimation(ventId);
-            player.MyPhysics.HandleRpc(isEnter != 0 ? (byte)19 : (byte)20, reader);
-        }
-
-        public static void uncheckedMurderPlayer(byte sourceId, byte targetId, byte showAnimation) {
-            if (AmongUsClient.Instance.GameState != InnerNet.InnerNetClient.GameStates.Started) return;
-            PlayerControl source = Helpers.playerById(sourceId);
-            PlayerControl target = Helpers.playerById(targetId);
-            if (source != null && target != null) {
-                if (showAnimation == 0) KillAnimationCoPerformKillPatch.hideNextAnimation = true;
-                source.MurderPlayer(target);
-            }
-        }
-
-        public static void uncheckedCmdReportDeadBody(byte sourceId, byte targetId) {
-            PlayerControl source = Helpers.playerById(sourceId);
-            var t = targetId == Byte.MaxValue ? null : Helpers.playerById(targetId).Data;
-            if (source != null) source.ReportDeadBody(t);
-        }
-
-        public static void uncheckedExilePlayer(byte targetId) {
-            PlayerControl target = Helpers.playerById(targetId);
-            if (target != null) target.Exiled();
-        }
-
-        public static void dynamicMapOption(byte mapId) {
-           GameOptionsManager.Instance.currentNormalGameOptions.MapId = mapId;
-        }
-
-        public static void setGameStarting() {
-            GameStartManagerPatch.GameStartManagerUpdatePatch.startingTimer = 5f;
-        }
-
         // Role functionality
-
-        public static void engineerFixLights() {
-            SwitchSystem switchSystem = MapUtilities.Systems[SystemTypes.Electrical].CastFast<SwitchSystem>();
-            switchSystem.ActualSwitches = switchSystem.ExpectedSwitches;
-        }
-
-        public static void engineerFixSubmergedOxygen() {
-            SubmergedCompatibility.RepairOxygen();
-        }
-
-        public static void engineerUsedRepair() {
-            Engineer.remainingFixes--;
-            if (Helpers.shouldShowGhostInfo()) {
-                Helpers.showFlash(Engineer.color, 0.5f, "Engineer Fix"); ;
-            }
-        }
-
-        public static void cleanBody(byte playerId, byte cleaningPlayerId) {
-            if (Medium.featureDeadBodies != null) {
-                var deadBody = Medium.featureDeadBodies.Find(x => x.Item1.player.PlayerId == playerId).Item1;
-                if (deadBody != null) deadBody.wasCleaned = true;
-            }
-
-            DeadBody[] array = UnityEngine.Object.FindObjectsOfType<DeadBody>();
-            for (int i = 0; i < array.Length; i++) {
-                if (GameData.Instance.GetPlayerById(array[i].ParentId).PlayerId == playerId) {
-                    UnityEngine.Object.Destroy(array[i].gameObject);
-                }     
-            }
-            if (Vulture.vulture != null && cleaningPlayerId == Vulture.vulture.PlayerId) {
-                Vulture.eatenBodies++;
-                if (Vulture.eatenBodies == Vulture.vultureNumberToWin) {
-                    Vulture.triggerVultureWin = true;
-                }
-            }
-        }
-
-        public static void timeMasterRewindTime() {
-            TimeMaster.shieldActive = false; // Shield is no longer active when rewinding
-            SoundEffectsManager.stop("timemasterShield");  // Shield sound stopped when rewinding
-            if(TimeMaster.timeMaster != null && TimeMaster.timeMaster == CachedPlayer.LocalPlayer.PlayerControl) {
-                resetTimeMasterButton();
-            }
-            FastDestroyableSingleton<HudManager>.Instance.FullScreen.color = new Color(0f, 0.5f, 0.8f, 0.3f);
-            FastDestroyableSingleton<HudManager>.Instance.FullScreen.enabled = true;
-            FastDestroyableSingleton<HudManager>.Instance.FullScreen.gameObject.SetActive(true);
-            FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(TimeMaster.rewindTime / 2, new Action<float>((p) => {
-                if (p == 1f) FastDestroyableSingleton<HudManager>.Instance.FullScreen.enabled = false;
-            })));
-
-            if (TimeMaster.timeMaster == null || CachedPlayer.LocalPlayer.PlayerControl == TimeMaster.timeMaster) return; // Time Master himself does not rewind
-
-            TimeMaster.isRewinding = true;
-
-            if (MapBehaviour.Instance)
-                MapBehaviour.Instance.Close();
-            if (Minigame.Instance)
-                Minigame.Instance.ForceClose();
-            CachedPlayer.LocalPlayer.PlayerControl.moveable = false;
-        }
-
-        public static void timeMasterShield() {
-            TimeMaster.shieldActive = true;
-            FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(TimeMaster.shieldDuration, new Action<float>((p) => {
-                if (p == 1f) TimeMaster.shieldActive = false;
-            })));
-        }
-
-        public static void medicSetShielded(byte shieldedId) {
-            Medic.usedShield = true;
-            Medic.shielded = Helpers.playerById(shieldedId);
-            Medic.futureShielded = null;
-        }
-
-        public static void shieldedMurderAttempt() {
-            if (Medic.shielded == null || Medic.medic == null) return;
-            
-            bool isShieldedAndShow = Medic.shielded == CachedPlayer.LocalPlayer.PlayerControl && Medic.showAttemptToShielded;
-            isShieldedAndShow = isShieldedAndShow && (Medic.meetingAfterShielding || !Medic.showShieldAfterMeeting);  // Dont show attempt, if shield is not shown yet
-            bool isMedicAndShow = Medic.medic == CachedPlayer.LocalPlayer.PlayerControl && Medic.showAttemptToMedic;
-
-            if (isShieldedAndShow || isMedicAndShow || Helpers.shouldShowGhostInfo()) Helpers.showFlash(Palette.ImpostorRed, duration: 0.5f, "Failed Murder Attempt on Shielded Player");
-        }
 
         public static void shifterShift(byte targetId) {
             PlayerControl oldShifter = Shifter.shifter;
@@ -643,10 +249,10 @@ namespace TheOtherRoles
 
         public static void deputyPromotes()
         {
-            if (Deputy.deputy != null) {  // Deputy should never be null here, but there appeared to be a race condition during testing, which was removed.
-                Sheriff.replaceCurrentSheriff(Deputy.deputy);
-                Sheriff.formerDeputy = Deputy.deputy;
-                Deputy.deputy = null;
+            if (Deputy.Player != null) {  // Deputy should never be null here, but there appeared to be a race condition during testing, which was removed.
+                Sheriff.replaceCurrentSheriff(Deputy.Player);
+                Sheriff.formerDeputy = Deputy.Player;
+                Deputy.Player = null;
                 // No clear and reload, as we need to keep the number of handcuffs left etc
             }
         }
@@ -699,7 +305,7 @@ namespace TheOtherRoles
             if (player == Portalmaker.portalmaker) Portalmaker.clearAndReload();
             if (player == Engineer.engineer) Engineer.clearAndReload();
             if (player == Sheriff.sheriff) Sheriff.clearAndReload();
-            if (player == Deputy.deputy) Deputy.clearAndReload();
+            if (player == Deputy.Player) Deputy.ClearAndReload();
             if (player == Lighter.lighter) Lighter.clearAndReload();
             if (player == Detective.detective) Detective.clearAndReload();
             if (player == TimeMaster.timeMaster) TimeMaster.clearAndReload();
@@ -778,11 +384,6 @@ namespace TheOtherRoles
 
         public static void setFutureShifted(byte playerId) {
             Shifter.futureShift = Helpers.playerById(playerId);
-        }
-
-        public static void setFutureShielded(byte playerId) {
-            Medic.futureShielded = Helpers.playerById(playerId);
-            Medic.usedShield = true;
         }
 
         public static void setFutureSpelled(byte playerId) {
@@ -1235,106 +836,7 @@ namespace TheOtherRoles
         {
             byte packetId = callId;
             switch (packetId) {
-
-                // Main Controls
-
-                case (byte)CustomRPC.ResetVaribles:
-                    RPCProcedure.resetVariables();
-                    break;
-                case (byte)CustomRPC.ShareOptions:
-                    RPCProcedure.HandleShareOptions(reader.ReadByte(), reader);
-                    break;
-                case (byte)CustomRPC.ForceEnd:
-                    RPCProcedure.forceEnd();
-                    break; 
-                case (byte)CustomRPC.WorkaroundSetRoles:
-                    RPCProcedure.workaroundSetRoles(reader.ReadByte(), reader);
-                    break;
-                case (byte)CustomRPC.SetRole:
-                    byte roleId = reader.ReadByte();
-                    byte playerId = reader.ReadByte();
-                    RPCProcedure.setRole(roleId, playerId);
-                    break;
-                case (byte)CustomRPC.SetModifier:
-                    byte modifierId = reader.ReadByte();
-                    byte pId = reader.ReadByte();
-                    byte flag = reader.ReadByte();
-                    RPCProcedure.setModifier(modifierId, pId, flag);
-                    break;
-                case (byte)CustomRPC.VersionHandshake:
-                    byte major = reader.ReadByte();
-                    byte minor = reader.ReadByte();
-                    byte patch = reader.ReadByte();
-                    float timer = reader.ReadSingle();
-                    if (!AmongUsClient.Instance.AmHost && timer >= 0f) GameStartManagerPatch.timer = timer;
-                    int versionOwnerId = reader.ReadPackedInt32();
-                    byte revision = 0xFF;
-                    Guid guid;
-                    if (reader.Length - reader.Position >= 17) { // enough bytes left to read
-                        revision = reader.ReadByte();
-                        // GUID
-                        byte[] gbytes = reader.ReadBytes(16);
-                        guid = new Guid(gbytes);
-                    } else {
-                        guid = new Guid(new byte[16]);
-                    }
-                    RPCProcedure.versionHandshake(major, minor, patch, revision == 0xFF ? -1 : revision, guid, versionOwnerId);
-                    break;
-                case (byte)CustomRPC.UseUncheckedVent:
-                    int ventId = reader.ReadPackedInt32();
-                    byte ventingPlayer = reader.ReadByte();
-                    byte isEnter = reader.ReadByte();
-                    RPCProcedure.useUncheckedVent(ventId, ventingPlayer, isEnter);
-                    break;
-                case (byte)CustomRPC.UncheckedMurderPlayer:
-                    byte source = reader.ReadByte();
-                    byte target = reader.ReadByte();
-                    byte showAnimation = reader.ReadByte();
-                    RPCProcedure.uncheckedMurderPlayer(source, target, showAnimation);
-                    break;
-                case (byte)CustomRPC.UncheckedExilePlayer:
-                    byte exileTarget = reader.ReadByte();
-                    RPCProcedure.uncheckedExilePlayer(exileTarget);
-                    break;
-                case (byte)CustomRPC.UncheckedCmdReportDeadBody:
-                    byte reportSource = reader.ReadByte();
-                    byte reportTarget = reader.ReadByte();
-                    RPCProcedure.uncheckedCmdReportDeadBody(reportSource, reportTarget);
-                    break;
-                case (byte)CustomRPC.DynamicMapOption:
-                    byte mapId = reader.ReadByte();
-                    RPCProcedure.dynamicMapOption(mapId);
-                    break;
-                case (byte)CustomRPC.SetGameStarting:
-                    RPCProcedure.setGameStarting();
-                    break;
-
                 // Role functionality
-
-                case (byte)CustomRPC.EngineerFixLights:
-                    RPCProcedure.engineerFixLights();
-                    break;
-                case (byte)CustomRPC.EngineerFixSubmergedOxygen:
-                    RPCProcedure.engineerFixSubmergedOxygen();
-                    break;
-                case (byte)CustomRPC.EngineerUsedRepair:
-                    RPCProcedure.engineerUsedRepair();
-                    break;
-                case (byte)CustomRPC.CleanBody:
-                    RPCProcedure.cleanBody(reader.ReadByte(), reader.ReadByte());
-                    break;
-                case (byte)CustomRPC.TimeMasterRewindTime:
-                    RPCProcedure.timeMasterRewindTime();
-                    break;
-                case (byte)CustomRPC.TimeMasterShield:
-                    RPCProcedure.timeMasterShield();
-                    break;
-                case (byte)CustomRPC.MedicSetShielded:
-                    RPCProcedure.medicSetShielded(reader.ReadByte());
-                    break;
-                case (byte)CustomRPC.ShieldedMurderAttempt:
-                    RPCProcedure.shieldedMurderAttempt();
-                    break;
                 case (byte)CustomRPC.ShifterShift:
                     RPCProcedure.shifterShift(reader.ReadByte());
                     break;
@@ -1385,9 +887,6 @@ namespace TheOtherRoles
                     break;
                 case (byte)CustomRPC.SetFutureShifted:
                     RPCProcedure.setFutureShifted(reader.ReadByte());
-                    break;
-                case (byte)CustomRPC.SetFutureShielded:
-                    RPCProcedure.setFutureShielded(reader.ReadByte());
                     break;
                 case (byte)CustomRPC.PlaceNinjaTrace:
                     RPCProcedure.placeNinjaTrace(reader.ReadBytesAndSize());
@@ -1468,10 +967,6 @@ namespace TheOtherRoles
                     break;
                 case (byte)CustomRPC.DefuseBomb:
                     RPCProcedure.defuseBomb();
-                    break;
-                case (byte)CustomRPC.ShareGamemode:
-                    byte gm = reader.ReadByte();
-                    RPCProcedure.shareGamemode(gm);
                     break;
 
                 // Game mode

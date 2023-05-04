@@ -1,5 +1,8 @@
 using HarmonyLib;
 using System;
+using TheOtherRoles.EnoFw.Roles.Crewmate;
+using TheOtherRoles.EnoFw.Roles.Modifiers;
+using TheOtherRoles.EnoFw.Roles.Neutral;
 using TheOtherRoles.Utilities;
 
 namespace TheOtherRoles {

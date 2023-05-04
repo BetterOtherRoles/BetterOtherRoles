@@ -14,6 +14,11 @@ using System.Threading.Tasks;
 using System.Net;
 using TheOtherRoles.CustomGameModes;
 using Reactor.Utilities.Extensions;
+using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.EnoFw.Roles.Crewmate;
+using TheOtherRoles.EnoFw.Roles.Impostor;
+using TheOtherRoles.EnoFw.Roles.Modifiers;
+using TheOtherRoles.EnoFw.Roles.Neutral;
 
 namespace TheOtherRoles
 {
@@ -479,8 +484,8 @@ namespace TheOtherRoles
                          target == Sidekick.sidekick ||
                          target == Jackal.fakeSidekick))
                 return false; // Members of team Jackal see the names of each other
-            else if (Deputy.knowsSheriff && (source == Sheriff.sheriff || source == Deputy.deputy) &&
-                     (target == Sheriff.sheriff || target == Deputy.deputy))
+            else if (Deputy.knowsSheriff && (source == Sheriff.sheriff || source == Deputy.Player) &&
+                     (target == Sheriff.sheriff || target == Deputy.Player))
                 return false; // Sheriff & Deputy see the names of each other
             return true;
         }
@@ -638,7 +643,7 @@ namespace TheOtherRoles
                 MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(killer.NetId,
                     (byte)CustomRPC.ShieldedMurderAttempt, Hazel.SendOption.Reliable, -1);
                 AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.shieldedMurderAttempt();
+                Medic.ShieldedMurderAttempt();
                 MurderAttempt.ShowFailedMurderAttempt(CachedPlayer.LocalPlayer, $"{killer.PlayerId}|{target.PlayerId}");
                 SoundEffectsManager.play("fail");
                 return MurderAttemptResult.SuppressKill;
@@ -657,10 +662,7 @@ namespace TheOtherRoles
                 if (!blockRewind)
                 {
                     // Only rewind the attempt was not called because a meeting startet 
-                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(killer.NetId,
-                        (byte)CustomRPC.TimeMasterRewindTime, Hazel.SendOption.Reliable, -1);
-                    AmongUsClient.Instance.FinishRpcImmediately(writer);
-                    RPCProcedure.timeMasterRewindTime();
+                    TimeMaster.TimeMasterRewindTime();
                 }
 
                 return MurderAttemptResult.SuppressKill;
@@ -697,19 +699,10 @@ namespace TheOtherRoles
             // The local player checks for the validity of the kill and performs it afterwards (different to vanilla, where the host performs all the checks)
             // The kill attempt will be shared using a custom RPC, hence combining modded and unmodded versions is impossible
 
-            MurderAttemptResult murder =
-                checkMurderAttempt(killer, target, isMeetingStart, ignoreBlank, ignoreIfKillerIsDead);
+            var murder = checkMurderAttempt(killer, target, isMeetingStart, ignoreBlank, ignoreIfKillerIsDead);
             if (murder == MurderAttemptResult.PerformKill)
             {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                    CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UncheckedMurderPlayer,
-                    Hazel.SendOption.Reliable, -1);
-                writer.Write(killer.PlayerId);
-                writer.Write(target.PlayerId);
-                writer.Write(showAnimation ? Byte.MaxValue : 0);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.uncheckedMurderPlayer(killer.PlayerId, target.PlayerId,
-                    showAnimation ? Byte.MaxValue : (byte)0);
+                KernelRpc.UncheckedMurderPlayer(killer.PlayerId, target.PlayerId, showAnimation);
             }
 
             return murder;
@@ -717,22 +710,11 @@ namespace TheOtherRoles
 
         public static void shareGameVersion()
         {
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.VersionHandshake,
-                Hazel.SendOption.Reliable, -1);
-            writer.Write((byte)TheOtherRolesPlugin.Version.Major);
-            writer.Write((byte)TheOtherRolesPlugin.Version.Minor);
-            writer.Write((byte)TheOtherRolesPlugin.Version.Build);
-            writer.Write(AmongUsClient.Instance.AmHost ? Patches.GameStartManagerPatch.timer : -1f);
-            writer.WritePacked(AmongUsClient.Instance.ClientId);
-            writer.Write((byte)(TheOtherRolesPlugin.Version.Revision < 0
-                ? 0xFF
-                : TheOtherRolesPlugin.Version.Revision));
-            writer.Write(CustomGuid.Guid.ToByteArray());
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
-            RPCProcedure.versionHandshake(TheOtherRolesPlugin.Version.Major, TheOtherRolesPlugin.Version.Minor,
-                TheOtherRolesPlugin.Version.Build, TheOtherRolesPlugin.Version.Revision, CustomGuid.Guid,
-                AmongUsClient.Instance.ClientId);
+            KernelRpc.VersionHandshake(
+                AmongUsClient.Instance.ClientId,
+                TheOtherRolesPlugin.Version,
+                CustomGuid.Guid,
+                AmongUsClient.Instance.AmHost ? Patches.GameStartManagerPatch.timer : -1);
         }
 
         public static List<PlayerControl> getKillerTeamMembers(PlayerControl player)

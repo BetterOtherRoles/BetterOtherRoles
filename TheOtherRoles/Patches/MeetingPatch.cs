@@ -6,6 +6,10 @@ using static TheOtherRoles.TheOtherRoles;
 using static TheOtherRoles.TORMapOptions;
 using TheOtherRoles.Objects;
 using System;
+using TheOtherRoles.EnoFw.Roles.Crewmate;
+using TheOtherRoles.EnoFw.Roles.Impostor;
+using TheOtherRoles.EnoFw.Roles.Modifiers;
+using TheOtherRoles.EnoFw.Roles.Neutral;
 using TheOtherRoles.Modules;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
@@ -414,7 +418,7 @@ namespace TheOtherRoles.Patches {
 
                             MessageWriter murderAttemptWriter = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShieldedMurderAttempt, Hazel.SendOption.Reliable, -1);
                             AmongUsClient.Instance.FinishRpcImmediately(murderAttemptWriter);
-                            RPCProcedure.shieldedMurderAttempt();
+                            Medic.ShieldedMurderAttempt();
                             SoundEffectsManager.play("fail");
                             return;
                         }

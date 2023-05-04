@@ -9,6 +9,10 @@ using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using static TheOtherRoles.TheOtherRoles;
 using TheOtherRoles.CustomGameModes;
+using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.EnoFw.Roles.Crewmate;
+using TheOtherRoles.EnoFw.Roles.Modifiers;
+using TheOtherRoles.EnoFw.Roles.Neutral;
 
 namespace TheOtherRoles.Patches {
     [HarmonyPatch(typeof(RoleOptionsCollectionV07), nameof(RoleOptionsCollectionV07.GetNumPerGame))]
@@ -46,9 +50,7 @@ namespace TheOtherRoles.Patches {
         private static List<Tuple<byte, byte>> playerRoleMap = new List<Tuple<byte, byte>>();
         public static bool isGuesserGamemode { get { return TORMapOptions.gameMode == CustomGamemodes.Guesser; } }
         public static void Postfix() {
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ResetVaribles, Hazel.SendOption.Reliable, -1);
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
-            RPCProcedure.resetVariables();
+            KernelRpc.ResetVariables();
             if (TORMapOptions.gameMode == CustomGamemodes.HideNSeek || GameOptionsManager.Instance.currentGameOptions.GameMode == GameModes.HideNSeek) return; // Don't assign Roles in Hide N Seek
             if (CustomOptionHolder.activateRoles.getBool()) // Don't assign Roles in Tutorial or if deactivated
                 assignRoles();
@@ -518,11 +520,7 @@ namespace TheOtherRoles.Patches {
 
             playerRoleMap.Add(new Tuple<byte, byte>(playerId, roleId));
 
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SetRole, Hazel.SendOption.Reliable, -1);
-            writer.Write(roleId);
-            writer.Write(playerId);
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
-            RPCProcedure.setRole(roleId, playerId);
+            KernelRpc.SetRole(roleId, playerId);
             return playerId;
         }
 
@@ -531,13 +529,7 @@ namespace TheOtherRoles.Patches {
             var index = rnd.Next(0, playerList.Count);
             byte playerId = playerList[index].PlayerId;
             playerList.RemoveAt(index);
-
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SetModifier, Hazel.SendOption.Reliable, -1);
-            writer.Write(modifierId);
-            writer.Write(playerId);
-            writer.Write(flag);
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
-            RPCProcedure.setModifier(modifierId, playerId, flag);
+            KernelRpc.SetModifier(modifierId, playerId, flag);
             return playerId;
         }
 
@@ -625,21 +617,9 @@ namespace TheOtherRoles.Patches {
 
         private static void setRolesAgain()
         {
-
-            while (playerRoleMap.Any())
-            {
-                byte amount = (byte)Math.Min(playerRoleMap.Count, 20);
-                var writer = AmongUsClient.Instance!.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.WorkaroundSetRoles, SendOption.Reliable, -1);
-                writer.Write(amount);
-                for (int i = 0; i < amount; i++)
-                {
-                    var option = playerRoleMap[0];
-                    playerRoleMap.RemoveAt(0);
-                    writer.WritePacked((uint)option.Item1);
-                    writer.WritePacked((uint)option.Item2);
-                }
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-            }
+            var roles = playerRoleMap.ToDictionary(pr => pr.Item1, pr => pr.Item2);
+            KernelRpc.WorkaroundSetRoles(roles);
+            playerRoleMap.Clear();
         }
 
         public class RoleAssignmentData {

@@ -4,12 +4,12 @@ namespace TheOtherRoles.Modules;
 
 public enum CustomRpc
 {
-    ShareRandomSeeds,
-    ShowFailedMurderAttempt,
-    ShareFriendCode,
+    ShareRandomSeeds = 10,
+    ShowFailedMurderAttempt = 11,
+    ShareFriendCode = 12,
     
-    UndertakerDragBody,
-    UndertakerDropBody,
+    UndertakerDragBody = 13,
+    UndertakerDropBody = 14,
 }
 
 public static class Vector3Extensions
