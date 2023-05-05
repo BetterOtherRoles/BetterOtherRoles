@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Linq;
 using Reactor.Networking.Attributes;
 using TheOtherRoles.Objects;
-using TheOtherRoles.Players;
 using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;

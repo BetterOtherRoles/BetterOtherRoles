@@ -22,7 +22,7 @@ public static class Rpc
         SetGameStarting,
         ShareGameMode,
     }
-    
+
     public enum Role : uint
     {
         EngineerFixLights = 50,
@@ -87,7 +87,7 @@ public static class Rpc
         ShareRoom,
         ShareGhostInfo,
     }
-    
+
     public static string Serialize<T>(T data)
     {
         return JsonSerializer.Serialize(data);
