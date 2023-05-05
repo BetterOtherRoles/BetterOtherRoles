@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using Reactor.Networking.Attributes;
+using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
 
@@ -49,5 +51,27 @@ public static class Morphling
         if (morphSprite) return morphSprite;
         morphSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.MorphButton.png", 115f);
         return morphSprite;
+    }
+
+    public static void MorphlingMorph(byte targetId)
+    {
+        var data = new Tuple<byte>(targetId);
+        Rpc_MorphlingMorph(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.MorphlingMorph)]
+    private static void Rpc_MorphlingMorph(PlayerControl sender, string rawData)
+    {
+        var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
+        var target = Helpers.playerById(targetId);
+        if (morphling == null || target == null) return;
+        morphTimer = duration;
+        morphTarget = target;
+        if (Camouflager.camouflageTimer <= 0f)
+        {
+            morphling.setLook(target.Data.PlayerName, target.Data.DefaultOutfit.ColorId,
+                target.Data.DefaultOutfit.HatId, target.Data.DefaultOutfit.VisorId, target.Data.DefaultOutfit.SkinId,
+                target.Data.DefaultOutfit.PetId);
+        }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Reactor.Networking.Attributes;
 using TheOtherRoles.EnoFw.Roles.Neutral;
 using UnityEngine;
 
@@ -34,5 +36,22 @@ public static class Pursuer
 
         cooldown = CustomOptionHolder.pursuerCooldown.getFloat();
         blanksNumber = Mathf.RoundToInt(CustomOptionHolder.pursuerBlanksNumber.getFloat());
+    }
+
+    public static void SetBlanked(byte playerId, bool add)
+    {
+        var data = new Tuple<byte, bool>(playerId, add);
+        Rpc_SetBlanked(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.SetBlanked)]
+    private static void Rpc_SetBlanked(PlayerControl sender, string rawData)
+    {
+        var (playerId, add) = Rpc.Deserialize<Tuple<byte, bool>>(rawData);
+        
+        var blankTarget = Helpers.playerById(playerId);
+        if (target == null) return;
+        blankedList.RemoveAll(x => x.PlayerId == playerId);
+        if (add) blankedList.Add(blankTarget);     
     }
 }

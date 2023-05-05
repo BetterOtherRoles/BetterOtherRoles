@@ -6,6 +6,7 @@ using static TheOtherRoles.TheOtherRoles;
 using static TheOtherRoles.TORMapOptions;
 using TheOtherRoles.Objects;
 using System;
+using TheOtherRoles.EnoFw.Modules;
 using TheOtherRoles.EnoFw.Roles.Crewmate;
 using TheOtherRoles.EnoFw.Roles.Impostor;
 using TheOtherRoles.EnoFw.Roles.Modifiers;
@@ -125,10 +126,7 @@ namespace TheOtherRoles.Patches {
                         if (potentialExiled.FindAll(x => x != null && x.PlayerId == tiebreakerVote).Count > 0 && (potentialExiled.Count > 1 || skipIsTie)) {
                             exiled = potentialExiled.ToArray().FirstOrDefault(v => v.PlayerId == tiebreakerVote);
                             tie = false;
-
-                            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SetTiebreak, Hazel.SendOption.Reliable, -1);
-                            AmongUsClient.Instance.FinishRpcImmediately(writer);
-                            RPCProcedure.setTiebreak();
+                            Tiebreaker.SetTiebreak();
                         }
                     }
 
@@ -292,12 +290,7 @@ namespace TheOtherRoles.Patches {
                 if (swapperButtonList[A] != null) swapperButtonList[A].OnClick.RemoveAllListeners();  // Swap buttons can't be clicked / changed anymore
             }
             if (firstPlayer != null && secondPlayer != null) {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SwapperSwap, Hazel.SendOption.Reliable, -1);
-                writer.Write((byte)firstPlayer.TargetPlayerId);
-                writer.Write((byte)secondPlayer.TargetPlayerId);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-
-                RPCProcedure.swapperSwap((byte)firstPlayer.TargetPlayerId, (byte)secondPlayer.TargetPlayerId);
+                Swapper.SwapperSwap(firstPlayer.TargetPlayerId, secondPlayer.TargetPlayerId);
                 meetingExtraButtonLabel.text = Helpers.cs(Color.green, "Swapping!");
                 Swapper.charges--;
                 meetingExtraButtonText.text = $"Swaps: {Swapper.charges}";
@@ -314,12 +307,7 @@ namespace TheOtherRoles.Patches {
                     return;
                 }
             }
-
-            Mayor.voteTwice = !Mayor.voteTwice;
-
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.MayorSetVoteTwice, Hazel.SendOption.Reliable, -1);
-            writer.Write(Mayor.voteTwice);
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
+            Mayor.MayorSetVoteTwice(!Mayor.voteTwice);
 
             meetingExtraButtonLabel.text = Helpers.cs(Mayor.color, "Double Vote: " + (Mayor.voteTwice ? Helpers.cs(Color.green, "On ") : Helpers.cs(Color.red, "Off")));
         }
@@ -415,9 +403,7 @@ namespace TheOtherRoles.Patches {
                         if (!HandleGuesser.killsThroughShield && focusedTarget == Medic.shielded) { // Depending on the options, shooting the shielded player will not allow the guess, notifiy everyone about the kill attempt and close the window
                             __instance.playerStates.ToList().ForEach(x => x.gameObject.SetActive(true)); 
                             UnityEngine.Object.Destroy(container.gameObject);
-
-                            MessageWriter murderAttemptWriter = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShieldedMurderAttempt, Hazel.SendOption.Reliable, -1);
-                            AmongUsClient.Instance.FinishRpcImmediately(murderAttemptWriter);
+                            
                             Medic.ShieldedMurderAttempt();
                             SoundEffectsManager.play("fail");
                             return;
@@ -437,13 +423,7 @@ namespace TheOtherRoles.Patches {
                             __instance.playerStates.ToList().ForEach(x => { if (x.transform.FindChild("ShootButton") != null) UnityEngine.Object.Destroy(x.transform.FindChild("ShootButton").gameObject); });
 
                         // Shoot player and send chat info if activated
-                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.GuesserShoot, Hazel.SendOption.Reliable, -1);
-                        writer.Write(CachedPlayer.LocalPlayer.PlayerId);
-                        writer.Write(dyingTarget.PlayerId);
-                        writer.Write(focusedTarget.PlayerId);
-                        writer.Write((byte)roleInfo.roleId);
-                        AmongUsClient.Instance.FinishRpcImmediately(writer);
-                        RPCProcedure.guesserShoot(CachedPlayer.LocalPlayer.PlayerId, dyingTarget.PlayerId, focusedTarget.PlayerId, (byte)roleInfo.roleId);
+                        Guesser.GuesserShoot(CachedPlayer.LocalPlayer.PlayerId, dyingTarget.PlayerId, focusedTarget.PlayerId, (byte)roleInfo.roleId);
                     }
                 }));
 
@@ -622,15 +602,12 @@ namespace TheOtherRoles.Patches {
         class StartMeetingPatch {
             public static void Prefix(PlayerControl __instance, [HarmonyArgument(0)]GameData.PlayerInfo meetingTarget) {
                 RoomTracker roomTracker = FastDestroyableSingleton<HudManager>.Instance?.roomTracker;
-                byte roomId = Byte.MinValue;
+                byte roomId = byte.MinValue;
                 if (roomTracker != null && roomTracker.LastRoom != null) {
                     roomId = (byte)roomTracker.LastRoom?.RoomId;
                 }
                 if (Snitch.snitch != null && roomTracker != null) {
-                    MessageWriter roomWriter = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareRoom, Hazel.SendOption.Reliable, -1);
-                    roomWriter.Write(CachedPlayer.LocalPlayer.PlayerId);
-                    roomWriter.Write(roomId);
-                    AmongUsClient.Instance.FinishRpcImmediately(roomWriter);
+                    CommonRpc.ShareRoom(CachedPlayer.LocalPlayer.PlayerId, roomId);
                 }
 
                 // Resett Bait list

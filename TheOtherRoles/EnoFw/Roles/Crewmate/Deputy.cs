@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Hazel;
+using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Modules;
 using TheOtherRoles.Players;
 using UnityEngine;
 
@@ -45,12 +48,8 @@ public static class Deputy
 
         if (active && playerId == CachedPlayer.LocalPlayer.PlayerId)
         {
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareGhostInfo, Hazel.SendOption.Reliable,
-                -1);
-            writer.Write(CachedPlayer.LocalPlayer.PlayerId);
-            writer.Write((byte)RPCProcedure.GhostInfoTypes.HandcuffNoticed);
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
+            GhostInfos.ShareGhostInfo(GhostInfos.Types.HandcuffNoticed,
+                Rpc.Serialize(new Tuple<byte>(CachedPlayer.LocalPlayer.PlayerId)));
         }
 
         if (active)
@@ -79,5 +78,33 @@ public static class Deputy
         keepsHandcuffsOnPromotion = CustomOptionHolder.deputyKeepsHandcuffs.getBool();
         handcuffDuration = CustomOptionHolder.deputyHandcuffDuration.getFloat();
         knowsSheriff = CustomOptionHolder.deputyKnowsSheriff.getBool();
+    }
+
+    public static void DeputyPromotes()
+    {
+        Rpc_DeputyPromotes(PlayerControl.LocalPlayer);
+    }
+
+    [MethodRpc((uint)Rpc.Role.DeputyPromotes)]
+    private static void Rpc_DeputyPromotes(PlayerControl sender)
+    {
+        if (Player == null) return;
+        Sheriff.replaceCurrentSheriff(Player);
+        Sheriff.formerDeputy = Player;
+        Player = null;
+    }
+
+    public static void DeputyUsedHandcuffs(byte targetId)
+    {
+        var data = new Tuple<byte>(targetId);
+        Rpc_DeputyUsedHandcuffs(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.DeputyUsedHandcuffs)]
+    private static void Rpc_DeputyUsedHandcuffs(PlayerControl sender, string rawData)
+    {
+        var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
+        remainingHandcuffs--;
+        handcuffedPlayers.Add(targetId);
     }
 }

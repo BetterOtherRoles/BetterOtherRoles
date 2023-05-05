@@ -7,7 +7,7 @@ public static class Rpc
 {
     public enum Kernel : uint
     {
-        ResetVariables,
+        ResetVariables = 1,
         ShareOptions,
         ForceEnd,
         WorkaroundSetRoles,
@@ -34,6 +34,54 @@ public static class Rpc
         MedicSetShielded,
         SetFutureShielded,
         ShieldedMurderAttempt,
+        ShifterShift,
+        SwapperSwap,
+        MayorSetVoteTwice,
+        MorphlingMorph,
+        CamouflagerCamouflage,
+        VampireSetBitten,
+        PlaceGarlic,
+        TrackerUsedTracker,
+        DeputyUsedHandcuffs,
+        DeputyPromotes,
+        JackalCreatesSidekick,
+        SidekickPromotes,
+        ErasePlayerRoles,
+        SetFutureErased,
+        SetFutureShifted,
+        PlaceNinjaTrace,
+        PlacePortal,
+        UsePortal,
+        PlaceJackInTheBox,
+        LightsOut,
+        PlaceCamera,
+        SealVent,
+        ArsonistWin,
+        GuesserShoot,
+        LawyerSetTarget,
+        LawyerPromotesToPursuer,
+        SetBlanked,
+        SetFutureSpelled,
+        SetBloody,
+        SetTiebreak,
+        SetInvisible,
+        ThiefStealsRole,
+        SetTrap,
+        TriggerTrap,
+        PlaceBomb,
+        DefuseBomb,
+    }
+
+    public enum Module : uint
+    {
+        ShareRandomSeed = 150,
+        SetFirstKill,
+        SetGuesserGm,
+        ShareTimer,
+        HuntedShield,
+        HuntedRewindTime,
+        ShareRoom,
+        ShareGhostInfo,
     }
     
     public static string Serialize<T>(T data)

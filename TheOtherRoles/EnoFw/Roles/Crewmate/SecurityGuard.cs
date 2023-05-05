@@ -1,5 +1,11 @@
-﻿using TheOtherRoles.Utilities;
+﻿using System;
+using System.Linq;
+using PowerTools;
+using Reactor.Networking.Attributes;
+using TheOtherRoles.Players;
+using TheOtherRoles.Utilities;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace TheOtherRoles.EnoFw.Roles.Crewmate;
 
@@ -13,15 +19,15 @@ public static class SecurityGuard
     public static int totalScrews = 7;
     public static int ventPrice = 1;
     public static int camPrice = 2;
-    public static int placedCameras = 0;
+    public static int placedCameras;
     public static float duration = 10f;
     public static int maxCharges = 5;
     public static int rechargeTasksNumber = 3;
     public static int rechargedTasks = 3;
     public static int charges = 1;
     public static bool cantMove = true;
-    public static Vent ventTarget = null;
-    public static Minigame minigame = null;
+    public static Vent ventTarget;
+    public static Minigame minigame;
 
     private static Sprite closeVentButtonSprite;
 
@@ -126,5 +132,78 @@ public static class SecurityGuard
         camPrice = Mathf.RoundToInt(CustomOptionHolder.securityGuardCamPrice.getFloat());
         ventPrice = Mathf.RoundToInt(CustomOptionHolder.securityGuardVentPrice.getFloat());
         cantMove = CustomOptionHolder.securityGuardNoMove.getBool();
+    }
+
+    public static void SealVent(int ventId)
+    {
+        var data = new Tuple<int>(ventId);
+        Rpc_SealVent(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.SealVent)]
+    private static void Rpc_SealVent(PlayerControl sender, string rawData)
+    {
+        var ventId = Rpc.Deserialize<Tuple<int>>(rawData).Item1;
+        var vent = MapUtilities.CachedShipStatus.AllVents.FirstOrDefault(x => x != null && x.Id == ventId);
+        if (vent == null) return;
+
+        remainingScrews -= ventPrice;
+        if (CachedPlayer.LocalPlayer.PlayerControl == securityGuard) {
+            var animator = vent.GetComponent<SpriteAnim>(); 
+            if (animator != null) animator.Stop();
+            vent.EnterVentAnim = vent.ExitVentAnim = null;
+            vent.myRend.sprite = animator == null ? getStaticVentSealedSprite() : getAnimatedVentSealedSprite();
+            if (SubmergedCompatibility.IsSubmerged && vent.Id == 0) vent.myRend.sprite = getSubmergedCentralUpperSealedSprite();
+            if (SubmergedCompatibility.IsSubmerged && vent.Id == 14) vent.myRend.sprite = getSubmergedCentralLowerSealedSprite();
+            vent.myRend.color = new Color(1f, 1f, 1f, 0.5f);
+            vent.name = "FutureSealedVent_" + vent.name;
+        }
+
+        TORMapOptions.ventsToSeal.Add(vent);
+    }
+
+    public static void PlaceCamera(float x, float y)
+    {
+        var data = new Tuple<float, float>(x, y);
+        Rpc_PlaceCamera(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.PlaceCamera)]
+    private static void Rpc_PlaceCamera(PlayerControl sender, string rawDData)
+    {
+        var referenceCamera = Object.FindObjectOfType<SurvCamera>(); 
+        if (referenceCamera == null) return; // Mira HQ
+        
+        var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawDData);
+        remainingScrews -= camPrice;
+        placedCameras++;
+
+        var camera = Object.Instantiate(referenceCamera);
+        camera.transform.position = new Vector3(x, y, referenceCamera.transform.position.z - 1f);
+        camera.CamName = $"Security Camera {placedCameras}";
+        camera.Offset = new Vector3(0f, 0f, camera.Offset.z);
+
+        if (GameOptionsManager.Instance.currentNormalGameOptions.MapId == 2 ||
+            GameOptionsManager.Instance.currentNormalGameOptions.MapId == 4)
+        {
+            camera.transform.localRotation = new Quaternion(0, 0, 1, 1); // Polus and Airship 
+        }
+        
+        if (SubmergedCompatibility.IsSubmerged) {
+            // remove 2d box collider of console, so that no barrier can be created. (irrelevant for now, but who knows... maybe we need it later)
+            var fixConsole = camera.transform.FindChild("FixConsole");
+            if (fixConsole != null) {
+                var boxCollider = fixConsole.GetComponent<BoxCollider2D>();
+                if (boxCollider != null) Object.Destroy(boxCollider);
+            }
+        }
+        
+        if (CachedPlayer.LocalPlayer.PlayerControl == securityGuard) {
+            camera.gameObject.SetActive(true);
+            camera.gameObject.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.5f);
+        } else {
+            camera.gameObject.SetActive(false);
+        }
+        TORMapOptions.camerasToAdd.Add(camera);
     }
 }

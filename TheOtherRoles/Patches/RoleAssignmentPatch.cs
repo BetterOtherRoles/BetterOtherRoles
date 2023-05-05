@@ -10,6 +10,7 @@ using TheOtherRoles.Utilities;
 using static TheOtherRoles.TheOtherRoles;
 using TheOtherRoles.CustomGameModes;
 using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.EnoFw.Modules;
 using TheOtherRoles.EnoFw.Roles.Crewmate;
 using TheOtherRoles.EnoFw.Roles.Modifiers;
 using TheOtherRoles.EnoFw.Roles.Neutral;
@@ -399,15 +400,10 @@ namespace TheOtherRoles.Patches {
                 }
                 
                 if (possibleTargets.Count == 0) {
-                    MessageWriter w = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.LawyerPromotesToPursuer, Hazel.SendOption.Reliable, -1);
-                    AmongUsClient.Instance.FinishRpcImmediately(w);
-                    RPCProcedure.lawyerPromotesToPursuer();
+                    Lawyer.LawyerPromotesToPursuer();
                 } else {
                     var target = possibleTargets[TheOtherRoles.rnd.Next(0, possibleTargets.Count)];
-                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.LawyerSetTarget, Hazel.SendOption.Reliable, -1);
-                    writer.Write(target.PlayerId);
-                    AmongUsClient.Instance.FinishRpcImmediately(writer);
-                    RPCProcedure.lawyerSetTarget(target.PlayerId);
+                    Lawyer.LawyerSetTarget(target.PlayerId);
                 }
             }
         }
@@ -505,11 +501,7 @@ namespace TheOtherRoles.Patches {
                 }
                 byte playerId = playerList[index].PlayerId;
                 playerList.RemoveAt(index);
-
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SetGuesserGm, Hazel.SendOption.Reliable, -1);
-                writer.Write(playerId);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.setGuesserGm(playerId);
+                CommonRpc.SetGuesserGm(playerId);
             }
         }
 

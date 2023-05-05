@@ -1,4 +1,6 @@
-﻿namespace TheOtherRoles.EnoFw.Roles.Modifiers;
+﻿using Reactor.Networking.Attributes;
+
+namespace TheOtherRoles.EnoFw.Roles.Modifiers;
 
 public static class Tiebreaker
 {
@@ -10,5 +12,16 @@ public static class Tiebreaker
     {
         tiebreaker = null;
         isTiebreak = false;
+    }
+
+    public static void SetTiebreak()
+    {
+        Rpc_SetTiebreak(PlayerControl.LocalPlayer);
+    }
+
+    [MethodRpc((uint)Rpc.Role.SetTiebreak)]
+    private static void Rpc_SetTiebreak(PlayerControl sender)
+    {
+        isTiebreak = true;
     }
 }

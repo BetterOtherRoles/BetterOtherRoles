@@ -6,6 +6,7 @@ using static TheOtherRoles.TheOtherRoles;
 using TheOtherRoles.Objects;
 using System;
 using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.EnoFw.Modules;
 using TheOtherRoles.EnoFw.Roles.Crewmate;
 using TheOtherRoles.EnoFw.Roles.Impostor;
 using TheOtherRoles.EnoFw.Roles.Modifiers;
@@ -30,25 +31,19 @@ namespace TheOtherRoles.Patches {
 
             // Shifter shift
             if (Shifter.shifter != null && AmongUsClient.Instance.AmHost && Shifter.futureShift != null) { // We need to send the RPC from the host here, to make sure that the order of shifting and erasing is correct (for that reason the futureShifted and futureErased are being synced)
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShifterShift, Hazel.SendOption.Reliable, -1);
-                writer.Write(Shifter.futureShift.PlayerId);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.shifterShift(Shifter.futureShift.PlayerId);
+                Shifter.ShifterShift(Shifter.futureShift.PlayerId);
             }
             Shifter.futureShift = null;
 
             // Eraser erase
-            if (Eraser.eraser != null && AmongUsClient.Instance.AmHost && Eraser.futureErased != null) {  // We need to send the RPC from the host here, to make sure that the order of shifting and erasing is correct (for that reason the futureShifted and futureErased are being synced)
-                foreach (PlayerControl target in Eraser.futureErased) {
+            if (Eraser.eraser != null && AmongUsClient.Instance.AmHost) {  // We need to send the RPC from the host here, to make sure that the order of shifting and erasing is correct (for that reason the futureShifted and futureErased are being synced)
+                foreach (var target in Eraser.futureErased) {
                     if (target != null && target.canBeErased()) {
-                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ErasePlayerRoles, Hazel.SendOption.Reliable, -1);
-                        writer.Write(target.PlayerId);
-                        AmongUsClient.Instance.FinishRpcImmediately(writer);
-                        RPCProcedure.erasePlayerRoles(target.PlayerId);
+                        CommonRpc.ErasePlayerRoles(target.PlayerId);
                     }
                 }
             }
-            Eraser.futureErased = new List<PlayerControl>();
+            Eraser.futureErased.Clear();
 
             // Trickster boxes
             if (Trickster.trickster != null && JackInTheBox.hasJackInTheBoxLimitReached()) {
@@ -71,9 +66,7 @@ namespace TheOtherRoles.Patches {
                             continue;
                         KernelRpc.UncheckedExilePlayer(target.PlayerId);
                         if (target == Lawyer.target && Lawyer.lawyer != null) {
-                            MessageWriter writer2 = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.LawyerPromotesToPursuer, Hazel.SendOption.Reliable, -1);
-                            AmongUsClient.Instance.FinishRpcImmediately(writer2);
-                            RPCProcedure.lawyerPromotesToPursuer();
+                            Lawyer.LawyerPromotesToPursuer();
                         }
                     }
                 }

@@ -11,7 +11,9 @@ using TheOtherRoles.Utilities;
 using UnityEngine;
 using TheOtherRoles.CustomGameModes;
 using AmongUs.GameOptions;
+using TheOtherRoles.EnoFw;
 using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.EnoFw.Modules;
 using TheOtherRoles.EnoFw.Roles.Crewmate;
 using TheOtherRoles.EnoFw.Roles.Impostor;
 using TheOtherRoles.EnoFw.Roles.Modifiers;
@@ -178,13 +180,9 @@ namespace TheOtherRoles.Patches
             if (Deputy.Player == null || Deputy.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
             if (Deputy.promotesToSheriff == 0 || Deputy.Player.Data.IsDead == true ||
                 Deputy.promotesToSheriff == 2 && !isMeeting) return;
-            if (Sheriff.sheriff == null || Sheriff.sheriff?.Data?.Disconnected == true || Sheriff.sheriff.Data.IsDead)
+            if (Sheriff.sheriff == null || Sheriff.sheriff.Data.Disconnected == true || Sheriff.sheriff.Data.IsDead)
             {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                    CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.DeputyPromotes,
-                    Hazel.SendOption.Reliable, -1);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.deputyPromotes();
+                Deputy.DeputyPromotes();
             }
         }
 
@@ -383,14 +381,10 @@ namespace TheOtherRoles.Patches
         {
             // If LocalPlayer is Sidekick, the Jackal is disconnected and Sidekick promotion is enabled, then trigger promotion
             if (Sidekick.sidekick == null || Sidekick.sidekick != CachedPlayer.LocalPlayer.PlayerControl) return;
-            if (Sidekick.sidekick.Data.IsDead == true || !Sidekick.promotesToJackal) return;
-            if (Jackal.jackal == null || Jackal.jackal?.Data?.Disconnected == true)
+            if (Sidekick.sidekick.Data.IsDead || !Sidekick.promotesToJackal) return;
+            if (Jackal.jackal == null || Jackal.jackal.Data.Disconnected == true)
             {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                    CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SidekickPromotes,
-                    Hazel.SendOption.Reliable, -1);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.sidekickPromotes();
+                Sidekick.SidekickPromotes();
             }
         }
 
@@ -419,12 +413,8 @@ namespace TheOtherRoles.Patches
                 Deputy.setHandcuffedKnows(false);
 
                 // Ghost info
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                    CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareGhostInfo,
-                    Hazel.SendOption.Reliable, -1);
-                writer.Write(CachedPlayer.LocalPlayer.PlayerId);
-                writer.Write((byte)RPCProcedure.GhostInfoTypes.HandcuffOver);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
+                GhostInfos.ShareGhostInfo(GhostInfos.Types.HandcuffOver,
+                    Rpc.Serialize(new Tuple<byte>(CachedPlayer.LocalPlayer.PlayerId)));
             }
         }
 
@@ -525,13 +515,7 @@ namespace TheOtherRoles.Patches
         {
             if (Ninja.isInvisble && Ninja.invisibleTimer <= 0 && Ninja.ninja == CachedPlayer.LocalPlayer.PlayerControl)
             {
-                MessageWriter invisibleWriter = AmongUsClient.Instance.StartRpcImmediately(
-                    CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SetInvisible,
-                    Hazel.SendOption.Reliable, -1);
-                invisibleWriter.Write(Ninja.ninja.PlayerId);
-                invisibleWriter.Write(byte.MaxValue);
-                AmongUsClient.Instance.FinishRpcImmediately(invisibleWriter);
-                RPCProcedure.setInvisible(Ninja.ninja.PlayerId, byte.MaxValue);
+                Ninja.SetInvisible(Ninja.ninja.PlayerId, true);
             }
 
             if (Ninja.arrow?.arrow != null)
@@ -1001,13 +985,8 @@ namespace TheOtherRoles.Patches
                 if (BountyHunter.bounty == null) return;
 
                 // Ghost Info
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                    CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareGhostInfo,
-                    Hazel.SendOption.Reliable, -1);
-                writer.Write(CachedPlayer.LocalPlayer.PlayerId);
-                writer.Write((byte)RPCProcedure.GhostInfoTypes.BountyTarget);
-                writer.Write(BountyHunter.bounty.PlayerId);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
+                GhostInfos.ShareGhostInfo(GhostInfos.Types.BountyTarget,
+                    Rpc.Serialize(new Tuple<byte>(BountyHunter.bounty.PlayerId)));
 
                 // Show poolable player
                 if (FastDestroyableSingleton<HudManager>.Instance != null &&
@@ -1136,15 +1115,8 @@ namespace TheOtherRoles.Patches
             if (Lawyer.lawyer == null || Lawyer.lawyer != CachedPlayer.LocalPlayer.PlayerControl) return;
 
             // Promote to Pursuer
-            if (Lawyer.target != null && Lawyer.target.Data.Disconnected && !Lawyer.lawyer.Data.IsDead)
-            {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                    CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.LawyerPromotesToPursuer,
-                    Hazel.SendOption.Reliable, -1);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.lawyerPromotesToPursuer();
-                return;
-            }
+            if (Lawyer.target == null || !Lawyer.target.Data.Disconnected || Lawyer.lawyer.Data.IsDead) return;
+            Lawyer.LawyerPromotesToPursuer();
         }
 
         public static void hackerUpdate()
@@ -1338,13 +1310,7 @@ namespace TheOtherRoles.Patches
                 int numberOfTasks = playerTotal - playerCompleted;
                 if (numberOfTasks == 0)
                 {
-                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                        CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareTimer,
-                        Hazel.SendOption.Reliable, -1);
-                    writer.Write(HideNSeek.taskPunish);
-                    AmongUsClient.Instance.FinishRpcImmediately(writer);
-                    RPCProcedure.shareTimer(HideNSeek.taskPunish);
-
+                    CommonRpc.ShareTimer(HideNSeek.taskPunish);
                     Hunted.taskPunish = true;
                 }
             }
@@ -1595,13 +1561,8 @@ namespace TheOtherRoles.Patches
                                 CachedPlayer.LocalPlayer.PlayerControl, msg);
 
                             // Ghost Info
-                            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                                CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareGhostInfo,
-                                Hazel.SendOption.Reliable, -1);
-                            writer.Write(CachedPlayer.LocalPlayer.PlayerId);
-                            writer.Write((byte)RPCProcedure.GhostInfoTypes.DetectiveOrMedicInfo);
-                            writer.Write(msg);
-                            AmongUsClient.Instance.FinishRpcImmediately(writer);
+                            GhostInfos.ShareGhostInfo(GhostInfos.Types.DetectiveOrMedicInfo,
+                                Rpc.Serialize(new Tuple<byte, string>(CachedPlayer.LocalPlayer.PlayerId, msg)));
                         }
 
                         if (msg.IndexOf("who", StringComparison.OrdinalIgnoreCase) >= 0)
@@ -1661,21 +1622,13 @@ namespace TheOtherRoles.Patches
             if (Sidekick.promotesToJackal && Sidekick.sidekick != null && !Sidekick.sidekick.Data.IsDead &&
                 target == Jackal.jackal && Jackal.jackal == CachedPlayer.LocalPlayer.PlayerControl)
             {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                    CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SidekickPromotes,
-                    Hazel.SendOption.Reliable, -1);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.sidekickPromotes();
+                Sidekick.SidekickPromotes();
             }
 
             // Pursuer promotion trigger on murder (the host sends the call such that everyone recieves the update before a possible game End)
             if (target == Lawyer.target && AmongUsClient.Instance.AmHost && Lawyer.lawyer != null)
             {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                    CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.LawyerPromotesToPursuer,
-                    Hazel.SendOption.Reliable, -1);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.lawyerPromotesToPursuer();
+                Lawyer.LawyerPromotesToPursuer();
             }
 
             // Seer show flash and add dead player position
@@ -1768,13 +1721,7 @@ namespace TheOtherRoles.Patches
             // Add Bloody Modifier
             if (Bloody.bloody.FindAll(x => x.PlayerId == target.PlayerId).Count > 0)
             {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                    CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.Bloody, Hazel.SendOption.Reliable,
-                    -1);
-                writer.Write(__instance.PlayerId);
-                writer.Write(target.PlayerId);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.bloody(__instance.PlayerId, target.PlayerId);
+                Bloody.SetBloody(__instance.PlayerId, target.PlayerId);
             }
 
             // VIP Modifier
@@ -1917,11 +1864,7 @@ namespace TheOtherRoles.Patches
             if (Sidekick.promotesToJackal && Sidekick.sidekick != null && !Sidekick.sidekick.Data.IsDead &&
                 __instance == Jackal.jackal && Jackal.jackal == CachedPlayer.LocalPlayer.PlayerControl)
             {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                    CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SidekickPromotes,
-                    Hazel.SendOption.Reliable, -1);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.sidekickPromotes();
+                Sidekick.SidekickPromotes();
             }
 
             // Pursuer promotion trigger on exile & suicide (the host sends the call such that everyone recieves the update before a possible game End)
@@ -1930,11 +1873,7 @@ namespace TheOtherRoles.Patches
                 if (AmongUsClient.Instance.AmHost &&
                     ((Lawyer.target != Jester.jester && !Lawyer.isProsecutor) || Lawyer.targetWasGuessed))
                 {
-                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                        CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.LawyerPromotesToPursuer,
-                        Hazel.SendOption.Reliable, -1);
-                    AmongUsClient.Instance.FinishRpcImmediately(writer);
-                    RPCProcedure.lawyerPromotesToPursuer();
+                    Lawyer.LawyerPromotesToPursuer();
                 }
 
                 if (!Lawyer.targetWasGuessed && !Lawyer.isProsecutor)

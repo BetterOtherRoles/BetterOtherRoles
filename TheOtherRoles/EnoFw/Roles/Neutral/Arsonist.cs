@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Reactor.Networking.Attributes;
 using TheOtherRoles.Players;
 using UnityEngine;
 
@@ -59,5 +60,23 @@ public static class Arsonist
 
         cooldown = CustomOptionHolder.arsonistCooldown.getFloat();
         duration = CustomOptionHolder.arsonistDuration.getFloat();
+    }
+
+    public static void ArsonistWin()
+    {
+        Rpc_ArsonistWin(PlayerControl.LocalPlayer);
+    }
+
+    [MethodRpc((uint)Rpc.Role.ArsonistWin)]
+    private static void Rpc_ArsonistWin(PlayerControl sender)
+    {
+        triggerArsonistWin = true;
+        foreach (var player in CachedPlayer.AllPlayers.Select(p => p.PlayerControl))
+        {
+            if (player != arsonist)
+            {
+                player.Exiled();
+            }
+        }
     }
 }

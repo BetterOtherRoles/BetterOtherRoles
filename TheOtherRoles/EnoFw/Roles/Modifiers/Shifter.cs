@@ -1,5 +1,10 @@
-﻿using TheOtherRoles.EnoFw.Roles.Crewmate;
+﻿using System;
+using Hazel;
+using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Roles.Crewmate;
 using TheOtherRoles.EnoFw.Roles.Neutral;
+using TheOtherRoles.Objects;
+using TheOtherRoles.Players;
 using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Roles.Modifiers;
@@ -131,5 +136,50 @@ public static class Shifter
         shifter = null;
         currentTarget = null;
         futureShift = null;
+    }
+
+    public static void SetFutureShifted(byte playerId)
+    {
+        var data = new Tuple<byte>(playerId);
+        Rpc_SetFutureShifted(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.SetFutureShifted)]
+    private static void Rpc_SetFutureShifted(PlayerControl sender, string rawData)
+    {
+        var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
+        futureShift = Helpers.playerById(playerId);
+    }
+
+    public static void ShifterShift(byte targetId)
+    {
+        var data = new Tuple<byte>(targetId);
+        Rpc_ShifterShift(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.ShifterShift)]
+    private static void Rpc_ShifterShift(PlayerControl sender, string rawData)
+    {
+        var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
+        var oldShifter = shifter;
+        var player = Helpers.playerById(targetId);
+        if (player == null || oldShifter == null) return;
+
+        futureShift = null;
+        clearAndReload();
+
+        // Suicide (exile) when impostor or impostor variants
+        if (player.Data.Role.IsImpostor || Helpers.isNeutral(player)) {
+            oldShifter.Exiled();
+            if (oldShifter != Lawyer.target || !AmongUsClient.Instance.AmHost || Lawyer.lawyer == null) return;
+            Lawyer.LawyerPromotesToPursuer();
+            return;
+        }
+            
+        shiftRole(oldShifter, player);
+
+        // Set cooldowns to max for both players
+        if (CachedPlayer.LocalPlayer.PlayerControl == oldShifter || CachedPlayer.LocalPlayer.PlayerControl == player)
+            CustomButton.ResetAllCooldowns();
     }
 }

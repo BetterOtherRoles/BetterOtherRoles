@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Reactor.Networking.Attributes;
+using TheOtherRoles.Objects;
 using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Roles.Crewmate;
@@ -38,5 +41,36 @@ public static class Trapper {
         anonymousMap = CustomOptionHolder.trapperAnonymousMap.getBool();
         infoType = CustomOptionHolder.trapperInfoType.getSelection();
         trapDuration = CustomOptionHolder.trapperTrapDuration.getFloat();
+    }
+
+    public static void TriggerTrap(byte playerId, byte trapId)
+    {
+        var data = new Tuple<byte, byte>(playerId, trapId);
+        Rpc_TriggerTrap(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.TriggerTrap)]
+    private static void Rpc_TriggerTrap(PlayerControl sender, string rawData)
+    {
+        var (playerId, trapId) = Rpc.Deserialize<Tuple<byte, byte>>(rawData);
+        Trap.triggerTrap(playerId, trapId);
+    }
+
+    public static void SetTrap(float x, float y)
+    {
+        var data = new Tuple<float, float>(x, y);
+        Rpc_SetTrap(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.SetTrap)]
+    private static void Rpc_SetTrap(PlayerControl sender, string rawData)
+    {
+        if (trapper == null) return;
+        var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawData);
+        charges--;
+        var position = Vector3.zero;
+        position.x = x;
+        position.y = y;
+        var _ = new Trap(position);
     }
 }

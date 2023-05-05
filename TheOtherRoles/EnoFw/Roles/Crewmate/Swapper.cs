@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using Reactor.Networking.Attributes;
+using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Roles.Crewmate;
 
@@ -33,5 +35,20 @@ public static class Swapper
         charges = Mathf.RoundToInt(CustomOptionHolder.swapperSwapsNumber.getFloat());
         rechargeTasksNumber = Mathf.RoundToInt(CustomOptionHolder.swapperRechargeTasksNumber.getFloat());
         rechargedTasks = Mathf.RoundToInt(CustomOptionHolder.swapperRechargeTasksNumber.getFloat());
+    }
+
+    public static void SwapperSwap(byte pId1, byte pId2)
+    {
+        var data = new Tuple<byte, byte>(pId1, pId2);
+        Rpc_SwapperSwap(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.SwapperSwap)]
+    private static void Rpc_SwapperSwap(PlayerControl sender, string rawData)
+    {
+        var (pId1, pId2) = Rpc.Deserialize<Tuple<byte, byte>>(rawData);
+        if (!MeetingHud.Instance) return;
+        playerId1 = pId1;
+        playerId2 = pId2;
     }
 }

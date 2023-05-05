@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Reactor.Networking.Attributes;
+using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Roles.Neutral;
 
@@ -17,7 +18,7 @@ public static class Sidekick
     public static bool canUseVents = true;
     public static bool canKill = true;
     public static bool promotesToJackal = true;
-    public static bool hasImpostorVision = false;
+    public static bool hasImpostorVision;
 
     public static void clearAndReload()
     {
@@ -29,5 +30,27 @@ public static class Sidekick
         promotesToJackal = CustomOptionHolder.sidekickPromotesToJackal.getBool();
         hasImpostorVision = CustomOptionHolder.jackalAndSidekickHaveImpostorVision.getBool();
         wasTeamRed = wasImpostor = wasSpy = false;
+    }
+
+    public static void SidekickPromotes()
+    {
+        Rpc_SidekickPromotes(PlayerControl.LocalPlayer);
+    }
+
+    [MethodRpc((uint)Rpc.Role.SidekickPromotes)]
+    private static void Rpc_SidekickPromotes(PlayerControl sender)
+    {
+        Local_SidekickPromotes();
+    }
+
+    public static void Local_SidekickPromotes()
+    {
+        Jackal.removeCurrentJackal();
+        Jackal.jackal = sidekick;
+        Jackal.canCreateSidekick = Jackal.jackalPromotedFromSidekickCanCreateSidekick;
+        Jackal.wasTeamRed = wasTeamRed;
+        Jackal.wasSpy = wasSpy;
+        Jackal.wasImpostor = wasImpostor;
+        clearAndReload();
     }
 }

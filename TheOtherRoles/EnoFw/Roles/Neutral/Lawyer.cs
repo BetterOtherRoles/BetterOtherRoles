@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿using System;
+using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Roles.Crewmate;
+using TheOtherRoles.Players;
+using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Roles.Neutral;
 
@@ -41,5 +45,39 @@ public static class Lawyer
         lawyerKnowsRole = CustomOptionHolder.lawyerKnowsRole.getBool();
         targetCanBeJester = CustomOptionHolder.lawyerTargetCanBeJester.getBool();
         canCallEmergency = CustomOptionHolder.jesterCanCallEmergency.getBool();
+    }
+
+    public static void LawyerPromotesToPursuer()
+    {
+        Rpc_LawyerPromotesToPursuer(PlayerControl.LocalPlayer);
+    }
+
+    [MethodRpc((uint)Rpc.Role.LawyerPromotesToPursuer)]
+    private static void Rpc_LawyerPromotesToPursuer(PlayerControl sender)
+    {
+        var player = lawyer;
+        var client = target;
+        clearAndReload(false);
+
+        Pursuer.pursuer = player;
+
+        if (player.PlayerId != CachedPlayer.LocalPlayer.PlayerId || client == null) return;
+        var playerInfoTransform = client.cosmetics.nameText.transform.parent.FindChild("Info");
+        var playerInfo = playerInfoTransform != null ? playerInfoTransform.GetComponent<TMPro.TextMeshPro>() : null;
+        if (playerInfo != null) playerInfo.text = "";
+    }
+
+    public static void LawyerSetTarget(byte playerId)
+    {
+        var data = new Tuple<byte>(playerId);
+        Rpc_LawyerSetTarget(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.LawyerSetTarget)]
+    private static void Rpc_LawyerSetTarget(PlayerControl sender, string rawData)
+    {
+        var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
+
+        target = Helpers.playerById(playerId);
     }
 }

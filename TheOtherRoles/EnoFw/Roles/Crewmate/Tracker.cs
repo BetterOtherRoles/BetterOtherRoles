@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Reactor.Networking.Attributes;
 using TheOtherRoles.Objects;
 using UnityEngine;
 
@@ -70,5 +72,20 @@ public static class Tracker
         corpsesTrackingCooldown = CustomOptionHolder.trackerCorpsesTrackingCooldown.getFloat();
         corpsesTrackingDuration = CustomOptionHolder.trackerCorpsesTrackingDuration.getFloat();
         canTrackCorpses = CustomOptionHolder.trackerCanTrackCorpses.getBool();
+    }
+
+    public static void TrackerUsedTracker(byte playerId)
+    {
+        var data = new Tuple<byte>(playerId);
+        Rpc_TrackerUsedTracker(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.TrackerUsedTracker)]
+    private static void Rpc_TrackerUsedTracker(PlayerControl sender, string rawData)
+    {
+        var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
+        var target = Helpers.playerById(targetId);
+        if (target == null) return;
+        tracked = target;
     }
 }

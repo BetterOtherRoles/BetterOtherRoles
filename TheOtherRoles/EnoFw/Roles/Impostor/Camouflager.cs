@@ -1,4 +1,6 @@
-﻿using TheOtherRoles.Players;
+﻿using System.Linq;
+using Reactor.Networking.Attributes;
+using TheOtherRoles.Players;
 using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
@@ -39,5 +41,21 @@ public static class Camouflager
         camouflageTimer = 0f;
         cooldown = CustomOptionHolder.camouflagerCooldown.getFloat();
         duration = CustomOptionHolder.camouflagerDuration.getFloat();
+    }
+
+    public static void CamouflagerCamouflage()
+    {
+        Rpc_CamouflagerCamouflage(PlayerControl.LocalPlayer);
+    }
+
+    [MethodRpc((uint)Rpc.Role.CamouflagerCamouflage)]
+    private static void Rpc_CamouflagerCamouflage(PlayerControl sender)
+    {
+        if (camouflager == null) return;
+        camouflageTimer = duration;
+        foreach (var player in CachedPlayer.AllPlayers.Select(p => p.PlayerControl))
+        {
+            player.setLook("", 6, "", "", "", "");
+        }
     }
 }

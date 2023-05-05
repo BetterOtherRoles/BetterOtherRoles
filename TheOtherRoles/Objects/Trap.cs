@@ -126,11 +126,7 @@ namespace TheOtherRoles.Objects {
                 }
             }
             if (target != null && player.PlayerId != Trapper.trapper.PlayerId && !player.Data.IsDead) {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.TriggerTrap, Hazel.SendOption.Reliable, -1);
-                writer.Write(player.PlayerId);
-                writer.Write(target.instanceId);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.triggerTrap(player.PlayerId,(byte)target.instanceId);
+                Trapper.TriggerTrap(player.PlayerId,(byte)target.instanceId);
             }
 
 

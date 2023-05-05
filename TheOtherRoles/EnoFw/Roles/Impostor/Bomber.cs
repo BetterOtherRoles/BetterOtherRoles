@@ -1,4 +1,6 @@
-﻿using TheOtherRoles.Objects;
+﻿using System;
+using Reactor.Networking.Attributes;
+using TheOtherRoles.Objects;
 using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
@@ -55,5 +57,37 @@ public static class Bomber
         bombCooldown = CustomOptionHolder.bomberBombCooldown.getFloat();
         bombActiveAfter = CustomOptionHolder.bomberBombActiveAfter.getFloat();
         Bomb.clearBackgroundSprite();
+    }
+
+    public static void DefuseBomb()
+    {
+        Rpc_DefuseBomb(PlayerControl.LocalPlayer);
+    }
+
+    [MethodRpc((uint)Rpc.Role.DefuseBomb)]
+    private static void Rpc_DefuseBomb(PlayerControl sender)
+    {
+        SoundEffectsManager.playAtPosition("bombDefused", Bomber.bomb.bomb.transform.position, range: Bomber.hearRange);
+        clearBomb();
+        HudManagerStartPatch.bomberButton.Timer = HudManagerStartPatch.bomberButton.MaxTimer;
+        HudManagerStartPatch.bomberButton.isEffectActive = false;
+        HudManagerStartPatch.bomberButton.actionButton.cooldownTimerText.color = Palette.EnabledColor;
+    }
+
+    public static void PlaceBomb(float x, float y)
+    {
+        var data = new Tuple<float, float>(x, y);
+        Rpc_PlaceBomb(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.PlaceBomb)]
+    private static void Rpc_PlaceBomb(PlayerControl sender, string rawData)
+    {
+        var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawData);
+        if (bomber == null) return;
+        var position = Vector3.zero;
+        position.x = x;
+        position.y = y;
+        var _ = new Bomb(position);
     }
 }

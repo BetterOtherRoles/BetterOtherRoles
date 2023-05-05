@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿using System;
+using Reactor.Networking.Attributes;
+using TheOtherRoles.Patches;
+using TheOtherRoles.Players;
+using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Roles.Crewmate;
 
@@ -35,5 +39,17 @@ public static class Mayor
         meetingButton = CustomOptionHolder.mayorMeetingButton.getBool();
         mayorChooseSingleVote = CustomOptionHolder.mayorChooseSingleVote.getSelection();
         voteTwice = true;
+    }
+
+    public static void MayorSetVoteTwice(bool value)
+    {
+        var data = new Tuple<bool>(value);
+        Rpc_MayorSetVoteTwice(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.MayorSetVoteTwice)]
+    private static void Rpc_MayorSetVoteTwice(PlayerControl sender, string rawData)
+    {
+        voteTwice = Rpc.Deserialize<Tuple<bool>>(rawData).Item1;
     }
 }

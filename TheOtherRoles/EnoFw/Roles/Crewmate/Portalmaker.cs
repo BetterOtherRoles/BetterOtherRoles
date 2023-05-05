@@ -1,4 +1,7 @@
-﻿using TheOtherRoles.Utilities;
+﻿using System;
+using Reactor.Networking.Attributes;
+using TheOtherRoles.Objects;
+using TheOtherRoles.Utilities;
 using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Roles.Crewmate;
@@ -69,5 +72,39 @@ public static class Portalmaker
         logOnlyHasColors = CustomOptionHolder.portalmakerLogOnlyColorType.getBool();
         logShowsTime = CustomOptionHolder.portalmakerLogHasTime.getBool();
         canPortalFromAnywhere = CustomOptionHolder.portalmakerCanPortalFromAnywhere.getBool();
+    }
+
+    public static void UsePortal(byte playerId, byte exit)
+    {
+        var data = new Tuple<byte, byte>(playerId, exit);
+        Rpc_UsePortal(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.UsePortal)]
+    private static void Rpc_UsePortal(PlayerControl sender, string rawData)
+    {
+        var (playerId, exit) = Rpc.Deserialize<Tuple<byte, byte>>(rawData);
+        Local_UsePortal(playerId, exit);
+    }
+    
+    public static void Local_UsePortal(byte playerId, byte exit)
+    {
+        Portal.startTeleport(playerId, exit);
+    }
+
+    public static void PlacePortal(float x, float y)
+    {
+        var data = new Tuple<float, float>(x, y);
+        Rpc_PlacePortal(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.PlacePortal)]
+    private static void Rpc_PlacePortal(PlayerControl sender, string rawData)
+    {
+        var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawData);
+        var position = Vector3.zero;
+        position.x = x;
+        position.y = y;
+        var _ = new Portal(position);
     }
 }

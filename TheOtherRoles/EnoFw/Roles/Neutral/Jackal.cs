@@ -1,5 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using AmongUs.GameOptions;
+using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Modules;
+using TheOtherRoles.EnoFw.Roles.Crewmate;
+using TheOtherRoles.Players;
+using TheOtherRoles.Utilities;
+using TMPro;
 using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Roles.Neutral;
@@ -19,7 +27,7 @@ public static class Jackal
     public static Sprite buttonSprite;
     public static bool jackalPromotedFromSidekickCanCreateSidekick = true;
     public static bool canCreateSidekickFromImpostor = true;
-    public static bool hasImpostorVision = false;
+    public static bool hasImpostorVision;
     public static bool wasTeamRed;
     public static bool wasImpostor;
     public static bool wasSpy;
@@ -33,7 +41,7 @@ public static class Jackal
 
     public static void removeCurrentJackal()
     {
-        if (!formerJackals.Any(x => x.PlayerId == jackal.PlayerId)) formerJackals.Add(jackal);
+        if (formerJackals.All(x => x.PlayerId != jackal.PlayerId)) formerJackals.Add(jackal);
         jackal = null;
         currentTarget = null;
         fakeSidekick = null;
@@ -56,5 +64,42 @@ public static class Jackal
         formerJackals.Clear();
         hasImpostorVision = CustomOptionHolder.jackalAndSidekickHaveImpostorVision.getBool();
         wasTeamRed = wasImpostor = wasSpy = false;
+    }
+
+    public static void JackalCreatesSidekick(byte targetId)
+    {
+        var data = new Tuple<byte>(targetId);
+        Rpc_JackalCreatesSidekick(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.JackalCreatesSidekick)]
+    private static void Rpc_JackalCreatesSidekick(PlayerControl sender, string rawData)
+    {
+        var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
+        var player = Helpers.playerById(targetId);
+        if (player == null) return;
+        if (Lawyer.target == player && Lawyer.isProsecutor && Lawyer.lawyer != null && !Lawyer.lawyer.Data.IsDead) Lawyer.isProsecutor = false;
+
+        if (!canCreateSidekickFromImpostor && player.Data.Role.IsImpostor) {
+            fakeSidekick = player;
+        } else {
+            var localWasSpy = Spy.spy != null && player == Spy.spy;
+            var localWasImpostor = player.Data.Role.IsImpostor;  // This can only be reached if impostors can be sidekicked.
+            FastDestroyableSingleton<RoleManager>.Instance.SetRole(player, RoleTypes.Crewmate);
+            if (player == Lawyer.lawyer && Lawyer.target != null)
+            {
+                var playerInfoTransform = Lawyer.target.cosmetics.nameText.transform.parent.FindChild("Info");
+                var playerInfo = playerInfoTransform != null ? playerInfoTransform.GetComponent<TextMeshPro>() : null;
+                if (playerInfo != null) playerInfo.text = "";
+            }
+            CommonRpc.Local_ErasePlayerRoles(player.PlayerId);
+            Sidekick.sidekick = player;
+            if (player.PlayerId == CachedPlayer.LocalPlayer.PlayerId) CachedPlayer.LocalPlayer.PlayerControl.moveable = true;
+            if (localWasSpy || localWasImpostor) Sidekick.wasTeamRed = true;
+            Sidekick.wasSpy = localWasSpy;
+            Sidekick.wasImpostor = localWasImpostor;
+            if (player == CachedPlayer.LocalPlayer.PlayerControl) SoundEffectsManager.play("jackalSidekick");
+        }
+        canCreateSidekick = false;
     }
 }

@@ -15,6 +15,7 @@ using System.Net;
 using TheOtherRoles.CustomGameModes;
 using Reactor.Utilities.Extensions;
 using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.EnoFw.Modules;
 using TheOtherRoles.EnoFw.Roles.Crewmate;
 using TheOtherRoles.EnoFw.Roles.Impostor;
 using TheOtherRoles.EnoFw.Roles.Modifiers;
@@ -275,13 +276,7 @@ namespace TheOtherRoles
         {
             // Murder the bitten player and reset bitten (regardless whether the kill was successful or not)
             Helpers.checkMurderAttemptAndKill(Vampire.vampire, Vampire.bitten, true, false);
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.VampireSetBitten,
-                Hazel.SendOption.Reliable, -1);
-            writer.Write(byte.MaxValue);
-            writer.Write(byte.MaxValue);
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
-            RPCProcedure.vampireSetBitten(byte.MaxValue, byte.MaxValue);
+            Vampire.VampireSetBitten(byte.MaxValue, true);
         }
 
         public static void handleUndertakerDropOnBodyReport()
@@ -626,23 +621,13 @@ namespace TheOtherRoles
             // Handle blank shot
             if (!ignoreBlank && Pursuer.blankedList.Any(x => x.PlayerId == killer.PlayerId))
             {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(
-                    CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SetBlanked, Hazel.SendOption.Reliable,
-                    -1);
-                writer.Write(killer.PlayerId);
-                writer.Write((byte)0);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.setBlanked(killer.PlayerId, 0);
-
+                Pursuer.SetBlanked(killer.PlayerId, false);
                 return MurderAttemptResult.BlankKill;
             }
 
             // Block impostor shielded kill
             if (Medic.shielded != null && Medic.shielded == target)
             {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(killer.NetId,
-                    (byte)CustomRPC.ShieldedMurderAttempt, Hazel.SendOption.Reliable, -1);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
                 Medic.ShieldedMurderAttempt();
                 MurderAttempt.ShowFailedMurderAttempt(CachedPlayer.LocalPlayer, $"{killer.PlayerId}|{target.PlayerId}");
                 SoundEffectsManager.play("fail");
@@ -680,11 +665,7 @@ namespace TheOtherRoles
             // Block hunted with time shield kill
             else if (Hunted.timeshieldActive.Contains(target.PlayerId))
             {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(killer.NetId,
-                    (byte)CustomRPC.HuntedRewindTime, Hazel.SendOption.Reliable, -1);
-                writer.Write(target.PlayerId);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.huntedRewindTime(target.PlayerId);
+                CommonRpc.HuntedRewindTime(target.PlayerId);
 
                 return MurderAttemptResult.SuppressKill;
             }

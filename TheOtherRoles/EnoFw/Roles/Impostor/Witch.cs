@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Reactor.Networking.Attributes;
 using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
@@ -14,8 +16,8 @@ public static class Witch
     public static float cooldown = 30f;
     public static float spellCastingDuration = 2f;
     public static float cooldownAddition = 10f;
-    public static float currentCooldownAddition = 0f;
-    public static bool canSpellAnyone = false;
+    public static float currentCooldownAddition;
+    public static bool canSpellAnyone;
     public static bool triggerBothCooldowns = true;
     public static bool witchVoteSavesTargets = true;
 
@@ -50,5 +52,24 @@ public static class Witch
         spellCastingDuration = CustomOptionHolder.witchSpellCastingDuration.getFloat();
         triggerBothCooldowns = CustomOptionHolder.witchTriggerBothCooldowns.getBool();
         witchVoteSavesTargets = CustomOptionHolder.witchVoteSavesTargets.getBool();
+    }
+
+    public static void SetFutureSpelled(byte playerId)
+    {
+        var data = new Tuple<byte>(playerId);
+        Rpc_SetFutureSpelled(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.SetFutureSpelled)]
+    private static void Rpc_SetFutureSpelled(PlayerControl sender, string rawData)
+    {
+        var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
+        
+        PlayerControl player = Helpers.playerById(playerId);
+        if (futureSpelled == null)
+            futureSpelled = new List<PlayerControl>();
+        if (player != null) {
+            futureSpelled.Add(player);
+        }
     }
 }

@@ -1,4 +1,9 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Linq;
+using Reactor.Networking.Attributes;
+using TheOtherRoles.Objects;
+using TheOtherRoles.Players;
+using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
 
@@ -46,5 +51,42 @@ public static class Vampire
         delay = CustomOptionHolder.vampireKillDelay.getFloat();
         cooldown = CustomOptionHolder.vampireCooldown.getFloat();
         canKillNearGarlics = CustomOptionHolder.vampireCanKillNearGarlics.getBool();
+    }
+
+    public static void VampireSetBitten(byte targetId, bool performReset)
+    {
+        var data = new Tuple<byte, bool>(targetId, performReset);
+        Rpc_VampireSetBitten(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.VampireSetBitten)]
+    private static void Rpc_VampireSetBitten(PlayerControl sender, string rawData)
+    {
+        var (targetId, performReset) = Rpc.Deserialize<Tuple<byte, bool>>(rawData);
+        if (performReset)
+        {
+            bitten = null;
+            return;
+        }
+        if (vampire == null) return;
+        var player = Helpers.playerById(targetId);
+        if (player.Data.IsDead) return;
+        bitten = player;
+    }
+
+    public static void PlaceGarlic(float x, float y)
+    {
+        var data = new Tuple<float, float>(x, y);
+        Rpc_PlaceGarlic(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.PlaceGarlic)]
+    private static void Rpc_PlaceGarlic(PlayerControl sender, string rawData)
+    {
+        var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawData);
+        var position = Vector3.zero;
+        position.x = x;
+        position.y = y;
+        var _ = new Garlic(position);
     }
 }
