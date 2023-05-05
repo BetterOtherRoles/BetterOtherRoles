@@ -8,7 +8,6 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
-using Hazel;
 using System.Collections.Generic;
 using System.Linq;
 using System;
@@ -16,7 +15,6 @@ using UnityEngine;
 using TheOtherRoles.Modules;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
-using Reactor;
 using Il2CppSystem.Security.Cryptography;
 using Il2CppSystem.Text;
 using Reactor.Networking.Attributes;
@@ -33,7 +31,7 @@ namespace TheOtherRoles
     public class TheOtherRolesPlugin : BasePlugin
     {
         public const string Id = "me.eisbison.theotherroles";
-        public const string VersionString = "1.1.8";
+        public const string VersionString = "1.1.9";
 
         public static Version Version = Version.Parse(VersionString);
         internal static BepInEx.Logging.ManualLogSource Logger;

@@ -199,6 +199,7 @@ public static class KernelRpc
     [MethodRpc((uint)Rpc.Kernel.WorkaroundSetRoles)]
     private static void Rpc_WorkaroundSetRoles(PlayerControl sender, string rawData)
     {
+        if (sender.AmOwner) return;
         var roles = Rpc.Deserialize<Dictionary<byte, byte>>(rawData);
         foreach (var role in roles)
         {

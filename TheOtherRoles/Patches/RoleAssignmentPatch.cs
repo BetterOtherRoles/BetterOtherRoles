@@ -48,7 +48,7 @@ namespace TheOtherRoles.Patches {
         private static int crewValues;
         private static int impValues;
         private static bool isEvilGuesser;
-        private static List<Tuple<byte, byte>> playerRoleMap = new List<Tuple<byte, byte>>();
+        private static List<Tuple<byte, byte>> playerRoleMap = new();
         public static bool isGuesserGamemode { get { return TORMapOptions.gameMode == CustomGamemodes.Guesser; } }
         public static void Postfix() {
             KernelRpc.ResetVariables();
@@ -609,9 +609,18 @@ namespace TheOtherRoles.Patches {
 
         private static void setRolesAgain()
         {
-            var roles = playerRoleMap.ToDictionary(pr => pr.Item1, pr => pr.Item2);
-            KernelRpc.WorkaroundSetRoles(roles);
-            playerRoleMap.Clear();
+            while (playerRoleMap.Any())
+            {
+                var roles = new Dictionary<byte, byte>();
+                var amount = (byte)Math.Min(playerRoleMap.Count, 20);
+                for (var i = 0; i < amount; i++)
+                {
+                    var option = playerRoleMap[0];
+                    roles.Add(option.Item1, option.Item2);
+                    playerRoleMap.RemoveAt(0);
+                }
+                KernelRpc.WorkaroundSetRoles(roles);
+            }
         }
 
         public class RoleAssignmentData {
