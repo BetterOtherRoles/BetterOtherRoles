@@ -395,7 +395,6 @@ public static class KernelRpc
     private static void Rpc_ShareOptions(PlayerControl sender, string rawData)
     {
         if (sender.AmOwner) return;
-        System.Console.WriteLine(rawData);
         var options = Rpc.Deserialize<Dictionary<int, int>>(rawData);
         foreach (var o in options)
         {

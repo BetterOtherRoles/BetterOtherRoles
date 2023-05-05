@@ -1,10 +1,8 @@
 ﻿using System;
-using Hazel;
 using Reactor.Networking.Attributes;
 using TheOtherRoles.EnoFw.Roles.Crewmate;
 using TheOtherRoles.EnoFw.Roles.Impostor;
 using TheOtherRoles.EnoFw.Roles.Neutral;
-using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 
 namespace TheOtherRoles.EnoFw.Modules;
@@ -29,11 +27,13 @@ public static class GhostInfos
     public static void ShareGhostInfo(Types type, string rawData)
     {
         var data = new Tuple<byte, string>((byte)type, rawData);
+        Rpc_ShareGhostInfo(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
 
     [MethodRpc((uint)Rpc.Module.ShareGhostInfo)]
     private static void Rpc_ShareGhostInfo(PlayerControl sender, string rawData)
     {
+        if (sender.AmOwner) return;
         var (id, data) = Rpc.Deserialize<Tuple<byte, string>>(rawData);
         switch ((Types)id)
         {

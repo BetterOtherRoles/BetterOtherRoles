@@ -355,7 +355,7 @@ namespace TheOtherRoles.Patches {
 
                 if (Vector2.Distance(undertakerPlayer.GetTruePosition() - new Vector2(-0.2f, -0.22f),  __instance.TruePosition) <= Undertaker.distancesList[(int) Undertaker.dragDistance] + 0.1f)
                 {
-                    Undertaker.DragBody(CachedPlayer.LocalPlayer, $"{__instance.ParentId}");
+                    Undertaker.DragBody(__instance.ParentId);
                     
                     return false;
                 }

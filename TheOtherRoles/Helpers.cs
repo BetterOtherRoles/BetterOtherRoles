@@ -283,7 +283,7 @@ namespace TheOtherRoles
         {
             if (Undertaker.undertaker == null) return;
             var position = Undertaker.undertaker.transform.position;
-            Undertaker.DropBody(CachedPlayer.LocalPlayer, position.Serialize());
+            Undertaker.DropBody(position.x, position.y);
         }
 
         public static void handleWhispererKillOnBodyReport()
@@ -614,7 +614,7 @@ namespace TheOtherRoles
             // Handle first kill attempt
             if (TORMapOptions.shieldFirstKill && TORMapOptions.firstKillPlayer == target)
             {
-                MurderAttempt.ShowFailedMurderAttempt(CachedPlayer.LocalPlayer, $"{killer.PlayerId}|{target.PlayerId}");
+                MurderAttempt.ShowFailedMurderAttempt(killer.PlayerId, target.PlayerId);
                 return MurderAttemptResult.SuppressKill;
             }
 
@@ -629,7 +629,7 @@ namespace TheOtherRoles
             if (Medic.shielded != null && Medic.shielded == target)
             {
                 Medic.ShieldedMurderAttempt();
-                MurderAttempt.ShowFailedMurderAttempt(CachedPlayer.LocalPlayer, $"{killer.PlayerId}|{target.PlayerId}");
+                MurderAttempt.ShowFailedMurderAttempt(killer.PlayerId, target.PlayerId);
                 SoundEffectsManager.play("fail");
                 return MurderAttemptResult.SuppressKill;
             }
@@ -637,7 +637,7 @@ namespace TheOtherRoles
             // Block impostor not fully grown mini kill
             else if (Mini.mini != null && target == Mini.mini && !Mini.isGrownUp())
             {
-                MurderAttempt.ShowFailedMurderAttempt(CachedPlayer.LocalPlayer, $"{killer.PlayerId}|{target.PlayerId}");
+                MurderAttempt.ShowFailedMurderAttempt(killer.PlayerId, target.PlayerId);
                 return MurderAttemptResult.SuppressKill;
             }
 

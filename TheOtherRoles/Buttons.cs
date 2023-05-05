@@ -757,7 +757,7 @@ namespace TheOtherRoles
                                 byte timer = (byte)whispererKillButton.Timer;
                                 if (timer != lastTimer) {
                                     lastTimer = timer;
-                                    GhostInfos.ShareGhostInfo(GhostInfos.Types.VampireTimer,
+                                    GhostInfos.ShareGhostInfo(GhostInfos.Types.WhispererTimerAndTarget,
                                         Rpc.Serialize(new Tuple<byte, byte, float>(Whisperer.whisperVictim.PlayerId, Whisperer.whisperVictimToKill.PlayerId, timer)));
                                 }
                             }
@@ -824,13 +824,13 @@ namespace TheOtherRoles
 
                     if (Undertaker.draggedBody == null && Undertaker.currentDeadTarget != null)
                     {
-                        Undertaker.DragBody(CachedPlayer.LocalPlayer, $"{bodyComponent.ParentId}");
+                        Undertaker.DragBody(bodyComponent.ParentId);
                         
                     } else if (Undertaker.draggedBody != null)
                     {
                         
                         var position = Undertaker.draggedBody.transform.position;
-                        Undertaker.DropBody(CachedPlayer.LocalPlayer, position.Serialize());
+                        Undertaker.DropBody(position.x, position.y);
 
                     }
                 }, // Action OnClick
@@ -1609,7 +1609,6 @@ namespace TheOtherRoles
             // Ninja mark and assassinate button 
             ninjaButton = new CustomButton(
                 () => {
-                    MessageWriter writer;
                     if (Ninja.ninjaMarked != null) {
                         // Murder attempt with teleport
                         MurderAttemptResult attempt = Helpers.checkMurderAttempt(Ninja.ninja, Ninja.ninjaMarked);

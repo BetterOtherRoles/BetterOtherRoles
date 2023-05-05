@@ -70,11 +70,15 @@ public static class Rpc
         TriggerTrap,
         PlaceBomb,
         DefuseBomb,
+        UndertakerDragBody,
+        UndertakerDropBody
     }
 
     public enum Module : uint
     {
         ShareRandomSeed = 150,
+        ShowFailedMurderAttempt,
+        ShareFriendCode,
         SetFirstKill,
         SetGuesserGm,
         ShareTimer,

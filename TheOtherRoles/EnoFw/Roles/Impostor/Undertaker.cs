@@ -62,20 +62,35 @@ public static class Undertaker
         disableVentButton = CustomOptionHolder.undertakerDisableVentButtonWhileDragging.getBool();
     }
 
-    [MethodRpc((uint)CustomRpc.UndertakerDropBody)]
-    public static void DropBody(PlayerControl sender, string rawData)
+    public static void DropBody(float x, float y)
+    {
+        var data = new Tuple<float, float>(x, y);
+        Rpc_DropBody(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.UndertakerDropBody)]
+    private static void Rpc_DropBody(PlayerControl sender, string rawData)
     {
         if (undertaker == null || draggedBody == null) return;
-        draggedBody.transform.position = Vector3Extensions.Deserialize(rawData);
+        var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawData);
+        var transform = draggedBody.transform;
+        var position = new Vector3(x, y, transform.position.z);
+        transform.position = position;
         draggedBody = null;
         LastDragged = DateTime.UtcNow;
     }
 
-    [MethodRpc((uint)CustomRpc.UndertakerDragBody)]
-    public static void DragBody(PlayerControl sender, string rawData)
+    public static void DragBody(byte playerId)
+    {
+        var data = new Tuple<byte>(playerId);
+        Rpc_DragBody(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint)Rpc.Role.UndertakerDragBody)]
+    private static void Rpc_DragBody(PlayerControl sender, string rawData)
     {
         if (undertaker == null) return;
-        var playerId = byte.Parse(rawData);
+        var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var body = UnityEngine.Object.FindObjectsOfType<DeadBody>().FirstOrDefault(b => b.ParentId == playerId);
         if (body == null) return;
         draggedBody = body;

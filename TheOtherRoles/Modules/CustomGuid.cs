@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw;
 using TheOtherRoles.Players;
 using UnityEngine;
 
@@ -52,13 +53,15 @@ public static class CustomGuid
     public static void ShareFriendCode()
     {
         var client = AmongUsClient.Instance.GetClient(CachedPlayer.LocalPlayer.PlayerControl.OwnerId);
-        RpcShareFriendCode(CachedPlayer.LocalPlayer, client.FriendCode);
+        var data = new Tuple<byte, string>(CachedPlayer.LocalPlayer.PlayerId, client.FriendCode);
+        Rpc_ShareFriendCode(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
 
-    [MethodRpc((uint)CustomRpc.ShareFriendCode)]
-    private static void RpcShareFriendCode(PlayerControl sender, string rawData)
+    [MethodRpc((uint)Rpc.Module.ShareFriendCode)]
+    private static void Rpc_ShareFriendCode(PlayerControl sender, string rawData)
     {
-        FriendCodes[sender.PlayerId] = rawData;
+        var (playerId, code) = Rpc.Deserialize<Tuple<byte, string>>(rawData);
+        FriendCodes[playerId] = code;
     }
     
     [HarmonyPatch(typeof(Minigame), nameof(Minigame.Begin))]

@@ -1,18 +1,23 @@
-﻿using System.Linq;
+﻿using System;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw;
 using TheOtherRoles.Players;
 
 namespace TheOtherRoles.Modules;
 
 public static class MurderAttempt
 {
-    [MethodRpc((uint)CustomRpc.ShowFailedMurderAttempt)]
-    public static void ShowFailedMurderAttempt(PlayerControl sender, string rawData)
+    public static void ShowFailedMurderAttempt(byte murderId, byte targetId)
+    {
+        var data = new Tuple<byte, byte>(murderId, targetId);
+        Rpc_ShowFailedMurderAttempt(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+    
+    [MethodRpc((uint)Rpc.Module.ShowFailedMurderAttempt)]
+    private static void Rpc_ShowFailedMurderAttempt(PlayerControl sender, string rawData)
     {
         if (CachedPlayer.LocalPlayer == null) return;
-        var data = rawData.Split("|").Select(byte.Parse).ToArray();
-        var murderId = data[0];
-        var targetId = data[1];
+        var (murderId, targetId) = Rpc.Deserialize<Tuple<byte, byte>>(rawData);
         if (CachedPlayer.LocalPlayer.PlayerId != murderId) return;
         Helpers.playerById(targetId)?.ShowFailedMurder();
     }

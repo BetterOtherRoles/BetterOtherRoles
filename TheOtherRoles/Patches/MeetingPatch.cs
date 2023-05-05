@@ -215,7 +215,7 @@ namespace TheOtherRoles.Patches {
             static void Postfix(MeetingHud __instance, [HarmonyArgument(0)]byte[] states, [HarmonyArgument(1)]GameData.PlayerInfo exiled, [HarmonyArgument(2)]bool tie)
             {
                 // Regenerate RandomSeeds
-                RandomSeed.GenerateSeeds();
+                RandomSeed.GenerateSeed();
                 
                 // Reset swapper values
                 Swapper.playerId1 = Byte.MaxValue;

@@ -337,7 +337,7 @@ namespace TheOtherRoles.Patches
             {
                 if (undertakerPlayer.AmOwner)
                 {
-                    Undertaker.DropBody(CachedPlayer.LocalPlayer, newBodyPos.Serialize());
+                    Undertaker.DropBody(newBodyPos.x, newBodyPos.y);
                 }
 
                 return;

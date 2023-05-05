@@ -1,9 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using BepInEx.Unity.IL2CPP.Utils;
 using HarmonyLib;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw;
 using TheOtherRoles.Players;
 using UnityEngine;
 using Random = System.Random;
@@ -12,25 +14,26 @@ namespace TheOtherRoles.Modules;
 
 public static class RandomSeed
 {
-    
-    private static List<int> seeds = new ();
+    private static Random _random = new();
 
-    public static void GenerateSeeds()
+    public static void GenerateSeed()
     {
         if (CachedPlayer.LocalPlayer == null || !AmongUsClient.Instance.AmHost) return;
-        var seedsList = new List<int>();
-        var rnd = new Random();
-        for (var i = 0; i < 15; i++)
-        {
-            seedsList.Add(rnd.Next());
-        }
-        ShareRandomizer(PlayerControl.LocalPlayer, string.Join("|", seedsList));
+        var seed = new Random().Next();
+        ShareRandomSeed(seed);
     }
 
-    [MethodRpc((uint) CustomRpc.ShareRandomSeeds)]
-    private static void ShareRandomizer(PlayerControl sender, string rawData)
+    private static void ShareRandomSeed(int seed)
     {
-        seeds = rawData.Split("|").Select(int.Parse).ToList();
+        var data = new Tuple<int>(seed);
+        Rpc_ShareRandomSeed(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+    }
+
+    [MethodRpc((uint) Rpc.Module.ShareRandomSeed)]
+    private static void Rpc_ShareRandomSeed(PlayerControl sender, string rawData)
+    {
+        var seed = Rpc.Deserialize<Tuple<int>>(rawData).Item1;
+        _random = new Random(seed);
     }
 
     public static void RandomizePlayersList(MeetingHud meetingHud)
@@ -41,9 +44,7 @@ public static class RandomSeed
         alivePlayers.Sort(SortListByNames);
         var playerPositions = alivePlayers.Select(area => area.transform.localPosition).ToList();
         var playersList = alivePlayers
-            .Select(ToRandomList)
-            .OrderBy(ReorderList)
-            .Select(GetPlayerVoteArea)
+            .OrderBy(_ => _random.Next())
             .ToList();
 
         for (var i = 0; i < playersList.Count; i++)
@@ -55,7 +56,7 @@ public static class RandomSeed
     public static void RandomizeUploadLocation(List<GameObject> downloads, GameObject upload)
     {
         var randomizedDownloads = downloads
-            .OrderBy(o => TheOtherRoles.rnd.Next())
+            .OrderBy(_ => TheOtherRoles.rnd.Next())
             .ToList();
         if (TheOtherRoles.rnd.Next(randomizedDownloads.Count + 1) == 1) return;
         var randomDownload = randomizedDownloads[0];
@@ -107,33 +108,6 @@ public static class RandomSeed
         return string.CompareOrdinal(a.NameText.text, b.NameText.text);
     }
 
-    private static RandomPlayerVoteArea ToRandomList(PlayerVoteArea pva, int index)
-    {
-        return new RandomPlayerVoteArea(pva, seeds[index]);
-    }
-
-    private static int ReorderList(RandomPlayerVoteArea pva)
-    {
-        return pva.RandomValue;
-    }
-
-    private static PlayerVoteArea GetPlayerVoteArea(RandomPlayerVoteArea pva)
-    {
-        return pva.Player;
-    }
-
-    private class RandomPlayerVoteArea
-    {
-        public readonly PlayerVoteArea Player;
-        public readonly int RandomValue;
-
-        public RandomPlayerVoteArea(PlayerVoteArea player, int randomValue)
-        {
-            Player = player;
-            RandomValue = randomValue;
-        }
-    }
-    
     [HarmonyPatch(typeof(MedScanMinigame._WalkToPad_d__16), nameof(MedScanMinigame._WalkToPad_d__16.MoveNext))]
     public static class MedScanMinigameWalkToPad_Patch
     {
