@@ -25,13 +25,13 @@ using TheOtherRoles.Patches;
 
 namespace TheOtherRoles
 {
-    [BepInPlugin(Id, "The Other Roles", VersionString)]
+    [BepInPlugin(Id, "Better Other Roles", VersionString)]
     [BepInDependency(SubmergedCompatibility.SUBMERGED_GUID, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInProcess("Among Us.exe")]
     [ReactorModFlags(Reactor.Networking.ModFlags.RequireOnAllClients)]
     public class TheOtherRolesPlugin : BasePlugin
     {
-        public const string Id = "me.eisbison.theotherroles";
+        public const string Id = "us.enothilladon.betterotherroles";
         public const string VersionString = "1.1.7";
 
         public static Version Version = Version.Parse(VersionString);
