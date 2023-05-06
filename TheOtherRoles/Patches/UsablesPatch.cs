@@ -478,49 +478,38 @@ namespace TheOtherRoles.Patches {
         [HarmonyPatch(typeof(VitalsMinigame), nameof(VitalsMinigame.Update))]
         class VitalsMinigameUpdatePatch {
             static void Postfix(VitalsMinigame __instance) {
-                // Hacker show time since death
                 if (__instance.gameObject.name == "hudroleinfo")
                 {
-                    // __instance.inputHandler.gameObject.SetActive(false);
-                    
-                    for (int j = 0; j < __instance.vitals.Length; j++)
+                    foreach (var vitalsPanel in __instance.vitals)
                     {
-                        __instance.vitals[j].gameObject.SetActive(false);
+                        vitalsPanel.gameObject.SetActive(false);
                     }
-
                     return;
                 }
                 
+                // Hacker show time since death
+                
                 if (Hacker.hacker != null && Hacker.hacker == CachedPlayer.LocalPlayer.PlayerControl && Hacker.hackerTimer > 0) {
-                    for (int k = 0; k < __instance.vitals.Length; k++) {
-                        VitalsPanel vitalsPanel = __instance.vitals[k];
-                        GameData.PlayerInfo player = vitalsPanel.PlayerInfo;
+                    for (var k = 0; k < __instance.vitals.Length; k++) {
+                        var vitalsPanel = __instance.vitals[k];
+                        var player = vitalsPanel.PlayerInfo;
 
                         // Hacker update
-                        if (vitalsPanel.IsDead) {
-                            DeadPlayer deadPlayer = deadPlayers?.Where(x => x.player?.PlayerId == player?.PlayerId)?.FirstOrDefault();
-                            if (deadPlayer != null && k < hackerTexts.Count && hackerTexts[k] != null) {
-                                float timeSinceDeath = ((float)(DateTime.UtcNow - deadPlayer.timeOfDeath).TotalMilliseconds);
-                                hackerTexts[k].gameObject.SetActive(true);
-                                hackerTexts[k].text = Math.Round(timeSinceDeath / 1000) + "s";
-                            }
-                        }
+                        if (!vitalsPanel.IsDead) continue;
+                        
+                        var deadPlayer = deadPlayers?.Where(x => x.player.PlayerId == player?.PlayerId)?.FirstOrDefault();
+                        if (deadPlayer == null || k >= hackerTexts.Count || hackerTexts[k] == null) continue;
+                        
+                        var timeSinceDeath = ((float)(DateTime.UtcNow - deadPlayer.timeOfDeath).TotalMilliseconds);
+                        hackerTexts[k].gameObject.SetActive(true);
+                        hackerTexts[k].text = Math.Round(timeSinceDeath / 1000) + "s";
                     }
-                } else {
-                    foreach (TMPro.TextMeshPro text in hackerTexts)
-                        if (text != null && text.gameObject != null)
-                            text.gameObject.SetActive(false);
+                } else
+                {
+                    foreach (var text in hackerTexts.Where(text => text != null && text.gameObject != null))
+                        text.gameObject.SetActive(false);
                 }
             }
-        }
-    }
-
-    [HarmonyPatch(typeof(Minigame), nameof(Minigame.ForceClose))]
-    class MinigameForceClosePatch
-    {
-        static void Postfix(Minigame __instance)
-        {
-            if (__instance.gameObject.name == "hudroleinfo") CustomOption.RoleDescriptionIsOpen = false;
         }
     }
 

@@ -48,7 +48,7 @@ namespace TheOtherRoles {
         public bool isHeader;
         public CustomOptionType type;
 
-        public static bool RoleDescriptionIsOpen = false;
+        public static bool RoleDescriptionIsOpen => HudManagerUpdate.roleDescriptionDisplay != null && HudManagerUpdate.roleDescriptionDisplay.gameObject != null;
 
         // Option creation
 
@@ -1033,7 +1033,7 @@ namespace TheOtherRoles {
         private static TMPro.TextMeshPro[] settingsTMPs = new TMPro.TextMeshPro[3];
         private static GameObject settingsBackground;        
         private static TMPro.TextMeshPro[] roleDescriptionTMPs = Array.Empty<TextMeshPro>();
-        private static Minigame roleDescriptionDisplay;
+        public static Minigame roleDescriptionDisplay;
         
         public static void OpenSettings(HudManager __instance) {
             if (__instance.FullScreen == null || MapBehaviour.Instance && MapBehaviour.Instance.IsOpen
@@ -1069,7 +1069,7 @@ namespace TheOtherRoles {
                 || GameOptionsManager.Instance.currentGameOptions.GameMode == GameModes.HideNSeek) return;
             
 
-            if (Camera.main == null || RoleDescriptionIsOpen) return;
+            if (Camera.main == null || Minigame.Instance != null) return;
             
             
             if (roleDescriptionDisplay == null) 
@@ -1116,23 +1116,19 @@ namespace TheOtherRoles {
             //      roleDescriptionTMPs[index].gameObject.SetActive(true);
             //  }
             // }
-            
-            RoleDescriptionIsOpen = true;
         }
         public static void CloseRoleDescription() {
-            if (Minigame.Instance) {
+            if (Minigame.Instance != null) {
                 roleDescriptionDisplay.ForceClose();
             }
 
             foreach (var tmp in roleDescriptionTMPs)
                 if (tmp) tmp.gameObject.Destroy();
 
-            RoleDescriptionIsOpen = false;
-
         }
 
         public static void ToggleRoleDescription(HudManager hudManager) {
-            if (roleDescriptionDisplay != null && RoleDescriptionIsOpen) CloseRoleDescription();
+            if (RoleDescriptionIsOpen) CloseRoleDescription();
             else OpenRoleDescription(hudManager);
         }
 
@@ -1151,7 +1147,10 @@ namespace TheOtherRoles {
                 toggleSettingsButton = toggleSettingsButtonObject.GetComponent<PassiveButton>();
                 toggleSettingsButton.OnClick.RemoveAllListeners();
                 toggleSettingsButton.OnClick.AddListener((Action)(() => ToggleSettings(__instance)));
-            }if (!toggleRoleInfoButton || !toggleRoleInfoButtonObject) {
+            }
+            
+            
+            if (!toggleRoleInfoButton || !toggleRoleInfoButtonObject) {
                 // add a special button for RoleInfo display:
                 toggleRoleInfoButtonObject = UnityEngine.Object.Instantiate(__instance.MapButton.gameObject, __instance.MapButton.transform.parent);
                 toggleRoleInfoButtonObject.transform.localPosition = toggleSettingsButtonObject.transform.localPosition + new Vector3(0, 0.66f, 0);
