@@ -477,9 +477,19 @@ namespace TheOtherRoles.Patches {
 
         [HarmonyPatch(typeof(VitalsMinigame), nameof(VitalsMinigame.Update))]
         class VitalsMinigameUpdatePatch {
-
             static void Postfix(VitalsMinigame __instance) {
                 // Hacker show time since death
+                if (__instance.gameObject.name == "hudroleinfo")
+                {
+                    // __instance.inputHandler.gameObject.SetActive(false);
+                    
+                    for (int j = 0; j < __instance.vitals.Length; j++)
+                    {
+                        __instance.vitals[j].gameObject.SetActive(false);
+                    }
+
+                    return;
+                }
                 
                 if (Hacker.hacker != null && Hacker.hacker == CachedPlayer.LocalPlayer.PlayerControl && Hacker.hackerTimer > 0) {
                     for (int k = 0; k < __instance.vitals.Length; k++) {
@@ -502,6 +512,15 @@ namespace TheOtherRoles.Patches {
                             text.gameObject.SetActive(false);
                 }
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(Minigame), nameof(Minigame.ForceClose))]
+    class MinigameForceClosePatch
+    {
+        static void Postfix(Minigame __instance)
+        {
+            if (__instance.gameObject.name == "hudroleinfo") CustomOption.RoleDescriptionIsOpen = false;
         }
     }
 

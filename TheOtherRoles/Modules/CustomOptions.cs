@@ -17,6 +17,7 @@ using AmongUs.GameOptions;
 using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.EnoFw.Roles.Crewmate;
 using TheOtherRoles.EnoFw.Roles.Neutral;
+using TMPro;
 
 namespace TheOtherRoles {
     public class CustomOption {
@@ -46,6 +47,8 @@ namespace TheOtherRoles {
         public CustomOption parent;
         public bool isHeader;
         public CustomOptionType type;
+
+        public static bool RoleDescriptionIsOpen = false;
 
         // Option creation
 
@@ -1028,18 +1031,21 @@ namespace TheOtherRoles {
         }
 
         private static TMPro.TextMeshPro[] settingsTMPs = new TMPro.TextMeshPro[3];
-        private static GameObject settingsBackground;
+        private static GameObject settingsBackground;        
+        private static TMPro.TextMeshPro[] roleDescriptionTMPs = Array.Empty<TextMeshPro>();
+        private static Minigame roleDescriptionDisplay;
+        
         public static void OpenSettings(HudManager __instance) {
             if (__instance.FullScreen == null || MapBehaviour.Instance && MapBehaviour.Instance.IsOpen
                 /*|| AmongUsClient.Instance.GameState != InnerNet.InnerNetClient.GameStates.Started*/
                 || GameOptionsManager.Instance.currentGameOptions.GameMode == GameModes.HideNSeek) return;
-            settingsBackground = GameObject.Instantiate(__instance.FullScreen.gameObject, __instance.transform);
+            settingsBackground = UnityEngine.Object.Instantiate(__instance.FullScreen.gameObject, __instance.transform);
             settingsBackground.SetActive(true);
             var renderer = settingsBackground.GetComponent<SpriteRenderer>();
             renderer.color = new Color(0.2f, 0.2f, 0.2f, 0.9f);
             renderer.enabled = true;
             for (int i = 0; i < 3; i++) {
-                settingsTMPs[i] = GameObject.Instantiate(__instance.KillButton.cooldownTimerText, __instance.transform);
+                settingsTMPs[i] = UnityEngine.Object.Instantiate(__instance.KillButton.cooldownTimerText, __instance.transform);
                 settingsTMPs[i].alignment = TMPro.TextAlignmentOptions.TopLeft;
                 settingsTMPs[i].enableWordWrapping = false;
                 settingsTMPs[i].transform.localScale = Vector3.one * 0.25f;
@@ -1047,35 +1053,119 @@ namespace TheOtherRoles {
                 settingsTMPs[i].gameObject.SetActive(true);
             }
         }
-
         public static void CloseSettings() {
             foreach (var tmp in settingsTMPs)
                 if (tmp) tmp.gameObject.Destroy();
 
             if (settingsBackground) settingsBackground.Destroy();
         }
-
         public static void ToggleSettings(HudManager __instance) {
             if (settingsTMPs[0]) CloseSettings();
             else OpenSettings(__instance);
         }
+        public static void OpenRoleDescription(HudManager hudManager) {
+            if (hudManager.FullScreen == null || MapBehaviour.Instance && MapBehaviour.Instance.IsOpen
+                /*|| AmongUsClient.Instance.GameState != InnerNet.InnerNetClient.GameStates.Started*/
+                || GameOptionsManager.Instance.currentGameOptions.GameMode == GameModes.HideNSeek) return;
+            
+
+            if (Camera.main == null || RoleDescriptionIsOpen) return;
+            
+            
+            if (roleDescriptionDisplay == null) 
+            {
+                // var vitalsObj = GameObject.FindObjectsOfType<SystemConsole>().ToList().Find(console => console.name == "panel_vitals");
+                var vitalsObj = UnityEngine.Object.FindObjectsOfType<SystemConsole>().FirstOrDefault(x => x.gameObject.name.Contains("panel_vitals"));
+
+                if (vitalsObj != null)
+                {
+                    var hud = UnityEngine.Object.Instantiate(vitalsObj.MinigamePrefab, Camera.main.transform, false).Cast<VitalsMinigame>();
+                    
+                    // var allRoleInfo = RoleInfo.getRoleInfoForPlayer(CachedPlayer.LocalPlayer);
+
+                    // roleDescriptionTMPs = new TMPro.TextMeshPro[allRoleInfo.Count];
+
+                    // for (var index = 0; index < allRoleInfo.Count; index++)
+                    // {
+                    //     roleDescriptionTMPs[index].text = allRoleInfo[index].name;
+                    // }
+
+                    roleDescriptionDisplay = hud;
+                    roleDescriptionDisplay.gameObject.name = "hudroleinfo";
+                }
+            }
+
+            var transform = roleDescriptionDisplay.transform;
+
+            transform.SetParent(Camera.main.transform, false);
+            transform.localPosition = new Vector3(0.0f, 0.0f, -100);
+            roleDescriptionDisplay.Begin(null);
+            
+            // var backgroundRenderer = roleDescriptionDisplay.GetComponent<SpriteRenderer>();
+            // backgroundRenderer.color = new Color(0.2f, 0.2f, 0.2f, 0.9f);
+            // backgroundRenderer.enabled = true;
+            
+            // if (roleDescriptionTMPs[0])
+            // {
+            //   for (int index = 0; index < roleDescriptionTMPs.Count(); index++) {
+            //      roleDescriptionTMPs[index] = UnityEngine.Object.Instantiate(hudManager.KillButton.cooldownTimerText, hudManager.transform);
+            //      roleDescriptionTMPs[index].alignment = TMPro.TextAlignmentOptions.TopLeft;
+            //      roleDescriptionTMPs[index].enableWordWrapping = false;
+            //      roleDescriptionTMPs[index].transform.localScale = Vector3.one * 0.25f;
+            //      roleDescriptionTMPs[index].transform.localPosition += new Vector3(-4f + 3f * index, 1.8f, -500f);
+            //      roleDescriptionTMPs[index].gameObject.SetActive(true);
+            //  }
+            // }
+            
+            RoleDescriptionIsOpen = true;
+        }
+        public static void CloseRoleDescription() {
+            if (Minigame.Instance) {
+                roleDescriptionDisplay.ForceClose();
+            }
+
+            foreach (var tmp in roleDescriptionTMPs)
+                if (tmp) tmp.gameObject.Destroy();
+
+            RoleDescriptionIsOpen = false;
+
+        }
+
+        public static void ToggleRoleDescription(HudManager hudManager) {
+            if (roleDescriptionDisplay != null && RoleDescriptionIsOpen) CloseRoleDescription();
+            else OpenRoleDescription(hudManager);
+        }
 
         static PassiveButton toggleSettingsButton;
         static GameObject toggleSettingsButtonObject;
+        static PassiveButton toggleRoleInfoButton;
+        static GameObject toggleRoleInfoButtonObject;
         [HarmonyPostfix]
         public static void Postfix(HudManager __instance) {
             if (!toggleSettingsButton || !toggleSettingsButtonObject) {
                 // add a special button for settings viewing:
-                toggleSettingsButtonObject = GameObject.Instantiate(__instance.MapButton.gameObject, __instance.MapButton.transform.parent);
+                toggleSettingsButtonObject = UnityEngine.Object.Instantiate(__instance.MapButton.gameObject, __instance.MapButton.transform.parent);
                 toggleSettingsButtonObject.transform.localPosition = __instance.MapButton.transform.localPosition + new Vector3(0, -0.66f, -500f);
                 SpriteRenderer renderer = toggleSettingsButtonObject.GetComponent<SpriteRenderer>();
                 renderer.sprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.CurrentSettingsButton.png", 180f);
                 toggleSettingsButton = toggleSettingsButtonObject.GetComponent<PassiveButton>();
                 toggleSettingsButton.OnClick.RemoveAllListeners();
                 toggleSettingsButton.OnClick.AddListener((Action)(() => ToggleSettings(__instance)));
+            }if (!toggleRoleInfoButton || !toggleRoleInfoButtonObject) {
+                // add a special button for RoleInfo display:
+                toggleRoleInfoButtonObject = UnityEngine.Object.Instantiate(__instance.MapButton.gameObject, __instance.MapButton.transform.parent);
+                toggleRoleInfoButtonObject.transform.localPosition = toggleSettingsButtonObject.transform.localPosition + new Vector3(0, 0.66f, 0);
+                SpriteRenderer roleInfoRenderer = toggleSettingsButtonObject.GetComponent<SpriteRenderer>();
+                roleInfoRenderer.sprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.CurrentSettingsButton.png", 180f);
+                toggleRoleInfoButton = toggleRoleInfoButtonObject.GetComponent<PassiveButton>();
+                toggleRoleInfoButton.OnClick.RemoveAllListeners();
+                toggleRoleInfoButton.OnClick.AddListener((Action)(() => ToggleRoleDescription(__instance)));
+
             }
+            toggleRoleInfoButtonObject.SetActive(__instance.MapButton.gameObject.active && !(MapBehaviour.Instance && MapBehaviour.Instance.IsOpen) && GameOptionsManager.Instance.currentGameOptions.GameMode != GameModes.HideNSeek);
             toggleSettingsButtonObject.SetActive(__instance.MapButton.gameObject.active && !(MapBehaviour.Instance && MapBehaviour.Instance.IsOpen) && GameOptionsManager.Instance.currentGameOptions.GameMode != GameModes.HideNSeek);
             toggleSettingsButtonObject.transform.localPosition = __instance.MapButton.transform.localPosition + new Vector3(0, -0.66f, -500f);
+            toggleRoleInfoButtonObject.transform.localPosition = toggleSettingsButtonObject.transform.localPosition + new Vector3(0, -0.66f, 0);
         }
     }
 }
