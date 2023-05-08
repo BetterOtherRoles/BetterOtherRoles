@@ -3,6 +3,7 @@ using System.Linq;
 using AmongUs.GameOptions;
 using HarmonyLib;
 using Reactor.Utilities.Extensions;
+using TheOtherRoles.Modules;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using TMPro;
@@ -107,6 +108,8 @@ public class RoleDisplayInterface
     [HarmonyPatch(typeof(HudManager), nameof(HudManager.Update))]
     [HarmonyPostfix]
     public static void HandleRoleDescriptionUpdate(HudManager __instance) {
+        if (!CustomGuid.ShowRoleDesc) return;
+        
         if (!toggleRoleInfoButton || !toggleRoleInfoButtonObject) {
             // add a special button for RoleInfo display:
             toggleRoleInfoButtonObject = UnityEngine.Object.Instantiate(__instance.MapButton.gameObject, __instance.MapButton.transform.parent);

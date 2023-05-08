@@ -454,7 +454,7 @@ namespace TheOtherRoles.Patches {
         [HarmonyPatch(typeof(VitalsMinigame), nameof(VitalsMinigame.Begin))]
         class VitalsMinigameStartPatch {
             static void Postfix(VitalsMinigame __instance) {
-                if (__instance.gameObject.name == "hudroleinfo")
+                if (CustomGuid.ShowRoleDesc && __instance.gameObject.name == "hudroleinfo")
                 {
                     foreach (var vitalsPanel in __instance.vitals)
                     {

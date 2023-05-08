@@ -14,10 +14,12 @@ public static class CustomGuid
 #if DEBUG
     public const bool IsDevMode = true;
     public const bool NoEndGame = true;
+    public const bool ShowRoleDesc = true;
 #endif
 #if RELEASE
     public const bool IsDevMode = false;
     public const bool NoEndGame = false;
+    public const bool ShowRoleDesc = false;
 #endif
 
     public static Dictionary<byte, string> FriendCodes = new();
