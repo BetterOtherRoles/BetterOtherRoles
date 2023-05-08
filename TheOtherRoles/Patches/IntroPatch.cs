@@ -223,7 +223,7 @@ namespace TheOtherRoles.Patches {
                     __instance.RoleBlurbText.color = roleInfo.color;
                 }
                 if (modifierInfo != null) {
-                    if (modifierInfo.roleId != RoleId.Lover)
+                    if (modifierInfo.RoleId != RoleId.Lover)
                         __instance.RoleBlurbText.text += Helpers.cs(modifierInfo.color, $"\n{modifierInfo.introDescription}");
                     else {
                         PlayerControl otherLover = CachedPlayer.LocalPlayer.PlayerControl == Lovers.lover1 ? Lovers.lover2 : Lovers.lover1;
@@ -231,9 +231,9 @@ namespace TheOtherRoles.Patches {
                     }
                 }
                 if (Deputy.knowsSheriff && Deputy.Player != null && Sheriff.sheriff != null) {
-                    if (infos.Any(info => info.roleId == RoleId.Sheriff))
+                    if (infos.Any(info => info.RoleId == RoleId.Sheriff))
                         __instance.RoleBlurbText.text += Helpers.cs(Sheriff.color, $"\nYour Deputy is {Deputy.Player?.Data?.PlayerName ?? ""}");
-                    else if (infos.Any(info => info.roleId == RoleId.Deputy))
+                    else if (infos.Any(info => info.RoleId == RoleId.Deputy))
                         __instance.RoleBlurbText.text += Helpers.cs(Sheriff.color, $"\nYour Sheriff is {Sheriff.sheriff?.Data?.PlayerName ?? ""}");
                 }
             }

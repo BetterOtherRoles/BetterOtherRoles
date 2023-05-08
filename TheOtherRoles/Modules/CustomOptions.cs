@@ -1063,8 +1063,6 @@ namespace TheOtherRoles {
 
         static PassiveButton toggleSettingsButton;
         static GameObject toggleSettingsButtonObject;
-        static PassiveButton toggleRoleInfoButton;
-        static GameObject toggleRoleInfoButtonObject;
         [HarmonyPostfix]
         public static void Postfix(HudManager __instance) {
             if (!toggleSettingsButton || !toggleSettingsButtonObject) {

@@ -147,7 +147,7 @@ public static class Guesser
 
         var guessedTarget = Helpers.playerById(guessedTargetId);
         if (!CachedPlayer.LocalPlayer.Data.IsDead || guessedTarget == null || guesser == null) return;
-        var roleInfo = RoleInfo.allRoleInfos.FirstOrDefault(x => (byte)x.roleId == guessedRoleId);
+        var roleInfo = RoleInfo.allRoleInfos.FirstOrDefault(x => (byte)x.RoleId == guessedRoleId);
         var msg =
             $"{guesser.Data.PlayerName} guessed the role {roleInfo?.name ?? ""} for {guessedTarget.Data.PlayerName}!";
         if (AmongUsClient.Instance.AmClient && FastDestroyableSingleton<HudManager>.Instance)

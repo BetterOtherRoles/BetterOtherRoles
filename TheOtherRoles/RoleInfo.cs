@@ -18,7 +18,7 @@ namespace TheOtherRoles
         public string name;
         public string introDescription;
         public string shortDescription;
-        public RoleId roleId;
+        public RoleId RoleId;
         public bool isNeutral;
         public bool isModifier;
 
@@ -27,7 +27,7 @@ namespace TheOtherRoles
             this.name = name;
             this.introDescription = introDescription;
             this.shortDescription = shortDescription;
-            this.roleId = roleId;
+            this.RoleId = roleId;
             this.isNeutral = isNeutral;
             this.isModifier = isModifier;
         }

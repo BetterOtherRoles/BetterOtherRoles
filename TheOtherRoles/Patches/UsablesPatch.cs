@@ -477,7 +477,7 @@ namespace TheOtherRoles.Patches {
 
         [HarmonyPatch(typeof(VitalsMinigame), nameof(VitalsMinigame.Update))]
         class VitalsMinigameUpdatePatch {
-            static void Postfix(VitalsMinigame __instance) {
+            public static void Postfix(VitalsMinigame __instance) {
                 if (__instance.gameObject.name == "hudroleinfo")
                 {
                     foreach (var vitalsPanel in __instance.vitals)
