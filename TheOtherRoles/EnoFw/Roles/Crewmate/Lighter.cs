@@ -1,21 +1,48 @@
-﻿using UnityEngine;
+﻿using TheOtherRoles.EnoFw.Kernel;
+using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Crewmate;
 
-public static class Lighter
+public class Lighter : AbstractRole
 {
-    public static PlayerControl lighter;
-    public static Color color = new Color32(238, 229, 190, byte.MaxValue);
+    public static readonly Lighter Instance = new();
+    
+    // Options
+    public readonly Option LightsOnVision;
+    public readonly Option LightsOffVision;
+    public readonly Option VisionWidth;
 
-    public static float lighterModeLightsOnVision = 2f;
-    public static float lighterModeLightsOffVision = 0.75f;
-    public static float flashlightWidth = 0.75f;
-
-    public static void clearAndReload()
+    private Lighter() : base(nameof(Lighter), "Lighter")
     {
-        lighter = null;
-        flashlightWidth = CustomOptionHolder.lighterFlashlightWidth.getFloat();
-        lighterModeLightsOnVision = CustomOptionHolder.lighterModeLightsOnVision.getFloat();
-        lighterModeLightsOffVision = CustomOptionHolder.lighterModeLightsOffVision.getFloat();
+        Team = Teams.Crewmate;
+        Color = new Color32(238, 229, 190, byte.MaxValue);
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        LightsOnVision = Tab.CreateFloatList(
+            $"{Name}{nameof(LightsOnVision)}",
+            Cs("Vision when lights are on"),
+            0.25f,
+            5f,
+            1.5f,
+            0.25f,
+            SpawnRate);
+        LightsOffVision = Tab.CreateFloatList(
+            $"{Name}{nameof(LightsOffVision)}",
+            Cs("Vision when lights are off"),
+            0.25f,
+            5f,
+            0.5f,
+            0.25f,
+            SpawnRate);
+        VisionWidth = Tab.CreateFloatList(
+            $"{Name}{nameof(VisionWidth)}",
+            Cs("Flashlight width"),
+            0.1f,
+            1f,
+            0.3f,
+            0.1f,
+            SpawnRate);
     }
 }

@@ -42,14 +42,12 @@ namespace TheOtherRoles.Utilities {
         public static void clearAndReload() {
             eventQueue = new List<EventTypes>();
             eventInvert = false;
-            if (canBeEnabled && CustomOptionHolder.enableCodenameDisableHorses != null)
-                disableHorses = CustomOptionHolder.enableCodenameDisableHorses.getBool();
         }
 
         public static void Update() {
-            if (!isEnabled || eventQueue == null || AmongUsClient.Instance.GameState != InnerNetClient.GameStates.Started || TheOtherRoles.rnd == null || IntroCutscene.Instance) return;
+            if (!isEnabled || eventQueue == null || AmongUsClient.Instance.GameState != InnerNetClient.GameStates.Started || TheOtherRoles.Rnd == null || IntroCutscene.Instance) return;
             foreach (EventTypes curEvent in eventQueue.ToArray()) {
-                if (TheOtherRoles.rnd.NextSingle() < eventProbabilities[(int)curEvent]) {
+                if (TheOtherRoles.Rnd.NextSingle() < eventProbabilities[(int)curEvent]) {
                     eventQueue.Remove(curEvent);
                     StartEvent(curEvent);
                 }
@@ -89,13 +87,13 @@ namespace TheOtherRoles.Utilities {
         private static string defaultHat = "default";
         public static void meetingEndsUpdate() {
             if (!isEnabled) return;
-            PlayerControl.LocalPlayer.RpcSetHat(CustomHatLoader.horseHatProductIds[rnd.Next(CustomHatLoader.horseHatProductIds.Count)]);
+            PlayerControl.LocalPlayer.RpcSetHat(CustomHatLoader.horseHatProductIds[Rnd.Next(CustomHatLoader.horseHatProductIds.Count)]);
         }
 
 
         public static void meetingStartsUpdate() {
             if (!isEnabled) return;
-            if (rnd.NextDouble() <= 0.3f) { AddToQueue(EventTypes.Communication); }
+            if (Rnd.NextDouble() <= 0.3f) { AddToQueue(EventTypes.Communication); }
             PlayerControl.LocalPlayer.RpcSetHat(defaultHat);
             HudManager.Instance.StartCoroutine(Effects.Lerp(1f, new Action<float>((p) => {
                 if (MeetingHud.Instance && MeetingHud.Instance.playerStates != null) {
@@ -127,20 +125,20 @@ namespace TheOtherRoles.Utilities {
             List<CachedPlayer> relevantPlayers = CachedPlayer.AllPlayers.Where(x => !x.Data.IsDead && x != CachedPlayer.LocalPlayer).ToList();
             switch (eventToStart) {
                 case EventTypes.Animation:
-                    CachedPlayer animationPlayer = relevantPlayers[rnd.Next(relevantPlayers.Count)];
-                    animationPlayer.PlayerPhysics.SetBodyType(rnd.Next(2) > 0 ? (disableHorses ? PlayerBodyTypes.Horse : PlayerBodyTypes.Normal) : PlayerBodyTypes.Seeker);
+                    CachedPlayer animationPlayer = relevantPlayers[Rnd.Next(relevantPlayers.Count)];
+                    animationPlayer.PlayerPhysics.SetBodyType(Rnd.Next(2) > 0 ? (disableHorses ? PlayerBodyTypes.Horse : PlayerBodyTypes.Normal) : PlayerBodyTypes.Seeker);
                     FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(eventDurations[(int)EventTypes.Animation], new Action<float>((p) => {
                         if (p==1)
                             animationPlayer.PlayerControl.MyPhysics.SetBodyType(disableHorses ? PlayerBodyTypes.Normal : PlayerBodyTypes.Horse);
                     })));
                     break;
                 case EventTypes.Communication:
-                    int index = TheOtherRoles.rnd.Next(relevantPlayers.Count);
+                    int index = TheOtherRoles.Rnd.Next(relevantPlayers.Count);
                     CachedPlayer firstPlayer = relevantPlayers[index];
                     relevantPlayers.RemoveAt(index);
                     string msg = firstPlayer.Data.PlayerName + " ";
                     foreach (CachedPlayer pc in relevantPlayers.ToArray()) {
-                        if (TheOtherRoles.rnd.NextSingle() < 1f / relevantPlayers.Count) {
+                        if (TheOtherRoles.Rnd.NextSingle() < 1f / relevantPlayers.Count) {
                             relevantPlayers.Remove(pc);
                             msg += pc.Data.PlayerName + " ";
                         }
@@ -148,9 +146,9 @@ namespace TheOtherRoles.Utilities {
                     RoomTracker tracker = FastDestroyableSingleton<HudManager>.Instance.roomTracker;
                     string lastRoom = "";
                     try { lastRoom = FastDestroyableSingleton<TranslationController>.Instance.GetString(tracker.LastRoom.RoomId); } catch { }
-                    msg += lastRoom != ""? lastRoom : (TheOtherRoles.rnd.Next(2) > 0 ? "sus" : "safe");
+                    msg += lastRoom != ""? lastRoom : (TheOtherRoles.Rnd.Next(2) > 0 ? "sus" : "safe");
 
-                    FastDestroyableSingleton<HudManager>.Instance.Chat.AddChat(relevantPlayers[rnd.Next(relevantPlayers.Count)], $"{msg}");
+                    FastDestroyableSingleton<HudManager>.Instance.Chat.AddChat(relevantPlayers[Rnd.Next(relevantPlayers.Count)], $"{msg}");
                     break;
                 case EventTypes.Invert:
                     eventInvert = true;

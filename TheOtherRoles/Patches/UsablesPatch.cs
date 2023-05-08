@@ -15,6 +15,7 @@ using TheOtherRoles.Objects;
 using TheOtherRoles.CustomGameModes;
 using Reactor.Utilities.Extensions;
 using AmongUs.GameOptions;
+using TheOtherRoles.EnoFw;
 using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.EnoFw.Roles.Crewmate;
 using TheOtherRoles.EnoFw.Roles.Impostor;
@@ -93,7 +94,7 @@ namespace TheOtherRoles.Patches {
 
             var usableDistance = __instance.UsableDistance;
             if (__instance.name.StartsWith("JackInTheBoxVent_")) {
-                if(Trickster.trickster != CachedPlayer.LocalPlayer.PlayerControl) {
+                if(Trickster.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) {
                     // Only the Trickster can use the Jack-In-The-Boxes!
                     canUse = false;
                     couldUse = false;
@@ -123,7 +124,7 @@ namespace TheOtherRoles.Patches {
     class VentButtonDoClickPatch {
         static  bool Prefix(VentButton __instance) {
             // Manually modifying the VentButton to use Vent.Use again in order to trigger the Vent.Use prefix patch
-		    if (__instance.currentTarget != null && !Deputy.handcuffedKnows.ContainsKey(CachedPlayer.LocalPlayer.PlayerId)) __instance.currentTarget.Use();
+		    if (__instance.currentTarget != null && !Deputy.Instance.HandcuffedKnows.ContainsKey(CachedPlayer.LocalPlayer.PlayerId)) __instance.currentTarget.Use();
             return false;
         }
     }
@@ -133,16 +134,16 @@ namespace TheOtherRoles.Patches {
         public static bool Prefix(Vent __instance) {
             if (GameOptionsManager.Instance.currentGameOptions.GameMode == GameModes.HideNSeek) return true;
             // Deputy handcuff disables the vents
-            if (Deputy.handcuffedPlayers.Contains(CachedPlayer.LocalPlayer.PlayerId)) {
-                Deputy.setHandcuffedKnows();
+            if (Deputy.Instance.HandcuffedPlayers.Contains(CachedPlayer.LocalPlayer.PlayerId)) {
+                Deputy.Instance.SetHandcuffedKnows();
                 return false;
             }
-            if (Trapper.playersOnMap.Contains(CachedPlayer.LocalPlayer.PlayerControl)) return false;
+            if (Trapper.Instance.PlayersOnMap.Contains(CachedPlayer.LocalPlayer.PlayerControl)) return false;
 
             bool canUse;
             bool couldUse;
             __instance.CanUse(CachedPlayer.LocalPlayer.Data, out canUse, out couldUse);
-            bool canMoveInVents = CachedPlayer.LocalPlayer.PlayerControl != Spy.spy && !Trapper.playersOnMap.Contains(CachedPlayer.LocalPlayer.PlayerControl);
+            bool canMoveInVents = CachedPlayer.LocalPlayer.PlayerControl != Spy.Instance.Player && !Trapper.Instance.PlayersOnMap.Contains(CachedPlayer.LocalPlayer.PlayerControl);
             if (!canUse) return false; // No need to execute the native method as using is disallowed anyways
 
             bool isEnter = !CachedPlayer.LocalPlayer.PlayerControl.inVent;
@@ -240,7 +241,7 @@ namespace TheOtherRoles.Patches {
     [HarmonyPatch(typeof(Vent), nameof(Vent.TryMoveToVent))]
     public static class TryMoveToVentPatch {
         public static bool Prefix(Vent otherVent) {
-            return !Trapper.playersOnMap.Contains(CachedPlayer.LocalPlayer.PlayerControl);
+            return !Trapper.Instance.PlayersOnMap.Contains(CachedPlayer.LocalPlayer.PlayerControl);
         }
     }
 
@@ -259,7 +260,7 @@ namespace TheOtherRoles.Patches {
 
         static bool Prefix(VentButton __instance)
         {
-            if (Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.draggedBody != null && Undertaker.disableVentButton) return false;
+            if (Undertaker.Instance.Player != null && Undertaker.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.Instance.DraggedBody != null && Undertaker.Instance.DisableVentWhileDragging) return false;
 
             return true;
         }
@@ -267,10 +268,10 @@ namespace TheOtherRoles.Patches {
         static void Postfix(VentButton __instance) {
 
             // Trickster render special vent button
-            if (Trickster.trickster != null && Trickster.trickster == CachedPlayer.LocalPlayer.PlayerControl) {
+            if (Trickster.Instance.Player != null && Trickster.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl) {
                 if (defaultVentSprite == null) defaultVentSprite = __instance.graphic.sprite;
                 bool isSpecialVent = __instance.currentTarget != null && __instance.currentTarget.gameObject != null && __instance.currentTarget.gameObject.name.StartsWith("JackInTheBoxVent_");
-                __instance.graphic.sprite = isSpecialVent ?  Trickster.getTricksterVentButtonSprite() : defaultVentSprite;
+                __instance.graphic.sprite = isSpecialVent ?  Trickster.TricksterVentButtonSprite : defaultVentSprite;
                 __instance.buttonLabelText.enabled = !isSpecialVent;
             }
         }
@@ -281,7 +282,7 @@ namespace TheOtherRoles.Patches {
     {
         static bool Prefix(KillButton __instance)
         {
-            if (Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.draggedBody != null) return false;
+            if (Undertaker.Instance.Player != null && Undertaker.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.Instance.DraggedBody != null) return false;
 
             return true;
         }
@@ -292,8 +293,8 @@ namespace TheOtherRoles.Patches {
         public static bool Prefix(KillButton __instance) {
             if (__instance.isActiveAndEnabled && __instance.currentTarget && !__instance.isCoolingDown && !CachedPlayer.LocalPlayer.Data.IsDead && CachedPlayer.LocalPlayer.PlayerControl.CanMove) {
                 // Deputy handcuff update.
-                if (Deputy.handcuffedPlayers.Contains(CachedPlayer.LocalPlayer.PlayerId)) {
-                    Deputy.setHandcuffedKnows();
+                if (Deputy.Instance.HandcuffedPlayers.Contains(CachedPlayer.LocalPlayer.PlayerId)) {
+                    Deputy.Instance.SetHandcuffedKnows();
                     return false;
                 }
                 
@@ -302,16 +303,16 @@ namespace TheOtherRoles.Patches {
                 // Handle blank kill
                 if (res == MurderAttemptResult.BlankKill) {
                     CachedPlayer.LocalPlayer.PlayerControl.killTimer = GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown;
-                    if (CachedPlayer.LocalPlayer.PlayerControl == Cleaner.cleaner)
-                        Cleaner.cleaner.killTimer = HudManagerStartPatch.cleanerCleanButton.Timer = HudManagerStartPatch.cleanerCleanButton.MaxTimer;
-                    else if (CachedPlayer.LocalPlayer.PlayerControl == Warlock.warlock)
-                        Warlock.warlock.killTimer = HudManagerStartPatch.warlockCurseButton.Timer = HudManagerStartPatch.warlockCurseButton.MaxTimer;
-                    else if (CachedPlayer.LocalPlayer.PlayerControl == Mini.mini && Mini.mini.Data.Role.IsImpostor)
-                        Mini.mini.SetKillTimer(GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown * (Mini.isGrownUp() ? 0.66f : 2f));
-                    else if (CachedPlayer.LocalPlayer.PlayerControl == Witch.witch)
-                        Witch.witch.killTimer = HudManagerStartPatch.witchSpellButton.Timer = HudManagerStartPatch.witchSpellButton.MaxTimer;
-                    else if (CachedPlayer.LocalPlayer.PlayerControl == Ninja.ninja)
-                        Ninja.ninja.killTimer = HudManagerStartPatch.ninjaButton.Timer = HudManagerStartPatch.ninjaButton.MaxTimer;
+                    if (CachedPlayer.LocalPlayer.PlayerControl == Cleaner.Instance.Player)
+                        Cleaner.Instance.Player.killTimer = HudManagerStartPatch.cleanerCleanButton.Timer = HudManagerStartPatch.cleanerCleanButton.MaxTimer;
+                    else if (CachedPlayer.LocalPlayer.PlayerControl == Warlock.Instance.Player)
+                        Warlock.Instance.Player.killTimer = HudManagerStartPatch.warlockCurseButton.Timer = HudManagerStartPatch.warlockCurseButton.MaxTimer;
+                    else if (CachedPlayer.LocalPlayer.PlayerControl == Mini.Instance.Player && Mini.Instance.Player.Data.Role.IsImpostor)
+                        Mini.Instance.Player.SetKillTimer(GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown * (Mini.Instance.IsGrownUp ? 0.66f : 2f));
+                    else if (CachedPlayer.LocalPlayer.PlayerControl == Witch.Instance.Player)
+                        Witch.Instance.Player.killTimer = HudManagerStartPatch.witchSpellButton.Timer = HudManagerStartPatch.witchSpellButton.MaxTimer;
+                    else if (CachedPlayer.LocalPlayer.PlayerControl == Ninja.Instance.Player)
+                        Ninja.Instance.Player.killTimer = HudManagerStartPatch.ninjaButton.Timer = HudManagerStartPatch.ninjaButton.MaxTimer;
                 }
                 __instance.SetTarget(null);
             }
@@ -323,8 +324,8 @@ namespace TheOtherRoles.Patches {
     class SabotageButtonRefreshPatch {
         static void Postfix() {
             // Mafia disable sabotage button for Janitor and sometimes for Mafioso
-            bool blockSabotageJanitor = (Janitor.janitor != null && Janitor.janitor == CachedPlayer.LocalPlayer.PlayerControl);
-            bool blockSabotageMafioso = (Mafioso.mafioso != null && Mafioso.mafioso == CachedPlayer.LocalPlayer.PlayerControl && Godfather.godfather != null && !Godfather.godfather.Data.IsDead);
+            bool blockSabotageJanitor = (Janitor.Instance.Player != null && Janitor.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl);
+            bool blockSabotageMafioso = (Mafioso.Instance.Player != null && Mafioso.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl && Godfather.Instance.Player != null && !Godfather.Instance.Player.Data.IsDead);
             if (blockSabotageJanitor || blockSabotageMafioso) {
                 FastDestroyableSingleton<HudManager>.Instance.SabotageButton.SetDisabled();
             }
@@ -334,9 +335,9 @@ namespace TheOtherRoles.Patches {
     [HarmonyPatch(typeof(ReportButton), nameof(ReportButton.DoClick))]
     class ReportButtonDoClickPatch {
         public static bool Prefix(ReportButton __instance) {
-            if (__instance.isActiveAndEnabled && Deputy.handcuffedPlayers.Contains(CachedPlayer.LocalPlayer.PlayerId) && __instance.graphic.color == Palette.EnabledColor) Deputy.setHandcuffedKnows();
-            if (Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.draggedBody != null && Undertaker.disableReportButton) return false;
-            return !Deputy.handcuffedKnows.ContainsKey(CachedPlayer.LocalPlayer.PlayerId);
+            if (__instance.isActiveAndEnabled && Deputy.Instance.HandcuffedPlayers.Contains(CachedPlayer.LocalPlayer.PlayerId) && __instance.graphic.color == Palette.EnabledColor) Deputy.Instance.SetHandcuffedKnows();
+            if (Undertaker.Instance.Player != null && Undertaker.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.Instance.DraggedBody != null && Undertaker.Instance.DisableReportWhileDragging) return false;
+            return !Deputy.Instance.HandcuffedKnows.ContainsKey(CachedPlayer.LocalPlayer.PlayerId);
         }
     }
 
@@ -344,16 +345,16 @@ namespace TheOtherRoles.Patches {
     class DeadBodyOnClickPatch {
         public static bool Prefix(DeadBody __instance) {
             // Deputy handcuff disables the vents
-            if (Deputy.handcuffedPlayers.Contains(CachedPlayer.LocalPlayer.PlayerId)) {
-                Deputy.setHandcuffedKnows();
+            if (Deputy.Instance.HandcuffedPlayers.Contains(CachedPlayer.LocalPlayer.PlayerId)) {
+                Deputy.Instance.SetHandcuffedKnows();
                 return false;
             }
 
-            if (Undertaker.undertaker != null && Undertaker.undertaker == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.draggedBody != null)
+            if (Undertaker.Instance.Player != null && Undertaker.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl && Undertaker.Instance.DraggedBody != null)
             {
-                PlayerControl undertakerPlayer = Undertaker.undertaker;
+                PlayerControl undertakerPlayer = Undertaker.Instance.Player;
 
-                if (Vector2.Distance(undertakerPlayer.GetTruePosition() - new Vector2(-0.2f, -0.22f),  __instance.TruePosition) <= Undertaker.distancesList[(int) Undertaker.dragDistance] + 0.1f)
+                if (Vector2.Distance(undertakerPlayer.GetTruePosition() - new Vector2(-0.2f, -0.22f),  __instance.TruePosition) <= Undertaker.Instance.RealDragDistance + 0.1f)
                 {
                     Undertaker.DragBody(__instance.ParentId);
                     
@@ -373,20 +374,20 @@ namespace TheOtherRoles.Patches {
             var statusText = "";
 
             // Deactivate emergency button for Swapper
-            if (Swapper.swapper != null && Swapper.swapper == CachedPlayer.LocalPlayer.PlayerControl && !Swapper.canCallEmergency) {
+            if (Swapper.Instance.Player != null && Swapper.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl && !Swapper.Instance.CanCallEmergencyMeeting) {
                 roleCanCallEmergency = false;
                 statusText = "The Swapper can't start an emergency meeting";
             }
             // Potentially deactivate emergency button for Jester
-            if (Jester.jester != null && Jester.jester == CachedPlayer.LocalPlayer.PlayerControl && !Jester.canCallEmergency) {
+            if (Jester.Instance.HasPlayer && Jester.Instance.IsLocalPlayer && !Jester.Instance.CanCallEmergency) {
                 roleCanCallEmergency = false;
                 statusText = "The Jester can't start an emergency meeting";
             }
             // Potentially deactivate emergency button for Lawyer/Prosecutor
-            if (Lawyer.lawyer != null && Lawyer.lawyer == CachedPlayer.LocalPlayer.PlayerControl && !Lawyer.canCallEmergency) {
+            if (Lawyer.Instance.Player != null && Lawyer.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl && !Lawyer.Instance.CanCallEmergencyMeeting) {
                 roleCanCallEmergency = false;
                 statusText = "The Lawyer can't start an emergency meeting";
-                if (Lawyer.isProsecutor) statusText = "The Prosecutor can't start an emergency meeting";
+                if (Lawyer.Instance.IsProsecutor) statusText = "The Prosecutor can't start an emergency meeting";
             }
 
             if (!roleCanCallEmergency) {
@@ -402,7 +403,7 @@ namespace TheOtherRoles.Patches {
             if (__instance.state == 1) {
                 int localRemaining = CachedPlayer.LocalPlayer.PlayerControl.RemainingEmergencies;
                 int teamRemaining = Mathf.Max(0, maxNumberOfMeetings - meetingsCount);
-                int remaining = Mathf.Min(localRemaining, (Mayor.mayor != null && Mayor.mayor == CachedPlayer.LocalPlayer.PlayerControl) ? 1 : teamRemaining);
+                int remaining = Mathf.Min(localRemaining, Mayor.Instance.IsLocalPlayer ? 1 : teamRemaining);
                 __instance.NumberText.text = $"{localRemaining.ToString()} and the ship has {teamRemaining.ToString()}";
                 __instance.ButtonActive = remaining > 0;
                 __instance.ClosedLid.gameObject.SetActive(!__instance.ButtonActive);
@@ -417,7 +418,7 @@ namespace TheOtherRoles.Patches {
     public static class ConsoleCanUsePatch {
         public static bool Prefix(ref float __result, Console __instance, [HarmonyArgument(0)] GameData.PlayerInfo pc, [HarmonyArgument(1)] out bool canUse, [HarmonyArgument(2)] out bool couldUse) {
             canUse = couldUse = false;
-            if (Swapper.swapper != null && Swapper.swapper == CachedPlayer.LocalPlayer.PlayerControl)
+            if (Swapper.Instance.Player != null && Swapper.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl)
                 return !__instance.TaskTypes.Any(x => x == TaskTypes.FixLights || x == TaskTypes.FixComms);
             if (__instance.AllowImpostor) return true;
             if (!Helpers.hasFakeTasks(pc.Object)) return true;
@@ -430,7 +431,7 @@ namespace TheOtherRoles.Patches {
     class CommsMinigameBeginPatch {
         static void Postfix(TuneRadioMinigame __instance) {
             // Block Swapper from fixing comms. Still looking for a better way to do this, but deleting the task doesn't seem like a viable option since then the camera, admin table, ... work while comms are out
-            if (Swapper.swapper != null && Swapper.swapper == CachedPlayer.LocalPlayer.PlayerControl) {
+            if (Swapper.Instance.Player != null && Swapper.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl) {
                 __instance.Close();
             }
         }
@@ -440,7 +441,7 @@ namespace TheOtherRoles.Patches {
     class LightsMinigameBeginPatch {
         static void Postfix(SwitchMinigame __instance) {
             // Block Swapper from fixing lights. One could also just delete the PlayerTask, but I wanted to do it the same way as with coms for now.
-            if (Swapper.swapper != null && Swapper.swapper == CachedPlayer.LocalPlayer.PlayerControl) {
+            if (Swapper.Instance.Player != null && Swapper.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl) {
                 __instance.Close();
             }
         }
@@ -453,7 +454,7 @@ namespace TheOtherRoles.Patches {
         [HarmonyPatch(typeof(VitalsMinigame), nameof(VitalsMinigame.Begin))]
         class VitalsMinigameStartPatch {
             static void Postfix(VitalsMinigame __instance) {
-                if (Hacker.hacker != null && CachedPlayer.LocalPlayer.PlayerControl == Hacker.hacker) {
+                if (Hacker.Instance.IsLocalPlayer) {
                     hackerTexts = new List<TMPro.TextMeshPro>();
                     foreach (VitalsPanel panel in __instance.vitals) {
                         TMPro.TextMeshPro text = UnityEngine.Object.Instantiate(__instance.SabText, panel.transform);
@@ -481,7 +482,7 @@ namespace TheOtherRoles.Patches {
             static void Postfix(VitalsMinigame __instance) {
                 // Hacker show time since death
                 
-                if (Hacker.hacker != null && Hacker.hacker == CachedPlayer.LocalPlayer.PlayerControl && Hacker.hackerTimer > 0) {
+                if (Hacker.Instance.IsLocalPlayer && Hacker.Instance.Timer > 0) {
                     for (int k = 0; k < __instance.vitals.Length; k++) {
                         VitalsPanel vitalsPanel = __instance.vitals[k];
                         GameData.PlayerInfo player = vitalsPanel.PlayerInfo;
@@ -564,7 +565,7 @@ namespace TheOtherRoles.Patches {
                                         GameData.PlayerInfo playerInfo = GameData.Instance.GetPlayerById(bodyComponent.ParentId);
                                         if (playerInfo != null) {
                                             var color = Palette.PlayerColors[playerInfo.DefaultOutfit.ColorId];
-                                            if (Hacker.onlyColorType)
+                                            if (Hacker.Instance.OnlyColorType)
                                                 color = Helpers.isLighterColor(playerInfo.DefaultOutfit.ColorId) ? Palette.PlayerColors[7] : Palette.PlayerColors[6];
                                             roomColors.Add(color);
                                         }
@@ -575,7 +576,7 @@ namespace TheOtherRoles.Patches {
                                         num2++;
                                         if (component?.cosmetics?.currentBodySprite?.BodySprite?.material != null) {
                                             Color color = component.cosmetics.currentBodySprite.BodySprite.material.GetColor("_BodyColor");
-                                            if (Hacker.onlyColorType) {
+                                            if (Hacker.Instance.OnlyColorType) {
                                                 var id = Mathf.Max(0, Palette.PlayerColors.IndexOf(color));
                                                 color = Helpers.isLighterColor((byte)id) ? Palette.PlayerColors[7] : Palette.PlayerColors[6];
                                             }
@@ -607,7 +608,7 @@ namespace TheOtherRoles.Patches {
             private static Material newMat;
             static void Postfix(CounterArea __instance) {
                 // Hacker display saved colors on the admin panel
-                bool showHackerInfo = Hacker.hacker != null && Hacker.hacker == CachedPlayer.LocalPlayer.PlayerControl && Hacker.hackerTimer > 0;
+                bool showHackerInfo = Hacker.Instance.IsLocalPlayer && Hacker.Instance.Timer > 0;
                 if (players.ContainsKey(__instance.RoomType)) {
                     List<Color> colors = players[__instance.RoomType];
                     int i = -1;
@@ -773,12 +774,12 @@ namespace TheOtherRoles.Patches {
 
 
             isLightsOut = CachedPlayer.LocalPlayer.PlayerControl.myTasks.ToArray().Any(x => x.name.Contains("FixLightsTask"));
-            bool ignoreNightVision = CustomOptionHolder.camsNoNightVisionIfImpVision.getBool() && Helpers.hasImpVision(GameData.Instance.GetPlayerById(CachedPlayer.LocalPlayer.PlayerId)) || CachedPlayer.LocalPlayer.Data.IsDead;
-            bool nightVisionEnabled = CustomOptionHolder.camsNightVision.getBool();
+            bool ignoreNightVision = CustomOptions.CamerasNightVisionIfImpostor && Helpers.hasImpVision(GameData.Instance.GetPlayerById(CachedPlayer.LocalPlayer.PlayerId)) || CachedPlayer.LocalPlayer.Data.IsDead;
+            bool nightVisionEnabled = CustomOptions.CamerasNightVision;
 
             if (isLightsOut && !nightVisionIsActive && nightVisionEnabled && !ignoreNightVision) {  // only update when something changed!
                 foreach (PlayerControl pc in CachedPlayer.AllPlayers) {
-                    if (pc == Ninja.ninja && Ninja.invisibleTimer > 0f) {
+                    if (pc == Ninja.Instance.Player && Ninja.Instance.InvisibilityTimer > 0f) {
                         continue;
                     }
                     pc.setLook("", 11, "", "", "", "", false);
@@ -807,12 +808,12 @@ namespace TheOtherRoles.Patches {
             if (nightVisionIsActive) {
                 nightVisionIsActive = false;
                 foreach (PlayerControl pc in CachedPlayer.AllPlayers) {
-                    if (Camouflager.camouflageTimer > 0) {
+                    if (Camouflager.Instance.CamouflageTimer > 0) {
                         pc.setLook("", 6, "", "", "", "", false);
-                    } else if (pc == Morphling.morphling && Morphling.morphTimer > 0) {
-                        PlayerControl target = Morphling.morphTarget;
-                        Morphling.morphling.setLook(target.Data.PlayerName, target.Data.DefaultOutfit.ColorId, target.Data.DefaultOutfit.HatId, target.Data.DefaultOutfit.VisorId, target.Data.DefaultOutfit.SkinId, target.Data.DefaultOutfit.PetId, false);
-                    } else if (pc == Ninja.ninja && Ninja.invisibleTimer > 0f) {
+                    } else if (pc == Morphling.Instance.Player && Morphling.Instance.MorphTimer > 0) {
+                        PlayerControl target = Morphling.Instance.MorphTarget;
+                        Morphling.Instance.Player.setLook(target.Data.PlayerName, target.Data.DefaultOutfit.ColorId, target.Data.DefaultOutfit.HatId, target.Data.DefaultOutfit.VisorId, target.Data.DefaultOutfit.SkinId, target.Data.DefaultOutfit.PetId, false);
+                    } else if (pc == Ninja.Instance.Player && Ninja.Instance.InvisibilityTimer > 0f) {
                         continue;
                     } else {
                         Helpers.setDefaultLook(pc, false);

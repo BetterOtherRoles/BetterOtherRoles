@@ -1,41 +1,59 @@
 ﻿using System;
 using System.Collections.Generic;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.EnoFw.Roles.Neutral;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Crewmate;
 
-public static class Pursuer
+public class Pursuer : AbstractRole
 {
-    public static PlayerControl pursuer;
-    public static PlayerControl target;
-    public static Color color = Lawyer.color;
-    public static List<PlayerControl> blankedList = new List<PlayerControl>();
-    public static int blanks = 0;
-    public static Sprite blank;
-    public static bool notAckedExiled = false;
+    public static readonly Pursuer Instance = new();
 
-    public static float cooldown = 30f;
-    public static int blanksNumber = 5;
+    // Fields
+    public int UsedBlanks;
+    public bool NotAckedExiled;
+    public readonly List<PlayerControl> BlankedList = new();
 
-    public static Sprite getTargetSprite()
+    // Options
+    public readonly Option BlankCooldown;
+    public readonly Option BlankNumber;
+
+    public static Sprite BlankButtonSprite => GetSprite("TheOtherRoles.Resources.PursuerButton.png", 115f);
+
+    private Pursuer() : base(nameof(Pursuer), "Pursuer", false)
     {
-        if (blank) return blank;
-        blank = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.PursuerButton.png", 115f);
-        return blank;
+        Team = Teams.Crewmate;
+        Color = new Color32(134, 153, 25, byte.MaxValue);
+
+        BlankCooldown = CustomOptions.NeutralSettings.CreateFloatList(
+            $"{Name}{nameof(BlankCooldown)}",
+            Cs("Pursuer blank cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            Lawyer.Instance.SpawnRate,
+            string.Empty,
+            "s");
+        BlankNumber = CustomOptions.NeutralSettings.CreateFloatList(
+            $"{Name}{nameof(BlankNumber)}",
+            Cs("Pursuer blank amount"),
+            0f,
+            10f,
+            5f,
+            1f,
+            Lawyer.Instance.SpawnRate);
     }
 
-    public static void clearAndReload()
+    public override void ClearAndReload()
     {
-        pursuer = null;
-        target = null;
-        blankedList = new List<PlayerControl>();
-        blanks = 0;
-        notAckedExiled = false;
-
-        cooldown = CustomOptionHolder.pursuerCooldown.getFloat();
-        blanksNumber = Mathf.RoundToInt(CustomOptionHolder.pursuerBlanksNumber.getFloat());
+        base.ClearAndReload();
+        UsedBlanks = 0;
+        NotAckedExiled = false;
+        BlankedList.Clear();
     }
 
     public static void SetBlanked(byte playerId, bool add)
@@ -48,10 +66,10 @@ public static class Pursuer
     private static void Rpc_SetBlanked(PlayerControl sender, string rawData)
     {
         var (playerId, add) = Rpc.Deserialize<Tuple<byte, bool>>(rawData);
-        
+
         var blankTarget = Helpers.playerById(playerId);
-        if (target == null) return;
-        blankedList.RemoveAll(x => x.PlayerId == playerId);
-        if (add) blankedList.Add(blankTarget);     
+        if (blankTarget == null) return;
+        Instance.BlankedList.RemoveAll(x => x.PlayerId == playerId);
+        if (add) Instance.BlankedList.Add(blankTarget);
     }
 }

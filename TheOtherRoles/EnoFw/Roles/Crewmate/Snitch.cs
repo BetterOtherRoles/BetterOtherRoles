@@ -1,70 +1,84 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Objects;
+using TMPro;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Crewmate;
 
-public static class Snitch
+public class Snitch : AbstractRole
 {
-    public static PlayerControl snitch;
-    public static Color color = new Color32(184, 251, 79, byte.MaxValue);
+    public static readonly Snitch Instance = new();
+    
+    // Fields
+    public readonly List<Arrow> Arrows = new();
+    public readonly Dictionary<byte, byte> PlayerRoomMap = new();
+    public bool IsRevealed;
+    public bool NeedsUpdate;
+    public TextMeshPro Text;
+    
+    public bool InfoModeNone => (string)InfoMode is "none";
+    public bool InfoModeChat => (string)InfoMode is "chat" or "chat & map";
+    public bool InfoModeMap => (string)InfoMode is "map" or "chat & map";
+    public bool InfoTargetEvilPlayers => (string)InfoTargets is "all evil players";
+    public bool InfoTargetKillingPlayers => (string)InfoTargets is "killing players";
+    public bool ArrowTargetsNone => (string)ArrowTargets is "none";
+    public bool ArrowTargetsSnitch => (string)ArrowTargets is "only for snitch" or "both";
+    public bool ArrowTargetsEvil => (string)ArrowTargets is "only for evil" or "both";
+    
+    // Options
+    public readonly Option LeftTasksForReveal;
+    public readonly Option InfoMode;
+    public readonly Option InfoTargets;
+    public readonly Option ArrowTargets;
 
-    public static List<Arrow> localArrows = new List<Arrow>();
-
-    public enum InfoMode
+    private Snitch() : base(nameof(Snitch), "Snitch")
     {
-        None = 0,
-        Chat = 1,
-        Map = 2,
-        ChatAndMap = 3,
+        Team = Teams.Crewmate;
+        Color = new Color32(184, 251, 79, byte.MaxValue);
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        LeftTasksForReveal = Tab.CreateFloatList(
+            $"{Key}{nameof(LeftTasksForReveal)}",
+            Cs("Task count where the snitch will be revealed"),
+            0f,
+            25f,
+            5f,
+            1f,
+            SpawnRate);
+        InfoMode = Tab.CreateStringList(
+            $"{Key}{nameof(InfoMode)}",
+            Cs("Information mode"),
+            new List<string> { "none", "chat", "map", "chat & map" },
+            "none",
+            SpawnRate);
+        InfoTargets = Tab.CreateStringList(
+            $"{Key}{nameof(InfoTargets)}",
+            Cs("Targets"),
+            new List<string> { "all evil players", "killing players" },
+            "all evil players",
+            InfoMode);
+        ArrowTargets = Tab.CreateStringList(
+            $"{Key}{nameof(ArrowTargets)}",
+            Cs("Arrow targets"),
+            new List<string> { "none", "only for snitch", "only for evil", "both" },
+            "none",
+            SpawnRate);
     }
 
-    public enum ArrowTargets
+    public override void ClearAndReload()
     {
-        None = 0,
-        Evil = 1,
-        Snitch = 2,
-        EvilAndSnitch = 3
-    }
-
-    public enum Targets
-    {
-        EvilPlayers = 0,
-        Killers = 1
-    }
-
-    public static InfoMode infoMode = InfoMode.Chat;
-    public static ArrowTargets arrowTargets = ArrowTargets.None;
-    public static Targets targets = Targets.EvilPlayers;
-    public static int taskCountForReveal = 1;
-
-    public static bool isRevealed = false;
-    public static bool showTasksLeft = false;
-    public static Dictionary<byte, byte> playerRoomMap = new Dictionary<byte, byte>();
-    public static TMPro.TextMeshPro text = null;
-    public static bool needsUpdate = true;
-
-    public static void clearAndReload()
-    {
-        if (localArrows != null)
+        base.ClearAndReload();
+        foreach (var arrow in Arrows.Where(arrow => arrow.arrow != null))
         {
-            foreach (Arrow arrow in localArrows)
-                if (arrow?.arrow != null)
-                    UnityEngine.Object.Destroy(arrow.arrow);
+            UnityEngine.Object.Destroy(arrow.arrow);
         }
-
-        localArrows = new List<Arrow>();
-
-        taskCountForReveal = Mathf.RoundToInt(CustomOptionHolder.snitchLeftTasksForReveal.getFloat());
-        snitch = null;
-        isRevealed = false;
-        showTasksLeft = CustomOptionHolder.snitchShowTasksLeft.getBool();
-        playerRoomMap = new Dictionary<byte, byte>();
-        if (text != null) UnityEngine.Object.Destroy(text);
-        text = null;
-        needsUpdate = true;
-        infoMode = (InfoMode)CustomOptionHolder.snitchInfoMode.getSelection();
-        targets = (Targets)CustomOptionHolder.snitchTargets.getSelection();
-        arrowTargets = (ArrowTargets)CustomOptionHolder.snitchArrowTargets.getSelection();
+        Arrows.Clear();
+        IsRevealed = false;
+        PlayerRoomMap.Clear();
+        NeedsUpdate = false;
     }
 }

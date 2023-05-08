@@ -1,65 +1,103 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Reactor.Networking.Attributes;
-using TheOtherRoles.Modules;
+using TheOtherRoles.EnoFw.Kernel;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
 
-public static class Undertaker
+public class Undertaker : AbstractRole
 {
-    public enum DragDistance
+    public static readonly Undertaker Instance = new();
+
+    // Fields
+    public DeadBody CurrentDeadTarget;
+    public DeadBody DraggedBody;
+    public DateTime LastDraggedAt;
+
+    public float RealDragDistance
     {
-        Short,
-        Medium,
-        Long
+        get
+        {
+            return (string)DragDistance switch
+            {
+                "short" => 2f / 3f,
+                "medium" => 4f / 3f,
+                _ => 2f
+            };
+        }
     }
 
-    public static PlayerControl undertaker;
-    public static Color color = Palette.ImpostorRed;
+    // Options
+    public readonly Option DragCooldown;
+    public readonly Option SpeedModifierWhenDragging;
+    public readonly Option DragDistance;
+    public readonly Option DisableKillWhileDragging;
+    public readonly Option DisableReportWhileDragging;
+    public readonly Option DisableVentWhileDragging;
 
-    public static float dragSpeedModifier = 9f;
-    public static float cooldown = 20f;
-    public static DragDistance dragDistance = DragDistance.Short;
-    public static bool disableKillButton = true;
-    public static bool disableReportButton = true;
-    public static bool disableVentButton = true;
+    public static Sprite DragButtonSprite => GetSprite("TheOtherRoles.Resources.DragButton.png", 115f);
+    public static Sprite DropButtonSprite => GetSprite("TheOtherRoles.Resources.DropButton.png", 115f);
 
-    public static float[] distancesList = new float[] { (2f / 3f), (4f / 3f), 2f };
-
-
-    public static DateTime LastDragged { get; set; }
-    public static DeadBody currentDeadTarget;
-    public static DeadBody draggedBody;
-
-    private static Sprite dragSprite;
-    private static Sprite dropSprite;
-
-    public static Sprite getDragButtonSprite()
+    private Undertaker() : base(nameof(Undertaker), "Undertaker")
     {
-        if (dragSprite) return dragSprite;
-        dragSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.DragButton.png", 115f);
-        return dragSprite;
+        Team = Teams.Impostor;
+        Color = Palette.ImpostorRed;
+        CanTarget = false;
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        DragCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(DragCooldown)}",
+            Cs("Drag cooldown"),
+            2.5f,
+            60f,
+            20f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        SpeedModifierWhenDragging = Tab.CreateFloatList(
+            $"{Key}{nameof(SpeedModifierWhenDragging)}",
+            Cs("Speed modifier while dragging"),
+            -90f,
+            100f,
+            -30f,
+            5f,
+            SpawnRate,
+            string.Empty,
+            "%");
+        DragDistance = Tab.CreateStringList(
+            $"{Key}{nameof(DragDistance)}",
+            Cs("Drag distance"),
+            new List<string> { "short", "medium", "long" },
+            "short",
+            SpawnRate);
+        DisableKillWhileDragging = Tab.CreateBool(
+            $"{Key}{nameof(DisableKillWhileDragging)}",
+            Cs("Cannot kill while dragging"),
+            true,
+            SpawnRate);
+        DisableReportWhileDragging = Tab.CreateBool(
+            $"{Key}{nameof(DisableReportWhileDragging)}",
+            Cs("Cannot report while dragging"),
+            true,
+            SpawnRate);
+        DisableVentWhileDragging = Tab.CreateBool(
+            $"{Key}{nameof(DisableVentWhileDragging)}",
+            Cs("Cannot vent while dragging"),
+            true,
+            SpawnRate);
     }
 
-    public static Sprite getDropButtonSprite()
+    public override void ClearAndReload()
     {
-        if (dropSprite) return dropSprite;
-        dropSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.DropButton.png", 115f);
-        return dropSprite;
-    }
-
-    public static void clearAndReload()
-    {
-        undertaker = null;
-        currentDeadTarget = null;
-        draggedBody = null;
-        dragSpeedModifier = (float)CustomOptionHolder.undertakerDragSpeedModifier.getSelection();
-        cooldown = CustomOptionHolder.undertakerAbilityCooldown.getFloat();
-        dragDistance = (DragDistance)CustomOptionHolder.undertakerDragDistance.getSelection();
-        disableKillButton = CustomOptionHolder.undertakerDisableKillButtonWhileDragging.getBool();
-        disableReportButton = CustomOptionHolder.undertakerDisableReportButtonWhileDragging.getBool();
-        disableVentButton = CustomOptionHolder.undertakerDisableVentButtonWhileDragging.getBool();
+        base.ClearAndReload();
+        CurrentDeadTarget = null;
+        DraggedBody = null;
+        LastDraggedAt = DateTime.UtcNow;
     }
 
     public static void DropBody(float x, float y)
@@ -71,13 +109,13 @@ public static class Undertaker
     [MethodRpc((uint)Rpc.Role.UndertakerDropBody)]
     private static void Rpc_DropBody(PlayerControl sender, string rawData)
     {
-        if (undertaker == null || draggedBody == null) return;
+        if (Instance.Player == null || Instance.DraggedBody == null) return;
         var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawData);
-        var transform = draggedBody.transform;
+        var transform = Instance.DraggedBody.transform;
         var position = new Vector3(x, y, transform.position.z);
         transform.position = position;
-        draggedBody = null;
-        LastDragged = DateTime.UtcNow;
+        Instance.DraggedBody = null;
+        Instance.LastDraggedAt = DateTime.UtcNow;
     }
 
     public static void DragBody(byte playerId)
@@ -89,10 +127,10 @@ public static class Undertaker
     [MethodRpc((uint)Rpc.Role.UndertakerDragBody)]
     private static void Rpc_DragBody(PlayerControl sender, string rawData)
     {
-        if (undertaker == null) return;
+        if (Instance.Player == null) return;
         var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var body = UnityEngine.Object.FindObjectsOfType<DeadBody>().FirstOrDefault(b => b.ParentId == playerId);
         if (body == null) return;
-        draggedBody = body;
+        Instance.DraggedBody = body;
     }
 }

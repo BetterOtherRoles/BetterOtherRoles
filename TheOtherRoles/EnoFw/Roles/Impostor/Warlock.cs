@@ -1,53 +1,68 @@
-﻿using UnityEngine;
+﻿using TheOtherRoles.EnoFw.Kernel;
+using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
 
-public static class Warlock
+public class Warlock : AbstractRole
 {
-    public static PlayerControl warlock;
-    public static Color color = Palette.ImpostorRed;
+    public static readonly Warlock Instance = new();
+    
+    // Fields
+    public PlayerControl CurseVictim;
+    public PlayerControl CurseVictimTarget;
+    
+    // Options
+    public readonly Option CurseCooldown;
+    public readonly Option RootDuration;
 
-    public static PlayerControl currentTarget;
-    public static PlayerControl curseVictim;
-    public static PlayerControl curseVictimTarget;
+    public static Sprite CurseButtonSprite => GetSprite("TheOtherRoles.Resources.CurseButton.png", 115f);
+    public static Sprite CurseKillButtonSprite => GetSprite("TheOtherRoles.Resources.CurseKillButton.png", 115f);
 
-    public static float cooldown = 30f;
-    public static float rootTime = 5f;
-
-    private static Sprite curseButtonSprite;
-    private static Sprite curseKillButtonSprite;
-
-    public static Sprite getCurseButtonSprite()
+    private Warlock() : base(nameof(Warlock), "Warlock")
     {
-        if (curseButtonSprite) return curseButtonSprite;
-        curseButtonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.CurseButton.png", 115f);
-        return curseButtonSprite;
+        Team = Teams.Impostor;
+        Color = Palette.ImpostorRed;
+        CanTarget = true;
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        CurseCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(CurseCooldown)}",
+            Cs("Curse cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        RootDuration = Tab.CreateFloatList(
+            $"{Key}{nameof(RootDuration)}",
+            Cs("Root duration"),
+            0f,
+            15f,
+            5f,
+            1f,
+            SpawnRate,
+            string.Empty,
+            "s");
     }
 
-    public static Sprite getCurseKillButtonSprite()
+    public override void ClearAndReload()
     {
-        if (curseKillButtonSprite) return curseKillButtonSprite;
-        curseKillButtonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.CurseKillButton.png", 115f);
-        return curseKillButtonSprite;
+        base.ClearAndReload();
+        CurseVictim = null;
+        CurseVictimTarget = null;
     }
 
-    public static void clearAndReload()
-    {
-        warlock = null;
-        currentTarget = null;
-        curseVictim = null;
-        curseVictimTarget = null;
-        cooldown = CustomOptionHolder.warlockCooldown.getFloat();
-        rootTime = CustomOptionHolder.warlockRootTime.getFloat();
-    }
-
-    public static void resetCurse()
+    public void ResetCurse()
     {
         HudManagerStartPatch.warlockCurseButton.Timer = HudManagerStartPatch.warlockCurseButton.MaxTimer;
-        HudManagerStartPatch.warlockCurseButton.Sprite = Warlock.getCurseButtonSprite();
+        HudManagerStartPatch.warlockCurseButton.Sprite = CurseButtonSprite;
         HudManagerStartPatch.warlockCurseButton.actionButton.cooldownTimerText.color = Palette.EnabledColor;
-        currentTarget = null;
-        curseVictim = null;
-        curseVictimTarget = null;
+        CurrentTarget = null;
+        CurseVictim = null;
+        CurseVictimTarget = null;
     }
 }

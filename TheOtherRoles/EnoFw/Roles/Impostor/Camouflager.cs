@@ -1,46 +1,70 @@
 ﻿using System.Linq;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Players;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
 
-public static class Camouflager
+public class Camouflager : AbstractRole
 {
-    public static PlayerControl camouflager;
-    public static Color color = Palette.ImpostorRed;
+    public static readonly Camouflager Instance = new();
+    
+    // Fields
+    public float CamouflageTimer;
+    
+    // Options
+    public readonly Option CamoCooldown;
+    public readonly Option CamoDuration;
 
-    public static float cooldown = 30f;
-    public static float duration = 10f;
-    public static float camouflageTimer = 0f;
+    public static Sprite CamouflageButtonSprite => GetSprite("TheOtherRoles.Resources.CamoButton.png", 115f);
 
-    private static Sprite buttonSprite;
-
-    public static Sprite getButtonSprite()
+    private Camouflager() : base(nameof(Camouflager), "Camouflager")
     {
-        if (buttonSprite) return buttonSprite;
-        buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.CamoButton.png", 115f);
-        return buttonSprite;
+        Team = Teams.Impostor;
+        Color = Palette.ImpostorRed;
+        CanTarget = true;
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        CamoCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(Key)}",
+            Cs($"{Name} cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        CamoDuration = Tab.CreateFloatList(
+            $"{Key}{nameof(CamoDuration)}",
+            Cs($"{Key} duration"),
+            5f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
     }
 
-    public static void resetCamouflage()
+    public void ResetCamouflage()
     {
-        camouflageTimer = 0f;
-        foreach (PlayerControl p in CachedPlayer.AllPlayers)
+        CamouflageTimer = 0f;
+        foreach (var p in CachedPlayer.AllPlayers.Select(p => p.PlayerControl))
         {
-            if (p == Ninja.ninja && Ninja.isInvisble)
-                continue;
+            if (p == Ninja.Instance.Player && Ninja.Instance.IsInvisible) continue;
             p.setDefaultLook();
         }
     }
 
-    public static void clearAndReload()
+    public override void ClearAndReload()
     {
-        resetCamouflage();
-        camouflager = null;
-        camouflageTimer = 0f;
-        cooldown = CustomOptionHolder.camouflagerCooldown.getFloat();
-        duration = CustomOptionHolder.camouflagerDuration.getFloat();
+        base.ClearAndReload();
+        ResetCamouflage();
+        CamouflageTimer = 0f;
     }
 
     public static void CamouflagerCamouflage()
@@ -51,8 +75,8 @@ public static class Camouflager
     [MethodRpc((uint)Rpc.Role.CamouflagerCamouflage)]
     private static void Rpc_CamouflagerCamouflage(PlayerControl sender)
     {
-        if (camouflager == null) return;
-        camouflageTimer = duration;
+        if (Instance.Player == null) return;
+        Instance.CamouflageTimer = Instance.CamoDuration;
         foreach (var player in CachedPlayer.AllPlayers.Select(p => p.PlayerControl))
         {
             player.setLook("", 6, "", "", "", "");

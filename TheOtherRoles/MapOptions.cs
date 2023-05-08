@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TheOtherRoles.EnoFw;
 using TheOtherRoles.Objects;
 using UnityEngine;
 
@@ -90,14 +91,14 @@ static class TORMapOptions
         playerIcons = new Dictionary<byte, PoolablePlayer>();
         ;
 
-        maxNumberOfMeetings = Mathf.RoundToInt(CustomOptionHolder.maxNumberOfMeetings.getSelection());
-        blockSkippingInEmergencyMeetings = CustomOptionHolder.blockSkippingInEmergencyMeetings.getBool();
-        noVoteIsSelfVote = CustomOptionHolder.noVoteIsSelfVote.getBool();
-        hidePlayerNames = CustomOptionHolder.hidePlayerNames.getBool();
-        allowParallelMedBayScans = CustomOptionHolder.allowParallelMedBayScans.getBool();
-        shieldFirstKill = CustomOptionHolder.shieldFirstKill.getBool();
-        removeShieldOnFirstMeeting = CustomOptionHolder.removeFirstKillShield.getSelection() == 0;
-        shieldDuration = CustomOptionHolder.removeShieldTimer.getFloat();
+        maxNumberOfMeetings = Mathf.RoundToInt(CustomOptions.MaxEmergencyMeetings);
+        blockSkippingInEmergencyMeetings = CustomOptions.BlockSkippingInEmergencyMeetings;
+        noVoteIsSelfVote = CustomOptions.NoVoteIsSelfVote;
+        hidePlayerNames = CustomOptions.HidePlayerNames;
+        allowParallelMedBayScans = CustomOptions.AllowParallelMedBayScans;
+        shieldFirstKill = CustomOptions.ShieldFirstKilledPlayer;
+        removeShieldOnFirstMeeting = CustomOptions.RemoveFirstKillShield == "First meeting ended";
+        shieldDuration = CustomOptions.RemoveShieldTimer;
         firstKillPlayer = null;
         ShieldExpiresAt = null;
     }

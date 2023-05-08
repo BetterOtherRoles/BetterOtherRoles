@@ -76,8 +76,8 @@ public static class GhostInfos
     private static void WhispererTimerAndTarget(string rawData)
     {
         var (victimId, victimToKillId, timer) = Rpc.Deserialize<Tuple<byte, byte, float>>(rawData);
-        Whisperer.whisperVictim = Helpers.playerById(victimId);
-        Whisperer.whisperVictimTarget = Helpers.playerById(victimToKillId);
+        Whisperer.Instance.WhisperVictim = Helpers.playerById(victimId);
+        Whisperer.Instance.WhisperVictimTarget = Helpers.playerById(victimToKillId);
         HudManagerStartPatch.whispererKillButton.Timer = timer;
     }
 
@@ -92,7 +92,7 @@ public static class GhostInfos
         var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var player = Helpers.playerById(playerId);
         if (player == null) return;
-        Pursuer.blankedList.Remove(player);
+        Pursuer.Instance.BlankedList.Remove(player);
     }
 
     private static void DetectiveOrMedicInfo(string rawData)
@@ -118,33 +118,33 @@ public static class GhostInfos
         var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         if (playerId == byte.MaxValue)
         {
-            Warlock.curseVictim = null;
+            Warlock.Instance.CurseVictim = null;
         }
-        Warlock.curseVictim = Helpers.playerById(playerId);
+        Warlock.Instance.CurseVictim = Helpers.playerById(playerId);
     }
 
     private static void NinjaMarked(string rawData)
     {
         var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
-        Ninja.ninjaMarked = Helpers.playerById(playerId);
+        Ninja.Instance.MarkedTarget = Helpers.playerById(playerId);
     }
 
     private static void BountyTarget(string rawData)
     {
         var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
-        BountyHunter.bounty = Helpers.playerById(playerId);
+        BountyHunter.Instance.Bounty = Helpers.playerById(playerId);
     }
 
     private static void HandcuffNoticed(string rawData)
     {
         var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
-        Deputy.setHandcuffedKnows(true, playerId);
+        Deputy.Instance.SetHandcuffedKnows(true, playerId);
     }
 
     private static void HandcuffOver(string rawData)
     {
         var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
-        Deputy.handcuffedKnows.Remove(playerId);
+        Deputy.Instance.HandcuffedKnows.Remove(playerId);
     }
 
     private static void ArsonistDouse(string rawData)
@@ -152,6 +152,6 @@ public static class GhostInfos
         var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var player = Helpers.playerById(playerId);
         if (player == null) return;
-        Arsonist.dousedPlayers.Add(player);
+        Arsonist.Instance.DousedPlayers.Add(player);
     }
 }

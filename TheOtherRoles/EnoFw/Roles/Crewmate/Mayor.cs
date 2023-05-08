@@ -1,44 +1,74 @@
 ﻿using System;
 using Reactor.Networking.Attributes;
-using TheOtherRoles.Patches;
-using TheOtherRoles.Players;
+using TheOtherRoles.EnoFw.Kernel;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Crewmate;
 
-public static class Mayor
+public class Mayor : AbstractRole
 {
-    public static PlayerControl mayor;
-    public static Color color = new Color32(32, 77, 66, byte.MaxValue);
-    public static Minigame emergency = null;
-    public static Sprite emergencySprite = null;
-    public static int remoteMeetingsLeft = 1;
+    public static readonly Mayor Instance = new();
+    
+    // Fields
+    public int UsedRemoteMeetings;
+    public bool VoteTwice = true;
+    public int RemoteMeetingsLeft => MaxRemoteMeetings - UsedRemoteMeetings;
 
-    public static bool canSeeVoteColors = false;
-    public static int tasksNeededToSeeVoteColors;
-    public static bool meetingButton = true;
-    public static int mayorChooseSingleVote;
+    // Options
+    public readonly Option CanChooseSingleVote;
+    public readonly Option CanSeeVoteColors;
+    public readonly Option TasksNeededToSeeVoteColors;
+    public readonly Option HasRemoteMeetingButton;
+    public readonly Option MaxRemoteMeetings;
 
-    public static bool voteTwice = true;
+    public static Sprite MeetingButtonSprite => GetSprite("TheOtherRoles.Resources.EmergencyButton.png", 550f);
 
-    public static Sprite getMeetingSprite()
+    private Mayor() : base(nameof(Mayor), "Mayor")
     {
-        if (emergencySprite) return emergencySprite;
-        emergencySprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.EmergencyButton.png", 550f);
-        return emergencySprite;
+        Team = Teams.Crewmate;
+        Color = new Color32(32, 77, 66, byte.MaxValue);
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        CanChooseSingleVote = Tab.CreateBool(
+            $"{Key}{nameof(CanChooseSingleVote)}",
+            Cs("Can choose single vote"),
+            false,
+            SpawnRate);
+        CanSeeVoteColors = Tab.CreateBool(
+            $"{Key}{nameof(CanSeeVoteColors)}",
+            Cs("Can see vote colors"),
+            false,
+            SpawnRate);
+        TasksNeededToSeeVoteColors = Tab.CreateFloatList(
+            $"{Key}{nameof(TasksNeededToSeeVoteColors)}",
+            Cs("Completed tasks needed to see vote colors"),
+            0f,
+            20f,
+            5f,
+            1f,
+            CanSeeVoteColors);
+        HasRemoteMeetingButton = Tab.CreateBool(
+            $"{Key}{nameof(HasRemoteMeetingButton)}",
+            Cs("Has mobile emergency button"),
+            false,
+            SpawnRate);
+        MaxRemoteMeetings = Tab.CreateFloatList(
+            $"{Key}{nameof(MaxRemoteMeetings)}",
+            Cs("Number of remote meetings"),
+            1f,
+            5f,
+            1f,
+            1f,
+            HasRemoteMeetingButton);
     }
-
-    public static void clearAndReload()
+    
+    public override void ClearAndReload()
     {
-        mayor = null;
-        emergency = null;
-        emergencySprite = null;
-        remoteMeetingsLeft = Mathf.RoundToInt(CustomOptionHolder.mayorMaxRemoteMeetings.getFloat());
-        canSeeVoteColors = CustomOptionHolder.mayorCanSeeVoteColors.getBool();
-        tasksNeededToSeeVoteColors = (int)CustomOptionHolder.mayorTasksNeededToSeeVoteColors.getFloat();
-        meetingButton = CustomOptionHolder.mayorMeetingButton.getBool();
-        mayorChooseSingleVote = CustomOptionHolder.mayorChooseSingleVote.getSelection();
-        voteTwice = true;
+        base.ClearAndReload();
+        UsedRemoteMeetings = 0;
+        VoteTwice = true;
     }
 
     public static void MayorSetVoteTwice(bool value)
@@ -50,6 +80,6 @@ public static class Mayor
     [MethodRpc((uint)Rpc.Role.MayorSetVoteTwice)]
     private static void Rpc_MayorSetVoteTwice(PlayerControl sender, string rawData)
     {
-        voteTwice = Rpc.Deserialize<Tuple<bool>>(rawData).Item1;
+        Instance.VoteTwice = Rpc.Deserialize<Tuple<bool>>(rawData).Item1;
     }
 }

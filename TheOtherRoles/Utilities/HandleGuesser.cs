@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TheOtherRoles.CustomGameModes;
+﻿using TheOtherRoles.CustomGameModes;
+using TheOtherRoles.EnoFw;
 using TheOtherRoles.EnoFw.Roles.Neutral;
 using UnityEngine;
 
@@ -22,33 +20,35 @@ namespace TheOtherRoles.Utilities {
 
         public static bool isGuesser(byte playerId) {
             if (isGuesserGm) return GuesserGM.isGuesser(playerId);
-            return Guesser.isGuesser(playerId);
+            return Guesser.Instance.IsGuesser(playerId);
         }
 
         public static void clear(byte playerId) {
             if (isGuesserGm) GuesserGM.clear(playerId);
-            else Guesser.clear(playerId);
+            else Guesser.Instance.Clear(playerId);
         }
 
         public static int remainingShots(byte playerId, bool shoot = false) {
             if (isGuesserGm) return GuesserGM.remainingShots(playerId, shoot);
-            return Guesser.remainingShots(playerId, shoot);
+            return Guesser.Instance.RemainingShots(playerId, shoot);
         }
 
         public static void clearAndReload() {
-            Guesser.clearAndReload();
+            Guesser.Instance.ClearAndReload();
             GuesserGM.clearAndReload();
             isGuesserGm = TORMapOptions.gameMode == CustomGamemodes.Guesser;
-            if (isGuesserGm) {
-                guesserCantGuessSnitch = CustomOptionHolder.guesserGamemodeCantGuessSnitchIfTaksDone.getBool();
-                hasMultipleShotsPerMeeting = CustomOptionHolder.guesserGamemodeHasMultipleShotsPerMeeting.getBool();
-                killsThroughShield = CustomOptionHolder.guesserGamemodeKillsThroughShield.getBool();
-                evilGuesserCanGuessSpy = CustomOptionHolder.guesserGamemodeEvilCanKillSpy.getBool();
-            } else {
-                guesserCantGuessSnitch = CustomOptionHolder.guesserCantGuessSnitchIfTaksDone.getBool();
-                hasMultipleShotsPerMeeting = CustomOptionHolder.guesserHasMultipleShotsPerMeeting.getBool();
-                killsThroughShield = CustomOptionHolder.guesserKillsThroughShield.getBool();
-                evilGuesserCanGuessSpy = CustomOptionHolder.guesserEvilCanKillSpy.getBool();
+            if (isGuesserGm)
+            {
+                guesserCantGuessSnitch = CustomOptions.GuesserGameModeCantGuessSnitchIfTasksDone;
+                hasMultipleShotsPerMeeting = CustomOptions.GuesserGameModeHasMultipleShotsPerMeeting;
+                killsThroughShield = CustomOptions.GuesserGameModeKillsThroughShield;
+                evilGuesserCanGuessSpy = CustomOptions.GuesserGameModeEvilCanKillSpy;
+            } else
+            {
+                guesserCantGuessSnitch = Guesser.Instance.CantGuessSnitchIfTasksDone;
+                hasMultipleShotsPerMeeting = Guesser.Instance.MultipleShotsPerMeeting;
+                killsThroughShield = Guesser.Instance.KillTroughShield;
+                evilGuesserCanGuessSpy = Guesser.Instance.CanKillSpy;
             }
 
         }

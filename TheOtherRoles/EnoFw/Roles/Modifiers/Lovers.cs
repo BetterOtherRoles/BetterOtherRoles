@@ -1,71 +1,98 @@
-﻿using TheOtherRoles.EnoFw.Roles.Neutral;
+﻿using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.EnoFw.Roles.Neutral;
+using TheOtherRoles.EnoFw.Utils;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Modifiers;
 
-public static class Lovers
+public class Lovers : AbstractSimpleModifier
 {
-    public static PlayerControl lover1;
-    public static PlayerControl lover2;
-    public static Color color = new Color32(232, 57, 185, byte.MaxValue);
+    public static readonly Lovers Instance = new();
 
-    public static bool bothDie = true;
-
-    public static bool enableChat = true;
+    public PlayerControl Lover1;
+    public PlayerControl Lover2;
 
     // Lovers save if next to be exiled is a lover, because RPC of ending game comes before RPC of exiled
-    public static bool notAckedExiledIsLover = false;
+    public bool NotAckedExiledIsLover;
 
-    public static bool existing()
+    public readonly Option ImpostorRate;
+    public readonly Option BothDie;
+    public readonly Option EnableChat;
+
+    private Lovers() : base(nameof(Lovers), "Lovers", new Color32(232, 57, 185, byte.MaxValue))
     {
-        return lover1 != null && lover2 != null && !lover1.Data.Disconnected && !lover2.Data.Disconnected;
+        ImpostorRate = CustomOptions.ModifierSettings.CreateFloatList(
+            $"{Key}{nameof(ImpostorRate)}",
+            Colors.Cs(Color, "Chance that one Lover is impostor"),
+            0f,
+            100f,
+            0f,
+            10f,
+            SpawnRate,
+            string.Empty,
+            "%");
+        BothDie = CustomOptions.ModifierSettings.CreateBool(
+            $"{Key}{nameof(BothDie)}",
+            Colors.Cs(Color, "Both lovers die"),
+            false,
+            SpawnRate);
+        EnableChat = CustomOptions.ModifierSettings.CreateBool(
+            $"{Key}{nameof(EnableChat)}",
+            Colors.Cs(Color, "Enable Lover chat"),
+            false,
+            SpawnRate);
     }
 
-    public static bool existingAndAlive()
+    public bool Existing => Lover1 != null && Lover2 != null && !Lover1.Data.Disconnected && !Lover2.Data.Disconnected;
+    public bool ExistingAndAlive => Existing && !Lover1.Data.IsDead && !Lover2.Data.IsDead && !NotAckedExiledIsLover;
+
+    public PlayerControl OtherLover(PlayerControl oneLover)
     {
-        return existing() && !lover1.Data.IsDead && !lover2.Data.IsDead &&
-               !notAckedExiledIsLover; // ADD NOT ACKED IS LOVER
+        if (!ExistingAndAlive) return null;
+        if (oneLover == Lover1) return Lover2;
+        return oneLover == Lover2 ? Lover1 : null;
     }
 
-    public static PlayerControl otherLover(PlayerControl oneLover)
+    public bool ExistingWithKiller => Existing && (Lover1 == Jackal.Instance.Player ||
+                                                   Lover2 == Jackal.Instance.Player ||
+                                                   Lover1 == Sidekick.Instance.Player ||
+                                                   Lover2 == Sidekick.Instance.Player || Lover1.Data.Role.IsImpostor ||
+                                                   Lover2.Data.Role.IsImpostor);
+
+    public override void ClearAndReload()
     {
-        if (!existingAndAlive()) return null;
-        if (oneLover == lover1) return lover2;
-        if (oneLover == lover2) return lover1;
-        return null;
+        base.ClearAndReload();
+        Lover1 = null;
+        Lover2 = null;
+        NotAckedExiledIsLover = false;
     }
 
-    public static bool existingWithKiller()
+    public override bool Is(PlayerControl player)
     {
-        return existing() && (lover1 == Jackal.jackal || lover2 == Jackal.jackal
-                                                      || lover1 == Sidekick.sidekick || lover2 == Sidekick.sidekick
-                                                      || lover1.Data.Role.IsImpostor || lover2.Data.Role.IsImpostor);
+        return Existing && player != null && Is(player.PlayerId);
     }
 
-    public static bool hasAliveKillingLover(this PlayerControl player)
+    public override bool Is(byte playerId)
     {
-        if (!Lovers.existingAndAlive() || !existingWithKiller())
-            return false;
-        return (player != null && (player == lover1 || player == lover2));
+        return Existing && (playerId == Lover1.PlayerId || playerId == Lover2.PlayerId);
     }
+}
 
-    public static void clearAndReload()
-    {
-        lover1 = null;
-        lover2 = null;
-        notAckedExiledIsLover = false;
-        bothDie = CustomOptionHolder.modifierLoverBothDie.getBool();
-        enableChat = CustomOptionHolder.modifierLoverEnableChat.getBool();
-    }
-
-    public static PlayerControl getPartner(this PlayerControl player)
+public static class LoverPlayerControlExtension
+{
+    public static PlayerControl GetPartner(this PlayerControl player)
     {
         if (player == null)
             return null;
-        if (lover1 == player)
-            return lover2;
-        if (lover2 == player)
-            return lover1;
-        return null;
+        if (Lovers.Instance.Lover1 == player)
+            return Lovers.Instance.Lover2;
+        return Lovers.Instance.Lover2 == player ? Lovers.Instance.Lover1 : null;
+    }
+    
+    public static bool HasAliveKillingLover(this PlayerControl player)
+    {
+        if (!Lovers.Instance.ExistingAndAlive || !Lovers.Instance.ExistingWithKiller) return false;
+        return player != null && (player == Lovers.Instance.Lover1 || player == Lovers.Instance.Lover2);
     }
 }

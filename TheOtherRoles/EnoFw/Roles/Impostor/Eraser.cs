@@ -1,39 +1,56 @@
 ﻿using System;
 using System.Collections.Generic;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
 
-public static class Eraser
+public class Eraser : AbstractRole
 {
-    public static PlayerControl eraser;
-    public static Color color = Palette.ImpostorRed;
+    public static readonly Eraser Instance = new();
+    
+    // Fields
+    public readonly List<byte> AlreadyErased = new();
+    public readonly List<PlayerControl> FutureErased = new();
+    
+    // Options
+    public readonly Option EraseCooldown;
+    public readonly Option CanEraseAnyone;
 
-    public static List<byte> alreadyErased = new List<byte>();
+    public static Sprite EraseButtonSprite => GetSprite("TheOtherRoles.Resources.EraserButton.png", 115f);
 
-    public static List<PlayerControl> futureErased = new();
-    public static PlayerControl currentTarget;
-    public static float cooldown = 30f;
-    public static bool canEraseAnyone = false;
-
-    private static Sprite buttonSprite;
-
-    public static Sprite getButtonSprite()
+    private Eraser() : base(nameof(Eraser), "Eraser")
     {
-        if (buttonSprite) return buttonSprite;
-        buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.EraserButton.png", 115f);
-        return buttonSprite;
+        Team = Teams.Impostor;
+        Color = Palette.ImpostorRed;
+        CanTarget = true;
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        EraseCooldown = Tab.CreateFloatList(
+            nameof(EraseCooldown),
+            Cs($"{Key} cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        CanEraseAnyone = Tab.CreateBool(
+            $"{Key}{nameof(CanEraseAnyone)}",
+            Cs("Can erase anyone"),
+            false,
+            SpawnRate);
     }
 
-    public static void clearAndReload()
+    public override void ClearAndReload()
     {
-        eraser = null;
-        futureErased.Clear();
-        currentTarget = null;
-        cooldown = CustomOptionHolder.eraserCooldown.getFloat();
-        canEraseAnyone = CustomOptionHolder.eraserCanEraseAnyone.getBool();
-        alreadyErased = new List<byte>();
+        base.ClearAndReload();
+        FutureErased.Clear();
+        AlreadyErased.Clear();
     }
 
     public static void SetFutureErased(byte playerId)
@@ -48,6 +65,6 @@ public static class Eraser
         var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var player = Helpers.playerById(playerId);
         if (player == null) return;
-        futureErased.Add(player);
+        Instance.FutureErased.Add(player);
     }
 }

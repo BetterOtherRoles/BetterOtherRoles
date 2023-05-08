@@ -1,7 +1,4 @@
-using Hazel;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using TheOtherRoles.EnoFw.Roles.Impostor;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
@@ -24,7 +21,7 @@ namespace TheOtherRoles.Objects {
         }
         public static Sprite getBackgroundSprite() {
             if (backgroundSprite) return backgroundSprite;
-            backgroundSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.BombBackground.png", 110f / Bomber.hearRange);
+            backgroundSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.BombBackground.png", 110f / Bomber.Instance.BombHearRange);
             return backgroundSprite;
         }
 
@@ -52,23 +49,23 @@ namespace TheOtherRoles.Objects {
 
             bomb.SetActive(false);
             background.SetActive(false);
-            if (CachedPlayer.LocalPlayer.PlayerControl == Bomber.bomber) {
+            if (CachedPlayer.LocalPlayer.PlayerControl == Bomber.Instance.Player) {
                 bomb.SetActive(true);
             }
-            Bomber.bomb = this;
+            Bomber.Instance.Bomb = this;
             Color c = Color.white;
             Color g = Color.red;
             backgroundRenderer.color = Color.white;
-            Bomber.isActive = false;
+            Bomber.Instance.IsActive = false;
 
-            FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Bomber.bombActiveAfter, new Action<float>((x) => {
+            FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Bomber.Instance.BombActivationTime, new Action<float>((x) => {
                 if (x == 1f && this != null) {
                     bomb.SetActive(true);
                     background.SetActive(true);
-                    SoundEffectsManager.playAtPosition("bombFuseBurning", p, Bomber.destructionTime, Bomber.hearRange, true);
-                    Bomber.isActive = true;
+                    SoundEffectsManager.playAtPosition("bombFuseBurning", p, Bomber.Instance.BombDestructionTime, Bomber.Instance.BombHearRange, true);
+                    Bomber.Instance.IsActive = true;
 
-                    FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Bomber.destructionTime, new Action<float>((x) => { // can you feel the pain?
+                    FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Bomber.Instance.BombDestructionTime, new Action<float>((x) => { // can you feel the pain?
                         Color combinedColor = Mathf.Clamp01(x) * g + Mathf.Clamp01(1 - x) * c;
                         if (backgroundRenderer) backgroundRenderer.color = combinedColor;
                         if (x == 1f && this != null) {
@@ -81,27 +78,27 @@ namespace TheOtherRoles.Objects {
         }
         public static void explode(Bomb b) {
             if (b == null) return;
-            if (Bomber.bomber != null) {
+            if (Bomber.Instance.Player != null) {
                 var position = b.bomb.transform.position;
                 var distance = Vector2.Distance(position, CachedPlayer.LocalPlayer.transform.position);  // every player only checks that for their own client (desynct with positions sucks)
-                if (distance < Bomber.destructionRange && !CachedPlayer.LocalPlayer.Data.IsDead) {
-                    Helpers.checkMurderAttemptAndKill(Bomber.bomber, CachedPlayer.LocalPlayer.PlayerControl, false, false, true, true);
+                if (distance < Bomber.Instance.BombDestructionRange && !CachedPlayer.LocalPlayer.Data.IsDead) {
+                    Helpers.checkMurderAttemptAndKill(Bomber.Instance.Player, CachedPlayer.LocalPlayer.PlayerControl, false, false, true, true);
                 }
-                SoundEffectsManager.playAtPosition("bombExplosion", position, range: Bomber.hearRange) ;
+                SoundEffectsManager.playAtPosition("bombExplosion", position, range: Bomber.Instance.BombHearRange) ;
             }
-            Bomber.clearBomb();
+            Bomber.Instance.ClearBomb();
             canDefuse = false;
-            Bomber.isActive = false;
+            Bomber.Instance.IsActive = false;
         }
 
         public static void update() {
-            if (Bomber.bomb == null || !Bomber.isActive) {
+            if (Bomber.Instance.Bomb == null || !Bomber.Instance.IsActive) {
                 canDefuse = false;
                 return;
             }
-            Bomber.bomb.background.transform.Rotate(Vector3.forward * 50 * Time.fixedDeltaTime);
+            Bomber.Instance.Bomb.background.transform.Rotate(Vector3.forward * 50 * Time.fixedDeltaTime);
 
-            if (Vector2.Distance(CachedPlayer.LocalPlayer.PlayerControl.GetTruePosition(), Bomber.bomb.bomb.transform.position) > 1f) canDefuse = false;
+            if (Vector2.Distance(CachedPlayer.LocalPlayer.PlayerControl.GetTruePosition(), Bomber.Instance.Bomb.bomb.transform.position) > 1f) canDefuse = false;
             else canDefuse = true;
         }
 

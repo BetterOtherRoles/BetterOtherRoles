@@ -1,37 +1,77 @@
 ﻿using System.Collections.Generic;
 using AmongUs.Data;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.EnoFw.Roles.Impostor;
+using TheOtherRoles.EnoFw.Utils;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Modifiers;
 
-public static class Chameleon
+public class Chameleon : AbstractMultipleModifier
 {
-    public static List<PlayerControl> chameleon = new();
-    public static float minVisibility = 0.2f;
-    public static float holdDuration = 1f;
-    public static float fadeDuration = 0.5f;
-    public static Dictionary<byte, float> lastMoved = new();
+    public static readonly Chameleon Instance = new();
 
-    public static void clearAndReload()
+    public readonly Dictionary<byte, float> LastMoved = new();
+
+    public readonly Option HoldDuration;
+    public readonly Option FadeDuration;
+    public readonly Option MinVisibilityOption;
+    private float MinVisibility => MinVisibilityOption / 100f;
+
+    private Chameleon() : base(nameof(Chameleon), "Chameleon", Color.yellow)
     {
-        chameleon.Clear();
-        lastMoved.Clear();
-        holdDuration = CustomOptionHolder.modifierChameleonHoldDuration.getFloat();
-        fadeDuration = CustomOptionHolder.modifierChameleonFadeDuration.getFloat();
-        minVisibility = CustomOptionHolder.modifierChameleonMinVisibility.getSelection() / 10f;
+        HoldDuration = CustomOptions.ModifierSettings.CreateFloatList(
+            $"{Key}{nameof(HoldDuration)}",
+            Colors.Cs(Color, "Time until fading starts"),
+            1f,
+            10f,
+            3f,
+            0.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        FadeDuration = CustomOptions.ModifierSettings.CreateFloatList(
+            $"{Key}{nameof(FadeDuration)}",
+            Colors.Cs(Color, "Fade duration"),
+            0.25f,
+            10f,
+            1f,
+            0.25f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        MinVisibilityOption = CustomOptions.ModifierSettings.CreateFloatList(
+            $"{Key}{nameof(MinVisibilityOption)}",
+            Colors.Cs(Color, "Minimum visibility"),
+            0f,
+            100f,
+            0f,
+            10f,
+            SpawnRate,
+            string.Empty,
+            "%");
     }
 
-    public static float visibility(byte playerId)
+    public override void ClearAndReload()
     {
-        float visibility = 1f;
-        if (lastMoved != null && lastMoved.ContainsKey(playerId))
+        base.ClearAndReload();
+        LastMoved.Clear();
+    }
+
+    public static float Visibility(byte playerId)
+    {
+        var visibility = 1f;
+        if (Instance.LastMoved.TryGetValue(playerId, out var value))
         {
-            var tStill = Time.time - lastMoved[playerId];
-            if (tStill > holdDuration)
+            var tStill = Time.time - value;
+            if (tStill > Instance.HoldDuration)
             {
-                if (tStill - holdDuration > fadeDuration) visibility = minVisibility;
-                else visibility = (1 - (tStill - holdDuration) / fadeDuration) * (1 - minVisibility) + minVisibility;
+                if (tStill - Instance.HoldDuration > Instance.FadeDuration) visibility = Instance.MinVisibility;
+                else
+                    visibility =
+                        (1 - (tStill - Instance.HoldDuration) / Instance.FadeDuration) * (1 - Instance.MinVisibility) +
+                        Instance.MinVisibility;
             }
         }
 
@@ -46,20 +86,21 @@ public static class Chameleon
 
     public static void update()
     {
-        foreach (var chameleonPlayer in chameleon)
+        foreach (var chameleonPlayer in Instance.Players)
         {
-            if (chameleonPlayer == Ninja.ninja && Ninja.isInvisble) continue; // Dont make Ninja visible...
+            if (chameleonPlayer == Ninja.Instance.Player && Ninja.Instance.IsInvisible)
+                continue; // Dont make Ninja visible...
             // check movement by animation
             PlayerPhysics playerPhysics = chameleonPlayer.MyPhysics;
             var currentPhysicsAnim = playerPhysics.Animations.Animator.GetCurrentAnimation();
             if (currentPhysicsAnim != playerPhysics.Animations.group.IdleAnim)
             {
-                lastMoved[chameleonPlayer.PlayerId] = Time.time;
+                Instance.LastMoved[chameleonPlayer.PlayerId] = Time.time;
             }
 
             // calculate and set visibility
-            float visibility = Chameleon.visibility(chameleonPlayer.PlayerId);
-            float petVisibility = visibility;
+            var visibility = Chameleon.Visibility(chameleonPlayer.PlayerId);
+            var petVisibility = visibility;
             if (chameleonPlayer.Data.IsDead)
             {
                 visibility = 0.5f;

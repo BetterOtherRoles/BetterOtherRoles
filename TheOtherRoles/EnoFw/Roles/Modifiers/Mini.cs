@@ -1,39 +1,57 @@
 ﻿using System;
+using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.EnoFw.Utils;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Modifiers;
 
-public static class Mini
+public class Mini : AbstractSimpleModifier
 {
-    public static PlayerControl mini;
-    public static Color color = Color.yellow;
-    public const float defaultColliderRadius = 0.2233912f;
-    public const float defaultColliderOffset = 0.3636057f;
+    public const float DefaultColliderRadius = 0.2233912f;
+    public const float DefaultColliderOffset = 0.3636057f;
+    
+    public static readonly Mini Instance = new();
 
-    public static float growingUpDuration = 400f;
-    public static bool isGrowingUpInMeeting = true;
-    public static DateTime timeOfGrowthStart = DateTime.UtcNow;
-    public static DateTime timeOfMeetingStart = DateTime.UtcNow;
-    public static float ageOnMeetingStart = 0f;
-    public static bool triggerMiniLose = false;
+    public DateTime TimeOfGrowthStart = DateTime.UtcNow;
+    public DateTime TimeOfMeetingStart = DateTime.UtcNow;
+    public float AgeOnMeetingStart;
+    public bool TriggerMiniLose;
 
-    public static void clearAndReload()
+    public readonly Option GrowingUpDuration;
+    public readonly Option IsGrowingUpInMeeting;
+
+    private Mini() : base(nameof(Mini), "Mini", Color.yellow)
     {
-        mini = null;
-        triggerMiniLose = false;
-        growingUpDuration = CustomOptionHolder.modifierMiniGrowingUpDuration.getFloat();
-        isGrowingUpInMeeting = CustomOptionHolder.modifierMiniGrowingUpInMeeting.getBool();
-        timeOfGrowthStart = DateTime.UtcNow;
+        GrowingUpDuration = CustomOptions.ModifierSettings.CreateFloatList(
+            $"{Key}{nameof(GrowingUpDuration)}",
+            Colors.Cs(Color, "Growing up duration"),
+            60f,
+            1200f,
+            400f,
+            10f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        IsGrowingUpInMeeting = CustomOptions.ModifierSettings.CreateBool(
+            $"{Key}{nameof(IsGrowingUpInMeeting)}",
+            Colors.Cs(Color, "Grows up in meeting"),
+            true,
+            SpawnRate);
     }
 
-    public static float growingProgress()
+    public override void ClearAndReload()
     {
-        float timeSinceStart = (float)(DateTime.UtcNow - timeOfGrowthStart).TotalMilliseconds;
-        return Mathf.Clamp(timeSinceStart / (growingUpDuration * 1000), 0f, 1f);
+        base.ClearAndReload();
+        TriggerMiniLose = false;
+        TimeOfGrowthStart = DateTime.UtcNow;
     }
 
-    public static bool isGrownUp()
+    public float GrowingProgress()
     {
-        return growingProgress() == 1f;
+        var timeSinceStart = (float)(DateTime.UtcNow - TimeOfGrowthStart).TotalMilliseconds;
+        return Mathf.Clamp(timeSinceStart / (GrowingUpDuration * 1000f), 0f, 1f);
     }
+
+    public bool IsGrownUp => GrowingProgress() >= 1f;
 }

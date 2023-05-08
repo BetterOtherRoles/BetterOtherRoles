@@ -1,40 +1,73 @@
 ﻿using System;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Crewmate;
 
-public static class Swapper
+public class Swapper : AbstractRole
 {
-    public static PlayerControl swapper;
-    public static Color color = new Color32(134, 55, 86, byte.MaxValue);
-    private static Sprite spriteCheck;
-    public static bool canCallEmergency = false;
-    public static bool canOnlySwapOthers = false;
-    public static int charges;
-    public static float rechargeTasksNumber;
-    public static float rechargedTasks;
+    public static readonly Swapper Instance = new();
+    
+    // Fields
+    public int UsedSwaps;
+    public bool EnableSwap;
+    public byte PlayerId1 = byte.MaxValue;
+    public byte PlayerId2 = byte.MaxValue;
+    public int RechargedTasks;
+    public int Charges => NumberOfSwaps - UsedSwaps;
+    
+    // Options
+    public readonly Option CanCallEmergencyMeeting;
+    public readonly Option CanOnlySwapOthers;
+    public readonly Option NumberOfSwaps;
+    public readonly Option RechargeTasksNumber;
 
-    public static byte playerId1 = byte.MaxValue;
-    public static byte playerId2 = byte.MaxValue;
+    public static Sprite CheckSprite => GetSprite("TheOtherRoles.Resources.SwapperCheck.png", 150f);
 
-    public static Sprite getCheckSprite()
+    private Swapper() : base(nameof(Swapper), "Swapper")
     {
-        if (spriteCheck) return spriteCheck;
-        spriteCheck = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.SwapperCheck.png", 150f);
-        return spriteCheck;
+        Team = Teams.Crewmate;
+        Color = new Color32(134, 55, 86, byte.MaxValue);
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        CanCallEmergencyMeeting = Tab.CreateBool(
+            $"{Key}{nameof(CanCallEmergencyMeeting)}",
+            Cs("Can call emergency meeting"),
+            true,
+            SpawnRate);
+        CanOnlySwapOthers = Tab.CreateBool(
+            $"{Key}{nameof(CanOnlySwapOthers)}",
+            Cs("Can only swap others"),
+            false,
+            SpawnRate);
+        NumberOfSwaps = Tab.CreateFloatList(
+            $"{Key}{nameof(NumberOfSwaps)}",
+            Cs("Initial swap charges"),
+            0f,
+            5f,
+            1f,
+            1f,
+            SpawnRate);
+        RechargeTasksNumber = Tab.CreateFloatList(
+            $"{Key}{nameof(RechargeTasksNumber)}",
+            Cs("Number of tasks needed for recharging"),
+            1f,
+            10f,
+            2f,
+            1f,
+            SpawnRate);
     }
 
-    public static void clearAndReload()
+    public override void ClearAndReload()
     {
-        swapper = null;
-        playerId1 = byte.MaxValue;
-        playerId2 = byte.MaxValue;
-        canCallEmergency = CustomOptionHolder.swapperCanCallEmergency.getBool();
-        canOnlySwapOthers = CustomOptionHolder.swapperCanOnlySwapOthers.getBool();
-        charges = Mathf.RoundToInt(CustomOptionHolder.swapperSwapsNumber.getFloat());
-        rechargeTasksNumber = Mathf.RoundToInt(CustomOptionHolder.swapperRechargeTasksNumber.getFloat());
-        rechargedTasks = Mathf.RoundToInt(CustomOptionHolder.swapperRechargeTasksNumber.getFloat());
+        base.ClearAndReload();
+        PlayerId1 = byte.MaxValue;
+        PlayerId2 = byte.MaxValue;
+        UsedSwaps = 0;
+        RechargedTasks = RechargeTasksNumber;
     }
 
     public static void SwapperSwap(byte pId1, byte pId2)
@@ -48,7 +81,7 @@ public static class Swapper
     {
         var (pId1, pId2) = Rpc.Deserialize<Tuple<byte, byte>>(rawData);
         if (!MeetingHud.Instance) return;
-        playerId1 = pId1;
-        playerId2 = pId2;
+        Instance.PlayerId1 = pId1;
+        Instance.PlayerId2 = pId2;
     }
 }

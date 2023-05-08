@@ -8,6 +8,7 @@ using Hazel;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using TheOtherRoles.CustomGameModes;
+using TheOtherRoles.EnoFw;
 using TheOtherRoles.EnoFw.Modules;
 using TheOtherRoles.EnoFw.Roles.Crewmate;
 using TheOtherRoles.EnoFw.Roles.Impostor;
@@ -45,7 +46,7 @@ namespace TheOtherRoles.Patches {
                     TORMapOptions.playerIcons[p.PlayerId] = player;
                     player.gameObject.SetActive(false);
 
-                    if (CachedPlayer.LocalPlayer.PlayerControl == Arsonist.arsonist && p != Arsonist.arsonist) {
+                    if (CachedPlayer.LocalPlayer.PlayerControl == Arsonist.Instance.Player && p != Arsonist.Instance.Player) {
                         player.transform.localPosition = bottomLeft + new Vector3(-0.25f, -0.25f, 0) + Vector3.right * playerCounter++ * 0.35f;
                         player.transform.localScale = Vector3.one * 0.2f;
                         player.setSemiTransparent(true);
@@ -72,14 +73,14 @@ namespace TheOtherRoles.Patches {
             }
 
             // Force Bounty Hunter to load a new Bounty when the Intro is over
-            if (BountyHunter.bounty != null && CachedPlayer.LocalPlayer.PlayerControl == BountyHunter.bountyHunter) {
-                BountyHunter.bountyUpdateTimer = 0f;
+            if (BountyHunter.Instance.Bounty != null && CachedPlayer.LocalPlayer.PlayerControl == BountyHunter.Instance.Player) {
+                BountyHunter.Instance.BountyUpdateTimer = 0f;
                 if (FastDestroyableSingleton<HudManager>.Instance != null) {
-                    BountyHunter.cooldownText = UnityEngine.Object.Instantiate<TMPro.TextMeshPro>(FastDestroyableSingleton<HudManager>.Instance.KillButton.cooldownTimerText, FastDestroyableSingleton<HudManager>.Instance.transform);
-                    BountyHunter.cooldownText.alignment = TMPro.TextAlignmentOptions.Center;
-                    BountyHunter.cooldownText.transform.localPosition = bottomLeft + new Vector3(0f, -0.35f, -62f);
-                    BountyHunter.cooldownText.transform.localScale = Vector3.one * 0.4f;
-                    BountyHunter.cooldownText.gameObject.SetActive(true);
+                    BountyHunter.Instance.CooldownText = UnityEngine.Object.Instantiate<TMPro.TextMeshPro>(FastDestroyableSingleton<HudManager>.Instance.KillButton.cooldownTimerText, FastDestroyableSingleton<HudManager>.Instance.transform);
+                    BountyHunter.Instance.CooldownText.alignment = TMPro.TextAlignmentOptions.Center;
+                    BountyHunter.Instance.CooldownText.transform.localPosition = bottomLeft + new Vector3(0f, -0.35f, -62f);
+                    BountyHunter.Instance.CooldownText.transform.localScale = Vector3.one * 0.4f;
+                    BountyHunter.Instance.CooldownText.gameObject.SetActive(true);
                 }
             }
 
@@ -105,7 +106,7 @@ namespace TheOtherRoles.Patches {
                     FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(HideNSeek.hunterWaitingTime, new Action<float>((p) => {
                         if (p == 1f) {
                             player.moveable = true;
-                            HideNSeek.timer = CustomOptionHolder.hideNSeekTimer.getFloat() * 60;
+                            HideNSeek.timer = CustomOptions.HideNSeekTimer * 60f;
                             HideNSeek.isWaitingTimer = false;
                         }
                     })));
@@ -137,9 +138,9 @@ namespace TheOtherRoles.Patches {
                 ShipStatusPatch.originalNumImpVisionOption = GameOptionsManager.Instance.currentNormalGameOptions.ImpostorLightMod;
                 ShipStatusPatch.originalNumKillCooldownOption = GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown;
 
-                GameOptionsManager.Instance.currentNormalGameOptions.ImpostorLightMod = CustomOptionHolder.hideNSeekHunterVision.getFloat();
-                GameOptionsManager.Instance.currentNormalGameOptions.CrewLightMod = CustomOptionHolder.hideNSeekHuntedVision.getFloat();
-                GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown = CustomOptionHolder.hideNSeekKillCooldown.getFloat();
+                GameOptionsManager.Instance.currentNormalGameOptions.ImpostorLightMod = CustomOptions.HideNSeekHunterVision;
+                GameOptionsManager.Instance.currentNormalGameOptions.CrewLightMod = CustomOptions.HideNSeekHuntedVision;
+                GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown = CustomOptions.HideNSeekKillCooldown;
             }
         }
     }
@@ -155,12 +156,12 @@ namespace TheOtherRoles.Patches {
             }
 
             // Add the Spy to the Impostor team (for the Impostors)
-            if (Spy.spy != null && CachedPlayer.LocalPlayer.Data.Role.IsImpostor) {
+            if (Spy.Instance.Player != null && CachedPlayer.LocalPlayer.Data.Role.IsImpostor) {
                 List<PlayerControl> players = PlayerControl.AllPlayerControls.ToArray().ToList().OrderBy(x => Guid.NewGuid()).ToList();
                 var fakeImpostorTeam = new Il2CppSystem.Collections.Generic.List<PlayerControl>(); // The local player always has to be the first one in the list (to be displayed in the center)
                 fakeImpostorTeam.Add(CachedPlayer.LocalPlayer.PlayerControl);
                 foreach (PlayerControl p in players) {
-                    if (CachedPlayer.LocalPlayer.PlayerControl != p && (p == Spy.spy || p.Data.Role.IsImpostor))
+                    if (CachedPlayer.LocalPlayer.PlayerControl != p && (p == Spy.Instance.Player || p.Data.Role.IsImpostor))
                         fakeImpostorTeam.Add(p);
                 }
                 yourTeam = fakeImpostorTeam;
@@ -226,22 +227,22 @@ namespace TheOtherRoles.Patches {
                     if (modifierInfo.roleId != RoleId.Lover)
                         __instance.RoleBlurbText.text += Helpers.cs(modifierInfo.color, $"\n{modifierInfo.introDescription}");
                     else {
-                        PlayerControl otherLover = CachedPlayer.LocalPlayer.PlayerControl == Lovers.lover1 ? Lovers.lover2 : Lovers.lover1;
-                        __instance.RoleBlurbText.text += Helpers.cs(Lovers.color, $"\n♥ You are in love with {otherLover?.Data?.PlayerName ?? ""} ♥");
+                        PlayerControl otherLover = CachedPlayer.LocalPlayer.PlayerControl == Lovers.Instance.Lover1 ? Lovers.Instance.Lover2 : Lovers.Instance.Lover1;
+                        __instance.RoleBlurbText.text += Helpers.cs(Lovers.Instance.Color, $"\n♥ You are in love with {otherLover?.Data?.PlayerName ?? ""} ♥");
                     }
                 }
-                if (Deputy.knowsSheriff && Deputy.Player != null && Sheriff.sheriff != null) {
+                if (Deputy.Instance.KnowsSheriff && Deputy.Instance.Player != null && Sheriff.Instance.Player != null) {
                     if (infos.Any(info => info.roleId == RoleId.Sheriff))
-                        __instance.RoleBlurbText.text += Helpers.cs(Sheriff.color, $"\nYour Deputy is {Deputy.Player?.Data?.PlayerName ?? ""}");
+                        __instance.RoleBlurbText.text += Helpers.cs(Sheriff.Instance.Color, Deputy.Instance.IntroTextForSheriff);
                     else if (infos.Any(info => info.roleId == RoleId.Deputy))
-                        __instance.RoleBlurbText.text += Helpers.cs(Sheriff.color, $"\nYour Sheriff is {Sheriff.sheriff?.Data?.PlayerName ?? ""}");
+                        __instance.RoleBlurbText.text += Sheriff.Instance.IntroTextForDeputy;
                 }
             }
             public static bool Prefix(IntroCutscene __instance) {
                 // Create RandomSeed
                 RandomSeed.GenerateSeed();
-                if (!CustomOptionHolder.activateRoles.getBool()) return true;
-                seed = rnd.Next(5000);
+                if (!CustomOptions.EnableRoles) return true;
+                seed = Rnd.Next(5000);
                 FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(1f, new Action<float>((p) => {
                     SetRoleTexts(__instance);
                 })));

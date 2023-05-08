@@ -38,7 +38,7 @@ public static class RandomSeed
 
     public static void RandomizePlayersList(MeetingHud meetingHud)
     {
-        if (!CustomOptionHolder.randomizePlayersInMeeting.getBool()) return;
+        if (!CustomOptions.RandomizeMeetingOrder) return;
         var alivePlayers = meetingHud.playerStates
             .Where(area => !area.AmDead).ToList();
         alivePlayers.Sort(SortListByNames);
@@ -56,9 +56,9 @@ public static class RandomSeed
     public static void RandomizeUploadLocation(List<GameObject> downloads, GameObject upload)
     {
         var randomizedDownloads = downloads
-            .OrderBy(_ => TheOtherRoles.rnd.Next())
+            .OrderBy(_ => TheOtherRoles.Rnd.Next())
             .ToList();
-        if (TheOtherRoles.rnd.Next(randomizedDownloads.Count + 1) == 1) return;
+        if (TheOtherRoles.Rnd.Next(randomizedDownloads.Count + 1) == 1) return;
         var randomDownload = randomizedDownloads[0];
         var randomUpload = upload;
         var downloadSprite = randomDownload.GetComponent<SpriteRenderer>().sprite;
@@ -80,7 +80,7 @@ public static class RandomSeed
             .Select(o => o.GetComponent<SpriteRenderer>().sprite)
             .ToList();
         var randomizedList = gameObjects
-            .OrderBy(_ => TheOtherRoles.rnd.Next())
+            .OrderBy(_ => TheOtherRoles.Rnd.Next())
             .ToList();
         for (var i = 0; i < randomizedList.Count; i++)
         {
@@ -95,7 +95,7 @@ public static class RandomSeed
             .Select(o => o.transform.localPosition)
             .ToList();
         var randomizedList = gameObjects
-            .OrderBy(o => TheOtherRoles.rnd.Next())
+            .OrderBy(o => TheOtherRoles.Rnd.Next())
             .ToList();
         for (var i = 0; i < randomizedList.Count; i++)
         {
@@ -113,7 +113,7 @@ public static class RandomSeed
     {
         public static bool Prefix(MedScanMinigame._WalkToPad_d__16 __instance)
         {
-            if (!CustomOptionHolder.randomizePositionDuringScan.getBool()) return true;
+            if (!CustomOptions.RandomizeMeetingOrder) return true;
             var minigame = __instance.__4__this;
             minigame.StartCoroutine(FixMedbayScanPosition(minigame));
             return false;

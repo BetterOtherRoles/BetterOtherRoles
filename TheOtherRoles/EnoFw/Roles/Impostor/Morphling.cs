@@ -1,56 +1,70 @@
 ﻿using System;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
 
-public static class Morphling
+public class Morphling : AbstractRole
 {
-    public static PlayerControl morphling;
-    public static Color color = Palette.ImpostorRed;
-    private static Sprite sampleSprite;
-    private static Sprite morphSprite;
+    public static readonly Morphling Instance = new();
+    
+    // Fields
+    public PlayerControl SampledTarget;
+    public PlayerControl MorphTarget;
+    public float MorphTimer;
+    
+    // Options
+    public readonly Option MorphCooldown;
+    public readonly Option MorphDuration;
 
-    public static float cooldown = 30f;
-    public static float duration = 10f;
+    public static Sprite SampleButtonSprite => GetSprite("TheOtherRoles.Resources.SampleButton.png", 115f);
+    public static Sprite MorphButtonSprite => GetSprite("TheOtherRoles.Resources.MorphButton.png", 115f);
 
-    public static PlayerControl currentTarget;
-    public static PlayerControl sampledTarget;
-    public static PlayerControl morphTarget;
-    public static float morphTimer = 0f;
-
-    public static void resetMorph()
+    private Morphling() : base(nameof(Morphling), "Morphling")
     {
-        morphTarget = null;
-        morphTimer = 0f;
-        if (morphling == null) return;
-        morphling.setDefaultLook();
+        Team = Teams.Impostor;
+        Color = Palette.ImpostorRed;
+        CanTarget = true;
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        MorphCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(MorphCooldown)}",
+            Cs("Morph cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        MorphDuration = Tab.CreateFloatList(
+            $"{Key}{nameof(MorphDuration)}",
+            Cs("Morph duration"),
+            5f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
     }
 
-    public static void clearAndReload()
+    public void ResetMorph()
     {
-        resetMorph();
-        morphling = null;
-        currentTarget = null;
-        sampledTarget = null;
-        morphTarget = null;
-        morphTimer = 0f;
-        cooldown = CustomOptionHolder.morphlingCooldown.getFloat();
-        duration = CustomOptionHolder.morphlingDuration.getFloat();
+        MorphTarget = null;
+        MorphTimer = 0f;
+        if (Player == null) return;
+        Player.setDefaultLook();
     }
 
-    public static Sprite getSampleSprite()
+    public override void ClearAndReload()
     {
-        if (sampleSprite) return sampleSprite;
-        sampleSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.SampleButton.png", 115f);
-        return sampleSprite;
-    }
-
-    public static Sprite getMorphSprite()
-    {
-        if (morphSprite) return morphSprite;
-        morphSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.MorphButton.png", 115f);
-        return morphSprite;
+        ResetMorph();
+        base.ClearAndReload();
+        SampledTarget = null;
     }
 
     public static void MorphlingMorph(byte targetId)
@@ -64,12 +78,12 @@ public static class Morphling
     {
         var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var target = Helpers.playerById(targetId);
-        if (morphling == null || target == null) return;
-        morphTimer = duration;
-        morphTarget = target;
-        if (Camouflager.camouflageTimer <= 0f)
+        if (Instance.Player == null || target == null) return;
+        Instance.MorphTimer = Instance.MorphDuration;
+        Instance.MorphTarget = target;
+        if (Camouflager.Instance.CamouflageTimer <= 0f)
         {
-            morphling.setLook(target.Data.PlayerName, target.Data.DefaultOutfit.ColorId,
+            Instance.Player.setLook(target.Data.PlayerName, target.Data.DefaultOutfit.ColorId,
                 target.Data.DefaultOutfit.HatId, target.Data.DefaultOutfit.VisorId, target.Data.DefaultOutfit.SkinId,
                 target.Data.DefaultOutfit.PetId);
         }

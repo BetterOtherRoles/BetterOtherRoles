@@ -1,14 +1,15 @@
-﻿using UnityEngine;
+﻿using TheOtherRoles.EnoFw.Kernel;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
 
-public static class Godfather
+public class Godfather : AbstractRole
 {
-    public static PlayerControl godfather;
-    public static Color color = Palette.ImpostorRed;
+    public static readonly Godfather Instance = new();
 
-    public static void clearAndReload()
+    private Godfather() : base(nameof(Godfather), "Godfather", false)
     {
-        godfather = null;
+        Team = Teams.Impostor;
+        Color = Palette.ImpostorRed;
+        CanTarget = true;
     }
 }

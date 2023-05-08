@@ -1,54 +1,71 @@
 ﻿using System;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Objects;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
 
-public static class Vampire
+public class Vampire : AbstractRole
 {
-    public static PlayerControl vampire;
-    public static Color color = Palette.ImpostorRed;
+    public static readonly Vampire Instance = new();
 
-    public static float delay = 10f;
-    public static float cooldown = 30f;
-    public static bool canKillNearGarlics = true;
-    public static bool localPlacedGarlic = false;
-    public static bool garlicsActive = true;
+    // Fields
+    public PlayerControl Bitten;
+    public bool TargetNearGarlic;
+    public bool LocalPlacedGarlic;
+    public bool GarlicsActive => SpawnRate > 0;
 
-    public static PlayerControl currentTarget;
-    public static PlayerControl bitten;
-    public static bool targetNearGarlic = false;
+    // Options
+    public readonly Option BiteDelay;
+    public readonly Option BiteCooldown;
+    public readonly Option CanKillNearGarlics;
 
-    private static Sprite buttonSprite;
-
-    public static Sprite getButtonSprite()
+    private Vampire() : base(nameof(Vampire), "Vampire")
     {
-        if (buttonSprite) return buttonSprite;
-        buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.VampireButton.png", 115f);
-        return buttonSprite;
+        Team = Teams.Impostor;
+        Color = Palette.ImpostorRed;
+        CanTarget = true;
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+
+        BiteDelay = Tab.CreateFloatList(
+            $"{Key}{nameof(BiteDelay)}",
+            Cs("Vampire kill delay"),
+            1f,
+            20f,
+            10f,
+            1f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        BiteCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(BiteCooldown)}",
+            Cs($"{Name} cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        CanKillNearGarlics = Tab.CreateBool(
+            $"{Name}{nameof(CanKillNearGarlics)},",
+            Cs("Can kill near garlics"),
+            true,
+            SpawnRate);
     }
 
-    private static Sprite garlicButtonSprite;
+    public static Sprite BiteButtonSprite => GetSprite("TheOtherRoles.Resources.VampireButton.png", 115f);
+    public static Sprite GarlicButtonSprite => GetSprite("TheOtherRoles.Resources.GarlicButton.png", 115f);
 
-    public static Sprite getGarlicButtonSprite()
+    public override void ClearAndReload()
     {
-        if (garlicButtonSprite) return garlicButtonSprite;
-        garlicButtonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.GarlicButton.png", 115f);
-        return garlicButtonSprite;
-    }
-
-    public static void clearAndReload()
-    {
-        vampire = null;
-        bitten = null;
-        targetNearGarlic = false;
-        localPlacedGarlic = false;
-        currentTarget = null;
-        garlicsActive = CustomOptionHolder.vampireSpawnRate.getSelection() > 0;
-        delay = CustomOptionHolder.vampireKillDelay.getFloat();
-        cooldown = CustomOptionHolder.vampireCooldown.getFloat();
-        canKillNearGarlics = CustomOptionHolder.vampireCanKillNearGarlics.getBool();
+        base.ClearAndReload();
+        Bitten = null;
+        TargetNearGarlic = false;
+        LocalPlacedGarlic = false;
     }
 
     public static void VampireSetBitten(byte targetId, bool performReset)
@@ -63,13 +80,14 @@ public static class Vampire
         var (targetId, performReset) = Rpc.Deserialize<Tuple<byte, bool>>(rawData);
         if (performReset)
         {
-            bitten = null;
+            Instance.Bitten = null;
             return;
         }
-        if (vampire == null) return;
+
+        if (Instance.Player == null) return;
         var player = Helpers.playerById(targetId);
         if (player.Data.IsDead) return;
-        bitten = player;
+        Instance.Bitten = player;
     }
 
     public static void PlaceGarlic(float x, float y)

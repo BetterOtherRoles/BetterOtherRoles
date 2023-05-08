@@ -10,13 +10,13 @@ namespace TheOtherRoles.Patches {
         [HarmonyPrefix]
         [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.ClimbLadder))]
         public static void prefix() {
-            AntiTeleport.position = Players.CachedPlayer.LocalPlayer.transform.position;
+            AntiTeleport.Instance.Position = Players.CachedPlayer.LocalPlayer.transform.position;
         }
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(MovingPlatformBehaviour), nameof(MovingPlatformBehaviour.UsePlatform))]
         public static void prefix2() {
-            AntiTeleport.position = Players.CachedPlayer.LocalPlayer.transform.position;
+            AntiTeleport.Instance.Position = Players.CachedPlayer.LocalPlayer.transform.position;
         }
     }
 }

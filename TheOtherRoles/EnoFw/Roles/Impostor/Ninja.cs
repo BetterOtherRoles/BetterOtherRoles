@@ -1,58 +1,98 @@
 ﻿using System;
 using AmongUs.Data;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Objects;
 using TheOtherRoles.Players;
 using UnityEngine;
-using Object = UnityEngine.Object;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
 
-public static class Ninja
+public class Ninja : AbstractRole
 {
-    public static PlayerControl ninja;
-    public static Color color = Palette.ImpostorRed;
+    public static readonly Ninja Instance = new();
 
-    public static PlayerControl ninjaMarked;
-    public static PlayerControl currentTarget;
-    public static float cooldown = 30f;
-    public static float traceTime = 1f;
-    public static bool knowsTargetLocation;
-    public static float invisibleDuration = 5f;
+    // Fields
+    public PlayerControl MarkedTarget;
+    public Arrow Arrow;
+    public bool IsInvisible;
+    public float InvisibilityTimer;
+    
+    // Options
+    public readonly Option NinjaCooldown;
+    public readonly Option KnowsTargetLocation;
+    public readonly Option TraceDuration;
+    public readonly Option TraceColorDuration;
+    public readonly Option InvisibilityDuration;
 
-    public static float invisibleTimer;
-    public static bool isInvisble;
-    private static Sprite markButtonSprite;
-    private static Sprite killButtonSprite;
-    public static Arrow arrow = new Arrow(Color.black);
+    public static Sprite MarkButtonSprite => GetSprite("TheOtherRoles.Resources.NinjaMarkButton.png", 115f);
+    public static Sprite AssassinateButtonSprite => GetSprite("TheOtherRoles.Resources.NinjaAssassinateButton.png", 115f);
 
-    public static Sprite getMarkButtonSprite()
+    private Ninja() : base(nameof(Ninja), "Ninja")
     {
-        if (markButtonSprite) return markButtonSprite;
-        markButtonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.NinjaMarkButton.png", 115f);
-        return markButtonSprite;
+        Team = Teams.Impostor;
+        Color = Palette.ImpostorRed;
+        CanTarget = true;
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        NinjaCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(NinjaCooldown)}",
+            Cs($"{Name} cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        KnowsTargetLocation = Tab.CreateBool(
+            $"{Key}{nameof(KnowsTargetLocation)}",
+            Cs("Knows location of target"),
+            true,
+            SpawnRate);
+        TraceDuration = Tab.CreateFloatList(
+            $"{Key}{nameof(TraceDuration)}",
+            Cs("Trace duration"),
+            1f,
+            20f,
+            5f,
+            0.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        TraceColorDuration = Tab.CreateFloatList(
+            $"{Key}{nameof(TraceColorDuration)}",
+            Cs("Time till trace color has faded"),
+            0f,
+            20f,
+            2f,
+            0.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        InvisibilityDuration = Tab.CreateFloatList(
+            $"{Key}{nameof(InvisibilityDuration)}",
+            Cs("Invisibility duration"),
+            0f,
+            20f,
+            3f,
+            1f,
+            SpawnRate,
+            string.Empty,
+            "s");
     }
 
-    public static Sprite getKillButtonSprite()
+    public override void ClearAndReload()
     {
-        if (killButtonSprite) return killButtonSprite;
-        killButtonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.NinjaAssassinateButton.png", 115f);
-        return killButtonSprite;
-    }
-
-    public static void clearAndReload()
-    {
-        ninja = null;
-        currentTarget = ninjaMarked = null;
-        cooldown = CustomOptionHolder.ninjaCooldown.getFloat();
-        knowsTargetLocation = CustomOptionHolder.ninjaKnowsTargetLocation.getBool();
-        traceTime = CustomOptionHolder.ninjaTraceTime.getFloat();
-        invisibleDuration = CustomOptionHolder.ninjaInvisibleDuration.getFloat();
-        invisibleTimer = 0f;
-        isInvisble = false;
-        if (arrow?.arrow != null) Object.Destroy(arrow.arrow);
-        arrow = new Arrow(Color.black);
-        if (arrow.arrow != null) arrow.arrow.SetActive(false);
+        base.ClearAndReload();
+        MarkedTarget = null;
+        InvisibilityTimer = 0f;
+        IsInvisible = false;
+        if (Arrow != null && Arrow.arrow != null) UnityEngine.Object.Destroy(Arrow.arrow);
+        Arrow = new Arrow(Color.black);
+        if (Arrow.arrow != null) Arrow.arrow.SetActive(false);
     }
 
     public static void SetInvisible(byte playerId, bool visible)
@@ -65,7 +105,7 @@ public static class Ninja
     private static void Rpc_SetInvisible(PlayerControl sender, string rawData)
     {
         var (playerId, visible) = Rpc.Deserialize<Tuple<byte, bool>>(rawData);
-        
+
         var target = Helpers.playerById(playerId);
         if (target == null) return;
         if (visible)
@@ -73,19 +113,19 @@ public static class Ninja
             target.cosmetics.currentBodySprite.BodySprite.color = Color.white;
             target.cosmetics.colorBlindText.gameObject.SetActive(DataManager.Settings.Accessibility.ColorBlindMode);
             target.cosmetics.colorBlindText.color = target.cosmetics.colorBlindText.color.SetAlpha(1f);
-            if (Camouflager.camouflageTimer <= 0) target.setDefaultLook();
-            isInvisble = false;
+            if (Camouflager.Instance.CamouflageTimer <= 0) target.setDefaultLook();
+            Instance.IsInvisible = false;
             return;
         }
 
         target.setLook("", 6, "", "", "", "");
-        var invisibleColor = Color.clear;           
+        var color = Color.clear;
         if (CachedPlayer.LocalPlayer.Data.Role.IsImpostor || CachedPlayer.LocalPlayer.Data.IsDead) color.a = 0.1f;
-        target.cosmetics.currentBodySprite.BodySprite.color = invisibleColor;
+        target.cosmetics.currentBodySprite.BodySprite.color = color;
         target.cosmetics.colorBlindText.color = target.cosmetics.colorBlindText.color.SetAlpha(color.a);
         target.cosmetics.colorBlindText.gameObject.SetActive(false);
-        invisibleTimer = invisibleDuration;
-        isInvisble = true;
+        Instance.InvisibilityTimer = Instance.InvisibilityDuration;
+        Instance.IsInvisible = true;
     }
 
     public static void PlaceNinjaTrace(float x, float y)
@@ -101,8 +141,8 @@ public static class Ninja
         var position = Vector3.zero;
         position.x = x;
         position.y = y;
-        var _ = new NinjaTrace(position, traceTime);
-        if (CachedPlayer.LocalPlayer.PlayerControl == ninja) return;
-        ninjaMarked = null;
+        var _ = new NinjaTrace(position, Instance.TraceDuration);
+        if (CachedPlayer.LocalPlayer.PlayerControl == Instance.Player) return;
+        Instance.MarkedTarget = null;
     }
 }

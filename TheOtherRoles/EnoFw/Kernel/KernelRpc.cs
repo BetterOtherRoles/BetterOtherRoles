@@ -155,38 +155,38 @@ public static class KernelRpc
         switch (modifierId)
         {
             case RoleId.Bait:
-                Bait.bait.Add(player);
+                Bait.Instance.Players.Add(player);
                 break;
             case RoleId.Lover:
-                if (flag == 0) Lovers.lover1 = player;
-                else Lovers.lover2 = player;
+                if (flag == 0) Lovers.Instance.Lover1 = player;
+                else Lovers.Instance.Lover2 = player;
                 break;
             case RoleId.Bloody:
-                Bloody.bloody.Add(player);
+                Bloody.Instance.Players.Add(player);
                 break;
             case RoleId.AntiTeleport:
-                AntiTeleport.antiTeleport.Add(player);
+                AntiTeleport.Instance.Players.Add(player);
                 break;
             case RoleId.Tiebreaker:
-                Tiebreaker.tiebreaker = player;
+                Tiebreaker.Instance.Player = player;
                 break;
             case RoleId.Sunglasses:
-                Sunglasses.sunglasses.Add(player);
+                Sunglasses.Instance.Players.Add(player);
                 break;
             case RoleId.Mini:
-                Mini.mini = player;
+                Mini.Instance.Player = player;
                 break;
             case RoleId.Vip:
-                Vip.vip.Add(player);
+                Vip.Instance.Players.Add(player);
                 break;
             case RoleId.Invert:
-                Invert.invert.Add(player);
+                Invert.Instance.Players.Add(player);
                 break;
             case RoleId.Chameleon:
-                Chameleon.chameleon.Add(player);
+                Chameleon.Instance.Players.Add(player);
                 break;
             case RoleId.Shifter:
-                Shifter.shifter = player;
+                Shifter.Instance.Player = player;
                 break;
         }
     }
@@ -225,143 +225,143 @@ public static class KernelRpc
         switch (roleId)
         {
             case RoleId.Jester:
-                Jester.jester = player;
+                Jester.Instance.Player = player;
                 break;
             case RoleId.Mayor:
-                Mayor.mayor = player;
+                Mayor.Instance.Player = player;
                 break;
             case RoleId.Portalmaker:
-                Portalmaker.portalmaker = player;
+                Portalmaker.Instance.Player = player;
                 break;
             case RoleId.Engineer:
-                Engineer.engineer = player;
+                Engineer.Instance.Player = player;
                 break;
             case RoleId.Sheriff:
-                Sheriff.sheriff = player;
+                Sheriff.Instance.Player = player;
                 break;
             case RoleId.Deputy:
-                Deputy.Player = player;
+                Deputy.Instance.Player = player;
                 break;
             case RoleId.Lighter:
-                Lighter.lighter = player;
+                Lighter.Instance.Player = player;
                 break;
             case RoleId.Godfather:
-                Godfather.godfather = player;
+                Godfather.Instance.Player = player;
                 break;
             case RoleId.Mafioso:
-                Mafioso.mafioso = player;
+                Mafioso.Instance.Player = player;
                 break;
             case RoleId.Janitor:
-                Janitor.janitor = player;
+                Janitor.Instance.Player = player;
                 break;
             case RoleId.Detective:
-                Detective.detective = player;
+                Detective.Instance.Player = player;
                 break;
             case RoleId.TimeMaster:
-                TimeMaster.timeMaster = player;
+                TimeMaster.Instance.Player = player;
                 break;
             case RoleId.Medic:
-                Medic.medic = player;
+                Medic.Instance.Player = player;
                 break;
             case RoleId.Shifter:
-                Shifter.shifter = player;
+                Shifter.Instance.Player = player;
                 break;
             case RoleId.Swapper:
-                Swapper.swapper = player;
+                Swapper.Instance.Player = player;
                 break;
             case RoleId.Seer:
-                Seer.seer = player;
+                Seer.Instance.Player = player;
                 break;
             case RoleId.Morphling:
-                Morphling.morphling = player;
+                Morphling.Instance.Player = player;
                 break;
             case RoleId.Camouflager:
-                Camouflager.camouflager = player;
+                Camouflager.Instance.Player = player;
                 break;
             case RoleId.Hacker:
-                Hacker.hacker = player;
+                Hacker.Instance.Player = player;
                 break;
             case RoleId.Tracker:
-                Tracker.tracker = player;
+                Tracker.Instance.Player = player;
                 break;
             case RoleId.Vampire:
-                Vampire.vampire = player;
+                Vampire.Instance.Player = player;
                 break;
             case RoleId.Snitch:
-                Snitch.snitch = player;
+                Snitch.Instance.Player = player;
                 break;
             case RoleId.Jackal:
-                Jackal.jackal = player;
+                Jackal.Instance.Player = player;
                 break;
             case RoleId.Sidekick:
-                Sidekick.sidekick = player;
+                Sidekick.Instance.Player = player;
                 break;
             case RoleId.Eraser:
-                Eraser.eraser = player;
+                Eraser.Instance.Player = player;
                 break;
             case RoleId.Spy:
-                Spy.spy = player;
+                Spy.Instance.Player = player;
                 break;
             case RoleId.Trickster:
-                Trickster.trickster = player;
+                Trickster.Instance.Player = player;
                 break;
             case RoleId.Cleaner:
-                Cleaner.cleaner = player;
+                Cleaner.Instance.Player = player;
                 break;
             case RoleId.Warlock:
-                Warlock.warlock = player;
+                Warlock.Instance.Player = player;
                 break;
             case RoleId.SecurityGuard:
-                SecurityGuard.securityGuard = player;
+                SecurityGuard.Instance.Player = player;
                 break;
             case RoleId.Arsonist:
-                Arsonist.arsonist = player;
+                Arsonist.Instance.Player = player;
                 break;
             case RoleId.EvilGuesser:
-                Guesser.evilGuesser = player;
+                Guesser.Instance.EvilGuesser = player;
                 break;
             case RoleId.NiceGuesser:
-                Guesser.niceGuesser = player;
+                Guesser.Instance.NiceGuesser = player;
                 break;
             case RoleId.BountyHunter:
-                BountyHunter.bountyHunter = player;
+                BountyHunter.Instance.Player = player;
                 break;
             case RoleId.Vulture:
-                Vulture.vulture = player;
+                Vulture.Instance.Player = player;
                 break;
             case RoleId.Medium:
-                Medium.medium = player;
+                Medium.Instance.Player = player;
                 break;
             case RoleId.Trapper:
-                Trapper.trapper = player;
+                Trapper.Instance.Player = player;
                 break;
             case RoleId.Lawyer:
-                Lawyer.lawyer = player;
+                Lawyer.Instance.Player = player;
                 break;
             case RoleId.Prosecutor:
-                Lawyer.lawyer = player;
-                Lawyer.isProsecutor = true;
+                Lawyer.Instance.Player = player;
+                Lawyer.Instance.IsProsecutor = true;
                 break;
             case RoleId.Pursuer:
-                Pursuer.pursuer = player;
+                Pursuer.Instance.Player = player;
                 break;
             case RoleId.Witch:
-                Witch.witch = player;
+                Witch.Instance.Player = player;
                 break;
             case RoleId.Ninja:
-                Ninja.ninja = player;
+                Ninja.Instance.Player = player;
                 break;
             case RoleId.Thief:
-                Thief.thief = player;
+                Thief.Instance.Player = player;
                 break;
             case RoleId.Bomber:
-                Bomber.bomber = player;
+                Bomber.Instance.Player = player;
                 break;
             case RoleId.Whisperer:
-                Whisperer.whisperer = player;
+                Whisperer.Instance.Player = player;
                 break;
             case RoleId.Undertaker:
-                Undertaker.undertaker = player;
+                Undertaker.Instance.Player = player;
                 break;
         }
     }
@@ -386,7 +386,7 @@ public static class KernelRpc
         }
     }
 
-    public static void ShareOptions(Dictionary<int, int> options)
+    public static void ShareOptions(Dictionary<string, int> options)
     {
         Rpc_ShareOptions(PlayerControl.LocalPlayer, Rpc.Serialize(options));
     }
@@ -395,11 +395,11 @@ public static class KernelRpc
     private static void Rpc_ShareOptions(PlayerControl sender, string rawData)
     {
         if (sender.AmOwner) return;
-        var options = Rpc.Deserialize<Dictionary<int, int>>(rawData);
+        var options = Rpc.Deserialize<Dictionary<string, int>>(rawData);
         foreach (var o in options)
         {
-            var option = CustomOption.options.Find(option => option.id == o.Key);
-            option?.updateSelection(o.Value);
+            var option = CustomOption.Tab.Options.Find(option => option.Key == o.Key);
+            option?.UpdateSelection(o.Value);
         }
     }
 

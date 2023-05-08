@@ -1,15 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.EnoFw.Utils;
+using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Modifiers;
 
-public static class Vip
+public class Vip : AbstractMultipleModifier
 {
-    public static List<PlayerControl> vip = new List<PlayerControl>();
-    public static bool showColor = true;
+    public static readonly Vip Instance = new();
 
-    public static void clearAndReload()
+    public readonly Option ShowTeamColor;
+
+    private Vip() : base(nameof(Vip), "Vip", Color.yellow)
     {
-        vip = new List<PlayerControl>();
-        showColor = CustomOptionHolder.modifierVipShowColor.getBool();
+        ShowTeamColor = CustomOptions.ModifierSettings.CreateBool(
+            $"{Key}{nameof(ShowTeamColor)}",
+            Colors.Cs(Color, "Show team color"),
+            false,
+            SpawnRate);
     }
+
 }

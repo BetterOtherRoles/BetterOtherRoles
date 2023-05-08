@@ -1,58 +1,96 @@
 ﻿using System;
 using System.Collections.Generic;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
 
-public static class Witch
+public class Witch : AbstractRole
 {
-    public static PlayerControl witch;
-    public static Color color = Palette.ImpostorRed;
+    public static readonly Witch Instance = new();
+    
+    // Fields
+    public readonly List<PlayerControl> FutureSpelled = new();
+    public PlayerControl SpellCastingTarget;
+    public float CurrentCooldownAddition;
+    
+    // Options
+    public readonly Option SpellCooldown;
+    public readonly Option SpellCastingDuration;
+    public readonly Option AdditionalCooldown;
+    public readonly Option CanSpellAnyone;
+    public readonly Option TriggerBothCooldown;
+    public readonly Option WitchVoteSaveTargets;
 
-    public static List<PlayerControl> futureSpelled = new List<PlayerControl>();
-    public static PlayerControl currentTarget;
-    public static PlayerControl spellCastingTarget;
-    public static float cooldown = 30f;
-    public static float spellCastingDuration = 2f;
-    public static float cooldownAddition = 10f;
-    public static float currentCooldownAddition;
-    public static bool canSpellAnyone;
-    public static bool triggerBothCooldowns = true;
-    public static bool witchVoteSavesTargets = true;
+    public static Sprite SpellButtonSprite => GetSprite("TheOtherRoles.Resources.SpellButton.png", 115f);
+    public static Sprite SpelledOverlaySprite => GetSprite("TheOtherRoles.Resources.SpellButtonMeeting.png", 225f);
 
-    private static Sprite buttonSprite;
-
-    public static Sprite getButtonSprite()
+    private Witch() : base(nameof(Witch), "Witch")
     {
-        if (buttonSprite) return buttonSprite;
-        buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.SpellButton.png", 115f);
-        return buttonSprite;
+        Team = Teams.Impostor;
+        Color = Palette.ImpostorRed;
+        CanTarget = true;
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        SpellCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(SpellCooldown)}",
+            Cs("Spell cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        SpellCastingDuration = Tab.CreateFloatList(
+            $"{Key}{nameof(SpellCastingDuration)}",
+            Cs("Spell casting duration"),
+            0f,
+            10f,
+            1f,
+            1f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        AdditionalCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(AdditionalCooldown)}",
+            Cs("Spell additional cooldown"),
+            0f,
+            60f,
+            10f,
+            5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        CanSpellAnyone = Tab.CreateBool(
+            $"{Key}{nameof(CanSpellAnyone)}",
+            Cs("Can spell anyone"),
+            false,
+            SpawnRate);
+        TriggerBothCooldown = Tab.CreateBool(
+            $"{Key}{nameof(TriggerBothCooldown)}",
+            Cs("Trigger both cooldown"),
+            false,
+            SpawnRate);
+        WitchVoteSaveTargets = Tab.CreateBool(
+            $"{Key}{nameof(WitchVoteSaveTargets)}",
+            Cs("Voting the witch saves all targets"),
+            false,
+            SpawnRate);
     }
 
-    private static Sprite spelledOverlaySprite;
-
-    public static Sprite getSpelledOverlaySprite()
+    public override void ClearAndReload()
     {
-        if (spelledOverlaySprite) return spelledOverlaySprite;
-        spelledOverlaySprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.SpellButtonMeeting.png", 225f);
-        return spelledOverlaySprite;
+        base.ClearAndReload();
+        FutureSpelled.Clear();
+        SpellCastingTarget = null;
+        CurrentCooldownAddition = 0f;
     }
 
-
-    public static void clearAndReload()
-    {
-        witch = null;
-        futureSpelled = new List<PlayerControl>();
-        currentTarget = spellCastingTarget = null;
-        cooldown = CustomOptionHolder.witchCooldown.getFloat();
-        cooldownAddition = CustomOptionHolder.witchAdditionalCooldown.getFloat();
-        currentCooldownAddition = 0f;
-        canSpellAnyone = CustomOptionHolder.witchCanSpellAnyone.getBool();
-        spellCastingDuration = CustomOptionHolder.witchSpellCastingDuration.getFloat();
-        triggerBothCooldowns = CustomOptionHolder.witchTriggerBothCooldowns.getBool();
-        witchVoteSavesTargets = CustomOptionHolder.witchVoteSavesTargets.getBool();
-    }
+    
 
     public static void SetFutureSpelled(byte playerId)
     {
@@ -65,11 +103,9 @@ public static class Witch
     {
         var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         
-        PlayerControl player = Helpers.playerById(playerId);
-        if (futureSpelled == null)
-            futureSpelled = new List<PlayerControl>();
+        var player = Helpers.playerById(playerId);
         if (player != null) {
-            futureSpelled.Add(player);
+            Instance.FutureSpelled.Add(player);
         }
     }
 }

@@ -1,14 +1,15 @@
-﻿using UnityEngine;
+﻿using TheOtherRoles.EnoFw.Kernel;
+using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Roles.Neutral;
 
-public static class Fallen
+public class Fallen : AbstractRole
 {
-    public static PlayerControl fallen;
-    public static Color color = Thief.color;
+    public static readonly Fallen Instance = new();
 
-    public static void clearAndReload()
+    private Fallen() : base(nameof(Fallen), "Fallen", false)
     {
-        fallen = null;
+        Team = Teams.Neutral;
+        Color = new Color32(71, 99, 45, byte.MaxValue);
     }
 }

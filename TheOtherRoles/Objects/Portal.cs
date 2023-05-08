@@ -48,12 +48,12 @@ namespace TheOtherRoles.Objects {
             bool flip = playerControl.cosmetics.currentBodySprite.BodySprite.flipX; // use the original player control here, not the morhpTarget.
             firstPortal.animationFgRenderer.flipX = flip;
             secondPortal.animationFgRenderer.flipX = flip;
-            if (Morphling.morphling != null && Morphling.morphTimer > 0) playerControl = Morphling.morphTarget;  // Will output info of morph-target instead
-            string playerNameDisplay = Portalmaker.logOnlyHasColors ? "A player (" + (Helpers.isLighterColor(playerControl.Data.DefaultOutfit.ColorId) ? "L" : "D") + ")" : playerControl.Data.PlayerName;
+            if (Morphling.Instance.Player != null && Morphling.Instance.MorphTimer > 0) playerControl = Morphling.Instance.MorphTarget;  // Will output info of morph-target instead
+            string playerNameDisplay = Portalmaker.Instance.LogOnlyColorType ? "A player (" + (Helpers.isLighterColor(playerControl.Data.DefaultOutfit.ColorId) ? "L" : "D") + ")" : playerControl.Data.PlayerName;
 
             int colorId = playerControl.Data.DefaultOutfit.ColorId;
 
-            if (Camouflager.camouflageTimer > 0) {
+            if (Camouflager.Instance.CamouflageTimer > 0) {
                 playerNameDisplay = "A camouflaged player";
                 colorId = 6;
             }
@@ -101,7 +101,7 @@ namespace TheOtherRoles.Objects {
             animationFgRenderer.material = FastDestroyableSingleton<HatManager>.Instance.PlayerMaterial;
 
             // Only render the inactive portals for the Portalmaker
-            bool playerIsPortalmaker = CachedPlayer.LocalPlayer.PlayerControl == Portalmaker.portalmaker;
+            bool playerIsPortalmaker = CachedPlayer.LocalPlayer.PlayerControl == Portalmaker.Instance.Player;
             portalGameObject.SetActive(playerIsPortalmaker);
             portalFgAnimationGameObject.SetActive(true);
 

@@ -1,17 +1,23 @@
 ﻿using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
+using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Roles.Modifiers;
 
-public static class Tiebreaker
+public class Tiebreaker : AbstractSimpleModifier
 {
-    public static PlayerControl tiebreaker;
+    public static readonly Tiebreaker Instance = new();
 
-    public static bool isTiebreak = false;
+    public bool IsTiebreak;
 
-    public static void clearAndReload()
+    private Tiebreaker() : base(nameof(Tiebreaker), "Tiebreaker", Color.yellow)
     {
-        tiebreaker = null;
-        isTiebreak = false;
+    }
+
+    public override void ClearAndReload()
+    {
+        base.ClearAndReload();
+        IsTiebreak = false;
     }
 
     public static void SetTiebreak()
@@ -22,6 +28,6 @@ public static class Tiebreaker
     [MethodRpc((uint)Rpc.Role.SetTiebreak)]
     private static void Rpc_SetTiebreak(PlayerControl sender)
     {
-        isTiebreak = true;
+        Instance.IsTiebreak = true;
     }
 }

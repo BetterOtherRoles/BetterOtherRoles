@@ -1,51 +1,82 @@
 ﻿using System;
+using System.Collections.Generic;
 using AmongUs.GameOptions;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.EnoFw.Roles.Crewmate;
 using TheOtherRoles.EnoFw.Roles.Impostor;
 using TheOtherRoles.Objects;
 using TheOtherRoles.Utilities;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Neutral;
 
-public static class Thief
+public class Thief : AbstractRole
 {
-    public static PlayerControl thief;
-    public static Color color = new Color32(71, 99, 45, byte.MaxValue);
-    public static PlayerControl currentTarget;
-    public static PlayerControl formerThief;
-    public static PlayerControl playerStealed;
+    public static readonly Thief Instance = new();
+    
+    // Fields
+    public PlayerControl FormerThief;
+    public PlayerControl PlayerStolen;
+    public bool SuicideFlag;
+    public bool StealRole => (string)StealMode is "steal role";
+    public bool BecomePartner => (string)StealMode is "become partner";
 
-    public enum StealMethod
+    // Options
+    public readonly Option KillCooldown;
+    public readonly Option HasImpostorVision;
+    public readonly Option CanUseVents;
+    public readonly Option CanKillSheriff;
+    public readonly Option StealMode;
+
+    private Thief() : base(nameof(Thief), "Thief")
     {
-        StealRole,
-        BecomePartner
+        Team = Teams.Neutral;
+        Color = new Color32(71, 99, 45, byte.MaxValue);
+        CanTarget = true;
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        KillCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(KillCooldown)}",
+            Cs("Kill cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        HasImpostorVision = Tab.CreateBool(
+            $"{Key}{nameof(HasImpostorVision)}",
+            Cs("Has impostor vision"),
+            false,
+            SpawnRate);
+        CanUseVents = Tab.CreateBool(
+            $"{Key}{nameof(CanUseVents)}",
+            Cs("Can use vents"),
+            true,
+            SpawnRate);
+        CanKillSheriff = Tab.CreateBool(
+            $"{Key}{nameof(CanKillSheriff)}",
+            Cs("Can kill sheriff"),
+            true,
+            SpawnRate);
+        StealMode = Tab.CreateStringList(
+            $"{Key}{nameof(StealMode)}",
+            Cs("Steal mode"),
+            new List<string> { "steal role", "become partner" },
+            "steal role",
+            SpawnRate);
     }
-
-    public static StealMethod stealMethod = StealMethod.StealRole;
-
-    public static float cooldown = 30f;
-
-    public static bool suicideFlag = false; // Used as a flag for suicide
-
-    public static bool hasImpostorVision;
-    public static bool canUseVents;
-    public static bool canKillSheriff;
-
-
-    public static void clearAndReload()
+    
+    public override void ClearAndReload()
     {
-        thief = null;
-        suicideFlag = false;
-        currentTarget = null;
-        formerThief = null;
-        playerStealed = null;
-        stealMethod = (StealMethod)CustomOptionHolder.thiefStealMethod.getSelection();
-        hasImpostorVision = CustomOptionHolder.thiefHasImpVision.getBool();
-        cooldown = CustomOptionHolder.thiefCooldown.getFloat();
-        canUseVents = CustomOptionHolder.thiefCanUseVents.getBool();
-        canKillSheriff = CustomOptionHolder.thiefCanKillSheriff.getBool();
+        base.ClearAndReload();
+        FormerThief = null;
+        PlayerStolen = null;
+        SuicideFlag = false;
     }
 
     public static void ThiefStealsRole(byte targetId)
@@ -59,55 +90,55 @@ public static class Thief
     {
         var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var target = Helpers.playerById(targetId);
-        var thiefPlayer = thief;
+        var thiefPlayer = Instance.Player;
         if (target == null) return;
-        if (target == Sheriff.sheriff) Sheriff.sheriff = thiefPlayer;
-        if (target == Jackal.jackal)
+        if (target == Sheriff.Instance.Player) Sheriff.Instance.Player = thiefPlayer;
+        if (target == Jackal.Instance.Player)
         {
-            Jackal.jackal = thiefPlayer;
-            Jackal.formerJackals.Add(target);
+            Jackal.Instance.Player = thiefPlayer;
+            Jackal.Instance.FormerJackals.Add(target);
         }
 
-        if (target == Sidekick.sidekick)
+        if (target == Sidekick.Instance.Player)
         {
-            Sidekick.sidekick = thiefPlayer;
-            Jackal.formerJackals.Add(target);
+            Sidekick.Instance.Player = thiefPlayer;
+            Jackal.Instance.FormerJackals.Add(target);
         }
 
-        if (target == Guesser.evilGuesser) Guesser.evilGuesser = thiefPlayer;
-        if (target == Godfather.godfather) Godfather.godfather = thiefPlayer;
-        if (target == Mafioso.mafioso) Mafioso.mafioso = thiefPlayer;
-        if (target == Janitor.janitor) Janitor.janitor = thiefPlayer;
-        if (target == Morphling.morphling) Morphling.morphling = thiefPlayer;
-        if (target == Camouflager.camouflager) Camouflager.camouflager = thiefPlayer;
-        if (target == Vampire.vampire) Vampire.vampire = thiefPlayer;
-        if (target == Whisperer.whisperer) Whisperer.whisperer = thiefPlayer;
-        if (target == Undertaker.undertaker) Undertaker.undertaker = thiefPlayer;
-        if (target == Eraser.eraser) Eraser.eraser = thiefPlayer;
-        if (target == Trickster.trickster) Trickster.trickster = thiefPlayer;
-        if (target == Cleaner.cleaner) Cleaner.cleaner = thiefPlayer;
-        if (target == Warlock.warlock) Warlock.warlock = thiefPlayer;
-        if (target == BountyHunter.bountyHunter) BountyHunter.bountyHunter = thiefPlayer;
-        if (target == Witch.witch) Witch.witch = thiefPlayer;
-        if (target == Ninja.ninja) Ninja.ninja = thiefPlayer;
-        if (target == Bomber.bomber) Bomber.bomber = thiefPlayer;
+        if (target == Guesser.Instance.EvilGuesser) Guesser.Instance.EvilGuesser = thiefPlayer;
+        if (target == Godfather.Instance.Player) Godfather.Instance.Player = thiefPlayer;
+        if (target == Mafioso.Instance.Player) Mafioso.Instance.Player = thiefPlayer;
+        if (target == Janitor.Instance.Player) Janitor.Instance.Player = thiefPlayer;
+        if (target == Morphling.Instance.Player) Morphling.Instance.Player = thiefPlayer;
+        if (target == Camouflager.Instance.Player) Camouflager.Instance.Player = thiefPlayer;
+        if (target == Vampire.Instance.Player) Vampire.Instance.Player = thiefPlayer;
+        if (target == Whisperer.Instance.Player) Whisperer.Instance.Player = thiefPlayer;
+        if (target == Undertaker.Instance.Player) Undertaker.Instance.Player = thiefPlayer;
+        if (target == Eraser.Instance.Player) Eraser.Instance.Player = thiefPlayer;
+        if (target == Trickster.Instance.Player) Trickster.Instance.Player = thiefPlayer;
+        if (target == Cleaner.Instance.Player) Cleaner.Instance.Player = thiefPlayer;
+        if (target == Warlock.Instance.Player) Warlock.Instance.Player = thiefPlayer;
+        if (target == BountyHunter.Instance.Player) BountyHunter.Instance.Player = thiefPlayer;
+        if (target == Witch.Instance.Player) Witch.Instance.Player = thiefPlayer;
+        if (target == Ninja.Instance.Player) Ninja.Instance.Player = thiefPlayer;
+        if (target == Bomber.Instance.Player) Bomber.Instance.Player = thiefPlayer;
         if (target.Data.Role.IsImpostor)
         {
-            RoleManager.Instance.SetRole(thief, RoleTypes.Impostor);
-            FastDestroyableSingleton<HudManager>.Instance.KillButton.SetCoolDown(thief.killTimer,
+            RoleManager.Instance.SetRole(Instance.Player, RoleTypes.Impostor);
+            FastDestroyableSingleton<HudManager>.Instance.KillButton.SetCoolDown(Instance.Player.killTimer,
                 GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown);
         }
 
-        if (target == Lawyer.target)
+        if (target == Lawyer.Instance.Target)
         {
-            Lawyer.target = thiefPlayer;
-            Lawyer.formerLawyer = target;
+            Lawyer.Instance.Target = thiefPlayer;
+            Lawyer.Instance.FormerLawyer = target;
         }
 
-        if (stealMethod != StealMethod.BecomePartner)
+        if (Instance.BecomePartner)
         {
-            Fallen.clearAndReload();
-            Fallen.fallen = target; // Change target to Fallen ???
+            Fallen.Instance.ClearAndReload();
+            Fallen.Instance.Player = target; // Change target to Fallen ???
             RoleManager.Instance.SetRole(target, RoleTypes.Crewmate);
 
             foreach (var task in target.myTasks.GetFastEnumerator())
@@ -129,9 +160,9 @@ public static class Thief
             }
         }
 
-        if (thief == PlayerControl.LocalPlayer) CustomButton.ResetAllCooldowns();
-        clearAndReload();
-        formerThief = thief; // After clearAndReload, else it would get reset...
-        playerStealed = target;
+        if (Instance.Player == PlayerControl.LocalPlayer) CustomButton.ResetAllCooldowns();
+        Instance.ClearAndReload();
+        Instance.FormerThief = Instance.Player; // After clearAndReload, else it would get reset...
+        Instance.PlayerStolen = target;
     }
 }

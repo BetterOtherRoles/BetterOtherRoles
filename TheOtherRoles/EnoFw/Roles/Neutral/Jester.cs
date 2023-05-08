@@ -1,21 +1,42 @@
-﻿using UnityEngine;
+﻿using TheOtherRoles.EnoFw.Kernel;
+using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Neutral;
 
-public static class Jester
+public class Jester : AbstractRole
 {
-    public static PlayerControl jester;
-    public static Color color = new Color32(236, 98, 165, byte.MaxValue);
+    public static readonly Jester Instance = new();
+    
+    // Fields
+    public bool TriggerJesterWin;
+    
+    // Options
+    public readonly Option CanCallEmergency;
+    public readonly Option HasImpostorVision;
 
-    public static bool triggerJesterWin = false;
-    public static bool canCallEmergency = true;
-    public static bool hasImpostorVision = false;
-
-    public static void clearAndReload()
+    private Jester() : base(nameof(Jester), "Jester")
     {
-        jester = null;
-        triggerJesterWin = false;
-        canCallEmergency = CustomOptionHolder.jesterCanCallEmergency.getBool();
-        hasImpostorVision = CustomOptionHolder.jesterHasImpostorVision.getBool();
+        Team = Teams.Neutral;
+        Color = new Color32(236, 98, 165, byte.MaxValue);
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+
+        CanCallEmergency = Tab.CreateBool(
+            $"{Key}{nameof(CanCallEmergency)}",
+            Cs("Can call emergency meeting"),
+            true,
+            SpawnRate);
+        HasImpostorVision = Tab.CreateBool(
+            $"{Key}{nameof(HasImpostorVision)}",
+            Cs("Has impostor vision"),
+            true,
+            SpawnRate);
+    }
+
+    public override void ClearAndReload()
+    {
+        base.ClearAndReload();
+        TriggerJesterWin = false;
     }
 }

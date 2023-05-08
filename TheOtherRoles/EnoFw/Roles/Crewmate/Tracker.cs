@@ -1,77 +1,109 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Objects;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Crewmate;
 
-public static class Tracker
+public class Tracker : AbstractRole
 {
-    public static PlayerControl tracker;
-    public static Color color = new Color32(100, 58, 220, byte.MaxValue);
-    public static List<Arrow> localArrows = new List<Arrow>();
+    public static readonly Tracker Instance = new();
+    
+    // Fields
+    public PlayerControl Tracked;
+    public bool UsedTracker;
+    public float TimeUntilUpdate;
+    public float CorpsesTrackingTimer;
+    public Arrow Arrow;
+    public readonly List<Vector3> DeadBodyPositions = new();
+    public readonly List<Arrow> Arrows = new();
+    
+    // Options
+    public readonly Option UpdateArrowInterval;
+    public readonly Option ResetTargetAfterMeeting;
+    public readonly Option CanTrackCorpses;
+    public readonly Option CorpsesTrackingCooldown;
+    public readonly Option CorpsesTrackingDuration;
 
-    public static float updateIntervall = 5f;
-    public static bool resetTargetAfterMeeting = false;
-    public static bool canTrackCorpses = false;
-    public static float corpsesTrackingCooldown = 30f;
-    public static float corpsesTrackingDuration = 5f;
-    public static float corpsesTrackingTimer = 0f;
-    public static List<Vector3> deadBodyPositions = new List<Vector3>();
+    public static Sprite TrackCorpsesButtonSprite => GetSprite("TheOtherRoles.Resources.PathfindButton.png", 115f);
+    public static Sprite TrackButtonSprite => GetSprite("TheOtherRoles.Resources.TrackerButton.png", 115f);
 
-    public static PlayerControl currentTarget;
-    public static PlayerControl tracked;
-    public static bool usedTracker = false;
-    public static float timeUntilUpdate = 0f;
-    public static Arrow arrow = new Arrow(Color.blue);
-
-    private static Sprite trackCorpsesButtonSprite;
-
-    public static Sprite getTrackCorpsesButtonSprite()
+    private Tracker() : base(nameof(Tracker), "Tracker")
     {
-        if (trackCorpsesButtonSprite) return trackCorpsesButtonSprite;
-        trackCorpsesButtonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.PathfindButton.png", 115f);
-        return trackCorpsesButtonSprite;
+        Team = Teams.Crewmate;
+        Color = new Color32(100, 58, 220, byte.MaxValue);
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        UpdateArrowInterval = Tab.CreateFloatList(
+            $"{Key}{nameof(UpdateArrowInterval)}",
+            Cs("Update interval"),
+            1f,
+            30f,
+            5f,
+            1f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        ResetTargetAfterMeeting = Tab.CreateBool(
+            $"{Key}{nameof(ResetTargetAfterMeeting)}",
+            Cs("Reset target after meeting"),
+            true,
+            SpawnRate);
+        CanTrackCorpses = Tab.CreateBool(
+            $"{Key}{nameof(CanTrackCorpses)}",
+            Cs("Can track dead bodies"),
+            false,
+            SpawnRate);
+        CorpsesTrackingCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(CorpsesTrackingCooldown)}",
+            Cs("Corpses tracking cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            CanTrackCorpses,
+            string.Empty,
+            "s");
+        CorpsesTrackingDuration = Tab.CreateFloatList(
+            $"{Key}{nameof(CorpsesTrackingDuration)}",
+            Cs("Corpses tracking duration"),
+            2.5f,
+            30f,
+            5f,
+            2.5f,
+            CanTrackCorpses,
+            string.Empty,
+            "s");
     }
 
-    private static Sprite buttonSprite;
+    
 
-    public static Sprite getButtonSprite()
+    public void ResetTracked()
     {
-        if (buttonSprite) return buttonSprite;
-        buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.TrackerButton.png", 115f);
-        return buttonSprite;
+        CurrentTarget = Tracked = null;
+        UsedTracker = false;
+        if (Arrow?.arrow != null) UnityEngine.Object.Destroy(Arrow.arrow);
+        Arrow = new Arrow(Color.blue);
+        if (Arrow.arrow != null) Arrow.arrow.SetActive(false);
     }
 
-    public static void resetTracked()
+    public override void ClearAndReload()
     {
-        currentTarget = tracked = null;
-        usedTracker = false;
-        if (arrow?.arrow != null) UnityEngine.Object.Destroy(arrow.arrow);
-        arrow = new Arrow(Color.blue);
-        if (arrow.arrow != null) arrow.arrow.SetActive(false);
-    }
-
-    public static void clearAndReload()
-    {
-        tracker = null;
-        resetTracked();
-        timeUntilUpdate = 0f;
-        updateIntervall = CustomOptionHolder.trackerUpdateIntervall.getFloat();
-        resetTargetAfterMeeting = CustomOptionHolder.trackerResetTargetAfterMeeting.getBool();
-        if (localArrows != null)
+        base.ClearAndReload();
+        ResetTracked();
+        TimeUntilUpdate = 0f;
+        foreach (var arrow in Arrows.Where(arrow => arrow.arrow != null))
         {
-            foreach (Arrow arrow in localArrows)
-                if (arrow?.arrow != null)
-                    UnityEngine.Object.Destroy(arrow.arrow);
+            UnityEngine.Object.Destroy(arrow.arrow);
         }
-
-        deadBodyPositions = new List<Vector3>();
-        corpsesTrackingTimer = 0f;
-        corpsesTrackingCooldown = CustomOptionHolder.trackerCorpsesTrackingCooldown.getFloat();
-        corpsesTrackingDuration = CustomOptionHolder.trackerCorpsesTrackingDuration.getFloat();
-        canTrackCorpses = CustomOptionHolder.trackerCanTrackCorpses.getBool();
+        Arrows.Clear();
+        DeadBodyPositions.Clear();
+        CorpsesTrackingTimer = 0f;
     }
 
     public static void TrackerUsedTracker(byte playerId)
@@ -86,6 +118,7 @@ public static class Tracker
         var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var target = Helpers.playerById(targetId);
         if (target == null) return;
-        tracked = target;
+        Instance.UsedTracker = true;
+        Instance.Tracked = target;
     }
 }

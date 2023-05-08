@@ -1,26 +1,35 @@
-﻿using UnityEngine;
+﻿using TheOtherRoles.EnoFw.Kernel;
+using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
 
-public static class Cleaner
+public class Cleaner : AbstractRole
 {
-    public static PlayerControl cleaner;
-    public static Color color = Palette.ImpostorRed;
+    public static readonly Cleaner Instance = new();
+    
+    // Options
+    public readonly Option CleanCooldown;
 
-    public static float cooldown = 30f;
+    public static Sprite CleanButtonSprite => GetSprite("TheOtherRoles.Resources.CleanButton.png", 115f);
 
-    private static Sprite buttonSprite;
-
-    public static Sprite getButtonSprite()
+    private Cleaner() : base(nameof(Cleaner), "Cleaner")
     {
-        if (buttonSprite) return buttonSprite;
-        buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.CleanButton.png", 115f);
-        return buttonSprite;
-    }
-
-    public static void clearAndReload()
-    {
-        cleaner = null;
-        cooldown = CustomOptionHolder.cleanerCooldown.getFloat();
+        Team = Teams.Impostor;
+        Color = Palette.ImpostorRed;
+        CanTarget = true;
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        CleanCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(CleanCooldown)}",
+            Cs($"Clean cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
     }
 }

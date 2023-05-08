@@ -51,7 +51,7 @@ namespace TheOtherRoles
 
     public static class Helpers
     {
-        public static Dictionary<string, Sprite> CachedSprites = new();
+        public static readonly Dictionary<string, Sprite> CachedSprites = new();
 
 
         public static PlayerControl setTarget(bool onlyCrewmates = false, bool targetPlayersInVents = false,
@@ -132,8 +132,8 @@ namespace TheOtherRoles
                 closestDistance = distance;
             }
 
-            if (result && Undertaker.undertaker == targetingPlayer)
-                Helpers.setDeadPlayerOutline(result, Undertaker.color);
+            if (result && Undertaker.Instance.Player == targetingPlayer)
+                Helpers.setDeadPlayerOutline(result, Undertaker.Instance.Color);
 
             return result;
         }
@@ -142,7 +142,7 @@ namespace TheOtherRoles
         {
             if (target == null || target.cosmetics?.currentBodySprite?.BodySprite == null) return;
 
-            color = color.SetAlpha(Chameleon.visibility(target.PlayerId));
+            color = color.SetAlpha(Chameleon.Visibility(target.PlayerId));
 
             target.cosmetics.currentBodySprite.BodySprite.material.SetFloat("_Outline", 1f);
             target.cosmetics.currentBodySprite.BodySprite.material.SetColor("_OutlineColor", color);
@@ -275,31 +275,31 @@ namespace TheOtherRoles
         public static void handleVampireBiteOnBodyReport()
         {
             // Murder the bitten player and reset bitten (regardless whether the kill was successful or not)
-            Helpers.checkMurderAttemptAndKill(Vampire.vampire, Vampire.bitten, true, false);
+            Helpers.checkMurderAttemptAndKill(Vampire.Instance.Player, Vampire.Instance.Bitten, true, false);
             Vampire.VampireSetBitten(byte.MaxValue, true);
         }
 
         public static void handleUndertakerDropOnBodyReport()
         {
-            if (Undertaker.undertaker == null) return;
-            var position = Undertaker.undertaker.transform.position;
+            if (Undertaker.Instance.Player == null) return;
+            var position = Undertaker.Instance.Player.transform.position;
             Undertaker.DropBody(position.x, position.y);
         }
 
         public static void handleWhispererKillOnBodyReport()
         {
-            if (Whisperer.whisperVictimToKill != null && Whisperer.whisperVictimToKill != Medic.shielded &&
-                (!TORMapOptions.shieldFirstKill || Whisperer.whisperVictimToKill != TORMapOptions.firstKillPlayer))
-                Helpers.checkMurderAttemptAndKill(Whisperer.whisperer, Whisperer.whisperVictimToKill, true, false);
+            if (Whisperer.Instance.WhisperVictimToKill != null && Whisperer.Instance.WhisperVictimToKill != Medic.Instance.Shielded &&
+                (!TORMapOptions.shieldFirstKill || Whisperer.Instance.WhisperVictimToKill != TORMapOptions.firstKillPlayer))
+                Helpers.checkMurderAttemptAndKill(Whisperer.Instance.Player, Whisperer.Instance.WhisperVictimToKill, true, false);
             else
-                Helpers.checkMurderAttemptAndKill(Whisperer.whisperer, Whisperer.whisperVictim, true, false);
+                Helpers.checkMurderAttemptAndKill(Whisperer.Instance.Player, Whisperer.Instance.WhisperVictim, true, false);
 
             // & reset anyway.
 
-            Whisperer.currentTarget = null;
-            Whisperer.whisperVictim = null;
-            Whisperer.whisperVictimTarget = null;
-            Whisperer.whisperVictimToKill = null;
+            Whisperer.Instance.CurrentTarget = null;
+            Whisperer.Instance.WhisperVictim = null;
+            Whisperer.Instance.WhisperVictimTarget = null;
+            Whisperer.Instance.WhisperVictimToKill = null;
 
             HudManagerStartPatch.whispererKillButton.Timer = HudManagerStartPatch.whispererKillButton.MaxTimer;
         }
@@ -349,13 +349,13 @@ namespace TheOtherRoles
         {
             if (roleInfo.name == "Jackal")
             {
-                var getSidekickText = Jackal.canCreateSidekick ? " and recruit a Sidekick" : "";
+                var getSidekickText = Jackal.Instance.CanCreateSidekick ? " and recruit a Sidekick" : "";
                 return cs(roleInfo.color, $"{roleInfo.name}: Kill everyone{getSidekickText}");
             }
 
             if (roleInfo.name == "Invert")
             {
-                return cs(roleInfo.color, $"{roleInfo.name}: {roleInfo.shortDescription} ({Invert.meetings})");
+                return cs(roleInfo.color, $"{roleInfo.name}: {roleInfo.shortDescription} ({Invert.Instance.Meetings})");
             }
 
             return cs(roleInfo.color, $"{roleInfo.name}: {roleInfo.shortDescription}");
@@ -375,15 +375,15 @@ namespace TheOtherRoles
 
         public static bool hasFakeTasks(this PlayerControl player)
         {
-            return (player == Jester.jester || player == Jackal.jackal || player == Sidekick.sidekick ||
-                    player == Arsonist.arsonist || player == Vulture.vulture ||
-                    Jackal.formerJackals.Any(x => x == player));
+            return (player == Jester.Instance.Player || player == Jackal.Instance.Player || player == Sidekick.Instance.Player ||
+                    player == Arsonist.Instance.Player || player == Vulture.Instance.Player ||
+                    Jackal.Instance.FormerJackals.Any(x => x == player));
         }
 
         public static bool canBeErased(this PlayerControl player)
         {
-            return (player != Jackal.jackal && player != Sidekick.sidekick &&
-                    !Jackal.formerJackals.Any(x => x == player));
+            return (player != Jackal.Instance.Player && player != Sidekick.Instance.Player &&
+                    !Jackal.Instance.FormerJackals.Any(x => x == player));
         }
 
         public static bool shouldShowGhostInfo()
@@ -462,25 +462,25 @@ namespace TheOtherRoles
 
         public static bool hidePlayerName(PlayerControl source, PlayerControl target)
         {
-            if (Camouflager.camouflageTimer > 0f) return true; // No names are visible
+            if (Camouflager.Instance.CamouflageTimer > 0f) return true; // No names are visible
             if (Patches.SurveillanceMinigamePatch.nightVisionIsActive) return true;
-            else if (Ninja.isInvisble && Ninja.ninja == target) return true;
+            else if (Ninja.Instance.IsInvisible && Ninja.Instance.Player == target) return true;
             else if (!TORMapOptions.hidePlayerNames) return false; // All names are visible
             else if (source == null || target == null) return true;
             else if (source == target) return false; // Player sees his own name
-            else if (source.Data.Role.IsImpostor && (target.Data.Role.IsImpostor || target == Spy.spy ||
-                                                     target == Sidekick.sidekick && Sidekick.wasTeamRed ||
-                                                     target == Jackal.jackal && Jackal.wasTeamRed))
+            else if (source.Data.Role.IsImpostor && (target.Data.Role.IsImpostor || target == Spy.Instance.Player ||
+                                                     target == Sidekick.Instance.Player && Sidekick.Instance.WasTeamRed ||
+                                                     target == Jackal.Instance.Player && Jackal.Instance.WasTeamRed))
                 return false; // Members of team Impostors see the names of Impostors/Spies
-            else if ((source == Lovers.lover1 || source == Lovers.lover2) &&
-                     (target == Lovers.lover1 || target == Lovers.lover2))
+            else if ((source == Lovers.Instance.Lover1 || source == Lovers.Instance.Lover2) &&
+                     (target == Lovers.Instance.Lover1 || target == Lovers.Instance.Lover2))
                 return false; // Members of team Lovers see the names of each other
-            else if ((source == Jackal.jackal || source == Sidekick.sidekick) && (target == Jackal.jackal ||
-                         target == Sidekick.sidekick ||
-                         target == Jackal.fakeSidekick))
+            else if ((source == Jackal.Instance.Player || source == Sidekick.Instance.Player) && (target == Jackal.Instance.Player ||
+                         target == Sidekick.Instance.Player ||
+                         target == Jackal.Instance.FakeSidekick))
                 return false; // Members of team Jackal see the names of each other
-            else if (Deputy.knowsSheriff && (source == Sheriff.sheriff || source == Deputy.Player) &&
-                     (target == Sheriff.sheriff || target == Deputy.Player))
+            else if (Deputy.Instance.KnowsSheriff && (source == Sheriff.Instance.Player || source == Deputy.Instance.Player) &&
+                     (target == Sheriff.Instance.Player || target == Deputy.Instance.Player))
                 return false; // Sheriff & Deputy see the names of each other
             return true;
         }
@@ -572,24 +572,24 @@ namespace TheOtherRoles
         public static bool roleCanUseVents(this PlayerControl player)
         {
             bool roleCouldUse = false;
-            if (Engineer.engineer != null && Engineer.engineer == player)
+            if (Engineer.Instance.HasPlayer && Engineer.Instance.Player == player)
                 roleCouldUse = true;
-            else if (Jackal.canUseVents && Jackal.jackal != null && Jackal.jackal == player)
+            else if (Jackal.Instance.CanUseVents && Jackal.Instance.Player != null && Jackal.Instance.Player == player)
                 roleCouldUse = true;
-            else if (Sidekick.canUseVents && Sidekick.sidekick != null && Sidekick.sidekick == player)
+            else if (Sidekick.Instance.CanUseVents && Sidekick.Instance.Player != null && Sidekick.Instance.Player == player)
                 roleCouldUse = true;
-            else if (Spy.canEnterVents && Spy.spy != null && Spy.spy == player)
+            else if (Spy.Instance.CanEnterVents && Spy.Instance.Player != null && Spy.Instance.Player == player)
                 roleCouldUse = true;
-            else if (Vulture.canUseVents && Vulture.vulture != null && Vulture.vulture == player)
+            else if (Vulture.Instance.CanUseVents && Vulture.Instance.Player != null && Vulture.Instance.Player == player)
                 roleCouldUse = true;
-            else if (Thief.canUseVents && Thief.thief != null && Thief.thief == player)
+            else if (Thief.Instance.CanUseVents && Thief.Instance.Player != null && Thief.Instance.Player == player)
                 roleCouldUse = true;
             else if (player.Data?.Role != null && player.Data.Role.CanVent)
             {
-                if (Janitor.janitor != null && Janitor.janitor == CachedPlayer.LocalPlayer.PlayerControl)
+                if (Janitor.Instance.Player != null && Janitor.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl)
                     roleCouldUse = false;
-                else if (Mafioso.mafioso != null && Mafioso.mafioso == CachedPlayer.LocalPlayer.PlayerControl &&
-                         Godfather.godfather != null && !Godfather.godfather.Data.IsDead)
+                else if (Mafioso.Instance.Player != null && Mafioso.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl &&
+                         Godfather.Instance.Player != null && !Godfather.Instance.Player.Data.IsDead)
                     roleCouldUse = false;
                 else
                     roleCouldUse = true;
@@ -619,14 +619,14 @@ namespace TheOtherRoles
             }
 
             // Handle blank shot
-            if (!ignoreBlank && Pursuer.blankedList.Any(x => x.PlayerId == killer.PlayerId))
+            if (!ignoreBlank && Pursuer.Instance.BlankedList.Any(x => x.PlayerId == killer.PlayerId))
             {
                 Pursuer.SetBlanked(killer.PlayerId, false);
                 return MurderAttemptResult.BlankKill;
             }
 
             // Block impostor shielded kill
-            if (Medic.shielded != null && Medic.shielded == target)
+            if (Medic.Instance.Shielded != null && Medic.Instance.Shielded == target)
             {
                 Medic.ShieldedMurderAttempt();
                 MurderAttempt.ShowFailedMurderAttempt(killer.PlayerId, target.PlayerId);
@@ -635,18 +635,18 @@ namespace TheOtherRoles
             }
 
             // Block impostor not fully grown mini kill
-            else if (Mini.mini != null && target == Mini.mini && !Mini.isGrownUp())
+            else if (Mini.Instance.Player != null && target == Mini.Instance.Player && !Mini.Instance.IsGrownUp)
             {
                 MurderAttempt.ShowFailedMurderAttempt(killer.PlayerId, target.PlayerId);
                 return MurderAttemptResult.SuppressKill;
             }
 
             // Block Time Master with time shield kill
-            else if (TimeMaster.shieldActive && TimeMaster.timeMaster != null && TimeMaster.timeMaster == target)
+            else if (TimeMaster.Instance.ShieldActive && TimeMaster.Instance.Player != null && TimeMaster.Instance.Player == target)
             {
                 if (!blockRewind)
                 {
-                    // Only rewind the attempt was not called because a meeting startet 
+                    // Only rewind the attempt was not called because a meeting started
                     TimeMaster.TimeMasterRewindTime();
                 }
 
@@ -654,11 +654,11 @@ namespace TheOtherRoles
             }
 
             // Thief if hit crew only kill if setting says so, but also kill the thief.
-            else if (killer == Thief.thief && !target.Data.Role.IsImpostor && !new List<RoleInfo>
-                             { RoleInfo.jackal, Thief.canKillSheriff ? RoleInfo.sheriff : null, RoleInfo.sidekick }
+            else if (killer == Thief.Instance.Player && !target.Data.Role.IsImpostor && !new List<RoleInfo>
+                             { RoleInfo.jackal, Thief.Instance.CanKillSheriff ? RoleInfo.sheriff : null, RoleInfo.sidekick }
                          .Contains(targetRole))
             {
-                Thief.suicideFlag = true;
+                Thief.Instance.SuicideFlag = true;
                 return MurderAttemptResult.SuppressKill;
             }
 
@@ -705,8 +705,8 @@ namespace TheOtherRoles
             {
                 if (player.Data.Role.IsImpostor && p.Data.Role.IsImpostor && player.PlayerId != p.PlayerId &&
                     team.All(x => x.PlayerId != p.PlayerId)) team.Add(p);
-                else if (player == Jackal.jackal && p == Sidekick.sidekick) team.Add(p);
-                else if (player == Sidekick.sidekick && p == Jackal.jackal) team.Add(p);
+                else if (player == Jackal.Instance.Player && p == Sidekick.Instance.Player) team.Add(p);
+                else if (player == Sidekick.Instance.Player && p == Jackal.Instance.Player) team.Add(p);
             }
 
             return team;
@@ -724,11 +724,11 @@ namespace TheOtherRoles
         {
             return player.Data.Role.IsImpostor ||
                    (isNeutral(player) &&
-                    player != Jester.jester &&
-                    player != Arsonist.arsonist &&
-                    player != Vulture.vulture &&
-                    player != Lawyer.lawyer &&
-                    player != Pursuer.pursuer);
+                    player != Jester.Instance.Player &&
+                    player != Arsonist.Instance.Player &&
+                    player != Vulture.Instance.Player &&
+                    player != Lawyer.Instance.Player &&
+                    player != Pursuer.Instance.Player);
         }
 
         public static bool isEvil(PlayerControl player)
@@ -769,13 +769,13 @@ namespace TheOtherRoles
         public static bool hasImpVision(GameData.PlayerInfo player)
         {
             return player.Role.IsImpostor
-                   || ((Jackal.jackal != null && Jackal.jackal.PlayerId == player.PlayerId ||
-                        Jackal.formerJackals.Any(x => x.PlayerId == player.PlayerId)) && Jackal.hasImpostorVision)
-                   || (Sidekick.sidekick != null && Sidekick.sidekick.PlayerId == player.PlayerId &&
-                       Sidekick.hasImpostorVision)
-                   || (Spy.spy != null && Spy.spy.PlayerId == player.PlayerId && Spy.hasImpostorVision)
-                   || (Jester.jester != null && Jester.jester.PlayerId == player.PlayerId && Jester.hasImpostorVision)
-                   || (Thief.thief != null && Thief.thief.PlayerId == player.PlayerId && Thief.hasImpostorVision);
+                   || ((Jackal.Instance.Player != null && Jackal.Instance.Player.PlayerId == player.PlayerId ||
+                        Jackal.Instance.FormerJackals.Any(x => x.PlayerId == player.PlayerId)) && Jackal.Instance.HasImpostorVision)
+                   || (Sidekick.Instance.Player != null && Sidekick.Instance.Player.PlayerId == player.PlayerId &&
+                       Sidekick.Instance.HasImpostorVision)
+                   || (Spy.Instance.Player != null && Spy.Instance.Player.PlayerId == player.PlayerId && Spy.Instance.HasImpostorVision)
+                   || (Jester.Instance.HasPlayer && Jester.Instance.Player.PlayerId == player.PlayerId && Jester.Instance.HasImpostorVision)
+                   || (Thief.Instance.Player != null && Thief.Instance.Player.PlayerId == player.PlayerId && Thief.Instance.HasImpostorVision);
         }
 
         public static object TryCast(this Il2CppObjectBase self, Type type)

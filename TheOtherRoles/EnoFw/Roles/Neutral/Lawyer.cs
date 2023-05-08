@@ -1,50 +1,87 @@
 ﻿using System;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.EnoFw.Roles.Crewmate;
 using TheOtherRoles.Players;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Neutral;
 
-public static class Lawyer
+public class Lawyer : AbstractRole
 {
-    public static PlayerControl lawyer;
-    public static PlayerControl target;
-    public static PlayerControl formerLawyer;
-    public static Color color = new Color32(134, 153, 25, byte.MaxValue);
-    public static Sprite targetSprite;
-    public static bool triggerProsecutorWin = false;
-    public static bool isProsecutor = false;
-    public static bool canCallEmergency = true;
+    public static readonly Lawyer Instance = new();
+    
+    // Fields
+    public PlayerControl Target;
+    public PlayerControl FormerLawyer;
+    public bool TriggerProsecutorWin;
+    public bool IsProsecutor;
+    public bool TargetWasGuessed;
 
-    public static float vision = 1f;
-    public static bool lawyerKnowsRole = false;
-    public static bool targetCanBeJester = false;
-    public static bool targetWasGuessed = false;
+    // Options
+    public readonly Option IsProsecutorChance;
+    public readonly Option Vision;
+    public readonly Option KnowsTargetRole;
+    public readonly Option CanCallEmergencyMeeting;
+    public readonly Option TargetCanBeJester;
 
-    public static Sprite getTargetSprite()
+    private Lawyer() : base(nameof(Lawyer), "Lawyer")
     {
-        if (targetSprite) return targetSprite;
-        targetSprite = Helpers.loadSpriteFromResources("", 150f);
-        return targetSprite;
+        Team = Teams.Neutral;
+        Color = new Color32(134, 153, 25, byte.MaxValue);
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        IsProsecutorChance = Tab.CreateFloatList(
+            $"{Key}{nameof(IsProsecutorChance)}",
+            Cs("Chance to be Prosecutor"),
+            0f,
+            100f,
+            50f,
+            10f,
+            SpawnRate,
+            string.Empty,
+            "%");
+        Vision = Tab.CreateFloatList(
+            $"{Key}{nameof(Vision)}",
+            Cs("Vision"),
+            0.25f,
+            3f,
+            1f,
+            0.25f,
+            SpawnRate);
+        KnowsTargetRole = Tab.CreateBool(
+            $"{Key}{nameof(KnowsTargetRole)}",
+            Cs("Knows target role"),
+            false,
+            SpawnRate);
+        CanCallEmergencyMeeting = Tab.CreateBool(
+            $"{Key}{nameof(CanCallEmergencyMeeting)}",
+            Cs("Can call emergency meeting"),
+            false,
+            SpawnRate);
+        TargetCanBeJester = Tab.CreateBool(
+            $"{Key}{nameof(TargetCanBeJester)}",
+            Cs("Target can be jester"),
+            false,
+            SpawnRate);
     }
 
-    public static void clearAndReload(bool clearTarget = true)
+    public override void ClearAndReload()
     {
-        lawyer = null;
-        formerLawyer = null;
-        if (clearTarget)
-        {
-            target = null;
-            targetWasGuessed = false;
-        }
+        base.ClearAndReload();
+        ClearAndReloadButKeepTarget();
+        Target = null;
+        TargetWasGuessed = false;
+    }
 
-        isProsecutor = false;
-        triggerProsecutorWin = false;
-        vision = CustomOptionHolder.lawyerVision.getFloat();
-        lawyerKnowsRole = CustomOptionHolder.lawyerKnowsRole.getBool();
-        targetCanBeJester = CustomOptionHolder.lawyerTargetCanBeJester.getBool();
-        canCallEmergency = CustomOptionHolder.jesterCanCallEmergency.getBool();
+    public void ClearAndReloadButKeepTarget()
+    {
+        base.ClearAndReload();
+        FormerLawyer = null;
+        IsProsecutor = false;
+        TriggerProsecutorWin = false;
     }
 
     public static void LawyerPromotesToPursuer()
@@ -55,11 +92,11 @@ public static class Lawyer
     [MethodRpc((uint)Rpc.Role.LawyerPromotesToPursuer)]
     private static void Rpc_LawyerPromotesToPursuer(PlayerControl sender)
     {
-        var player = lawyer;
-        var client = target;
-        clearAndReload(false);
+        var player = Instance.Player;
+        var client = Instance.Target;
+        Instance.ClearAndReloadButKeepTarget();
 
-        Pursuer.pursuer = player;
+        Pursuer.Instance.Player = player;
 
         if (player.PlayerId != CachedPlayer.LocalPlayer.PlayerId || client == null) return;
         var playerInfoTransform = client.cosmetics.nameText.transform.parent.FindChild("Info");
@@ -78,6 +115,6 @@ public static class Lawyer
     {
         var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
 
-        target = Helpers.playerById(playerId);
+        Instance.Target = Helpers.playerById(playerId);
     }
 }

@@ -1,77 +1,70 @@
 ﻿using System;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Objects;
-using TheOtherRoles.Utilities;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Crewmate;
 
-public static class Portalmaker
+public class Portalmaker : AbstractRole
 {
-    public static PlayerControl portalmaker;
-    public static Color color = new Color32(69, 69, 169, byte.MaxValue);
+    public static readonly Portalmaker Instance = new();
+    
+    // Fields
+    
+    // Options
+    public readonly Option PortalCooldown;
+    public readonly Option UsePortalCooldown;
+    public readonly Option LogOnlyColorType;
+    public readonly Option LogHasTime;
+    public readonly Option CanPortalFromAnywhere;
 
-    public static float cooldown;
-    public static float usePortalCooldown;
-    public static bool logOnlyHasColors;
-    public static bool logShowsTime;
-    public static bool canPortalFromAnywhere;
+    public static Sprite PlacePortalButtonSprite => GetSprite("TheOtherRoles.Resources.PlacePortalButton.png", 115f);
+    public static Sprite UsePortalButtonSprite => GetSprite("TheOtherRoles.Resources.UsePortalButton.png", 115f);
 
-    private static Sprite placePortalButtonSprite;
-    private static Sprite usePortalButtonSprite;
-    private static Sprite usePortalSpecialButtonSprite1;
-    private static Sprite usePortalSpecialButtonSprite2;
-    private static Sprite logSprite;
-
-    public static Sprite getPlacePortalButtonSprite()
+    private Portalmaker() : base(nameof(Portalmaker), "Portal maker")
     {
-        if (placePortalButtonSprite) return placePortalButtonSprite;
-        placePortalButtonSprite =
-            Helpers.loadSpriteFromResources("TheOtherRoles.Resources.PlacePortalButton.png", 115f);
-        return placePortalButtonSprite;
-    }
-
-    public static Sprite getUsePortalButtonSprite()
-    {
-        if (usePortalButtonSprite) return usePortalButtonSprite;
-        usePortalButtonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.UsePortalButton.png", 115f);
-        return usePortalButtonSprite;
-    }
-
-    public static Sprite getUsePortalSpecialButtonSprite(bool first)
-    {
-        if (first)
-        {
-            if (usePortalSpecialButtonSprite1) return usePortalSpecialButtonSprite1;
-            usePortalSpecialButtonSprite1 =
-                Helpers.loadSpriteFromResources("TheOtherRoles.Resources.UsePortalSpecialButton1.png", 115f);
-            return usePortalSpecialButtonSprite1;
-        }
-        else
-        {
-            if (usePortalSpecialButtonSprite2) return usePortalSpecialButtonSprite2;
-            usePortalSpecialButtonSprite2 =
-                Helpers.loadSpriteFromResources("TheOtherRoles.Resources.UsePortalSpecialButton2.png", 115f);
-            return usePortalSpecialButtonSprite2;
-        }
-    }
-
-    public static Sprite getLogSprite()
-    {
-        if (logSprite) return logSprite;
-        logSprite = FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[ImageNames.DoorLogsButton]
-            .Image;
-        return logSprite;
-    }
-
-    public static void clearAndReload()
-    {
-        portalmaker = null;
-        cooldown = CustomOptionHolder.portalmakerCooldown.getFloat();
-        usePortalCooldown = CustomOptionHolder.portalmakerUsePortalCooldown.getFloat();
-        logOnlyHasColors = CustomOptionHolder.portalmakerLogOnlyColorType.getBool();
-        logShowsTime = CustomOptionHolder.portalmakerLogHasTime.getBool();
-        canPortalFromAnywhere = CustomOptionHolder.portalmakerCanPortalFromAnywhere.getBool();
+        Team = Teams.Crewmate;
+        Color = new Color32(69, 69, 169, byte.MaxValue);
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        PortalCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(PortalCooldown)}",
+            Cs("Portal cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        UsePortalCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(UsePortalCooldown)}",
+            Cs("Use portal cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        LogOnlyColorType = Tab.CreateBool(
+            $"{Key}{nameof(LogOnlyColorType)}",
+            Cs("Log only display color type"),
+            true,
+            SpawnRate);
+        LogHasTime = Tab.CreateBool(
+            $"{Key}{nameof(LogHasTime)}",
+            Cs("Log display time"),
+            true,
+            SpawnRate);
+        CanPortalFromAnywhere = Tab.CreateBool(
+            $"{Key}{nameof(CanPortalFromAnywhere)}",
+            Cs("Can use portal from everywhere"),
+            true,
+            SpawnRate);
     }
 
     public static void UsePortal(byte playerId, byte exit)

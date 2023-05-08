@@ -1,26 +1,33 @@
-﻿using UnityEngine;
+﻿using TheOtherRoles.EnoFw.Kernel;
+using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
 
-public static class Janitor
+public class Janitor : AbstractRole
 {
-    public static PlayerControl janitor;
-    public static Color color = Palette.ImpostorRed;
+    public static readonly Janitor Instance = new();
+    
+    // Options
+    public readonly Option CleanCooldown;
 
-    public static float cooldown = 30f;
+    public static Sprite CleanButtonSprite => GetSprite("TheOtherRoles.Resources.CleanButton.png", 115f);
 
-    private static Sprite buttonSprite;
-
-    public static Sprite getButtonSprite()
+    private Janitor() : base(nameof(Janitor), "Janitor", false)
     {
-        if (buttonSprite) return buttonSprite;
-        buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.CleanButton.png", 115f);
-        return buttonSprite;
-    }
-
-    public static void clearAndReload()
-    {
-        janitor = null;
-        cooldown = CustomOptionHolder.janitorCooldown.getFloat();
+        Team = Teams.Impostor;
+        Color = Palette.ImpostorRed;
+        CanTarget = true;
+        
+        CleanCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(CleanCooldown)}",
+            Cs($"Clean cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            CustomOptions.MafiaSpawnRate,
+            string.Empty,
+            "s");
     }
 }

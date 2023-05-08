@@ -1,88 +1,148 @@
-﻿using TheOtherRoles.Utilities;
+﻿using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.Utilities;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Crewmate;
 
-public static class Hacker
+public class Hacker : AbstractRole
 {
-    public static PlayerControl hacker;
-    public static Minigame vitals = null;
-    public static Minigame doorLog = null;
-    public static Color color = new Color32(117, 250, 76, byte.MaxValue);
+    public static readonly Hacker Instance = new();
 
-    public static float cooldown = 30f;
-    public static float duration = 10f;
-    public static float toolsNumber = 5f;
-    public static bool onlyColorType = false;
-    public static float hackerTimer = 0f;
-    public static int rechargeTasksNumber = 2;
-    public static int rechargedTasks = 2;
-    public static int chargesVitals = 1;
-    public static int chargesAdminTable = 1;
-    public static bool cantMove = true;
+    // Fields
+    public Minigame Vitals;
+    public Minigame DoorLog;
+    public float Timer;
+    public int RechargedTasks;
+    public int VitalsCharges;
+    public int AdminCharges;
 
-    private static Sprite buttonSprite;
-    private static Sprite vitalsSprite;
-    private static Sprite logSprite;
-    private static Sprite adminSprite;
+    // Options
+    public readonly Option HackCooldown;
+    public readonly Option HackingDuration;
+    public readonly Option OnlyColorType;
+    public readonly Option MaxGadgetCharges;
+    public readonly Option RechargeTasksNumber;
+    public readonly Option CanMoveDuringGadget;
 
-    public static Sprite getButtonSprite()
+    private static Sprite _vitalsSprite;
+    private static Sprite _doorLogSprite;
+    private static Sprite _adminSprite;
+
+    public static Sprite HackButtonSprite => GetSprite("TheOtherRoles.Resources.HackerButton.png", 115f);
+
+    public static Sprite VitalsButtonSprite
     {
-        if (buttonSprite) return buttonSprite;
-        buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.HackerButton.png", 115f);
-        return buttonSprite;
+        get
+        {
+            if (_vitalsSprite != null) return _vitalsSprite;
+            _vitalsSprite = FastDestroyableSingleton<HudManager>.Instance.UseButton
+                .fastUseSettings[ImageNames.VitalsButton].Image;
+            return _vitalsSprite;
+        }
     }
 
-    public static Sprite getVitalsSprite()
+    public static Sprite DoorLogButtonSprite
     {
-        if (vitalsSprite) return vitalsSprite;
-        vitalsSprite = FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[ImageNames.VitalsButton]
-            .Image;
-        return vitalsSprite;
+        get
+        {
+            if (_doorLogSprite != null) return _doorLogSprite;
+            _doorLogSprite = FastDestroyableSingleton<HudManager>.Instance.UseButton
+                .fastUseSettings[ImageNames.DoorLogsButton].Image;
+            return _doorLogSprite;
+        }
     }
 
-    public static Sprite getLogSprite()
+    public static Sprite AdminButtonSprite
     {
-        if (logSprite) return logSprite;
-        logSprite = FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[ImageNames.DoorLogsButton]
-            .Image;
-        return logSprite;
+        get
+        {
+            if (_adminSprite != null) return _adminSprite;
+            var mapId = GameOptionsManager.Instance.currentNormalGameOptions.MapId;
+            var button = mapId switch
+            {
+                0 or 3 => FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[
+                    ImageNames.AdminMapButton] // Skeld & Dleks
+                ,
+                1 => FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings
+                    [ImageNames.MIRAAdminButton] // Mira HQ
+                ,
+                4 => FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[
+                    ImageNames.AirshipAdminButton] // Airship
+                ,
+                _ => FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[
+                    ImageNames.PolusAdminButton]
+            };
+
+            _adminSprite = button.Image;
+            return _adminSprite;
+        }
     }
 
-    public static Sprite getAdminSprite()
+    private Hacker() : base(nameof(Hacker), "Hacker")
     {
-        byte mapId = GameOptionsManager.Instance.currentNormalGameOptions.MapId;
-        UseButtonSettings button =
-            FastDestroyableSingleton<HudManager>.Instance.UseButton
-                .fastUseSettings[ImageNames.PolusAdminButton]; // Polus
-        if (mapId == 0 || mapId == 3)
-            button = FastDestroyableSingleton<HudManager>.Instance.UseButton
-                .fastUseSettings[ImageNames.AdminMapButton]; // Skeld || Dleks
-        else if (mapId == 1)
-            button = FastDestroyableSingleton<HudManager>.Instance.UseButton
-                .fastUseSettings[ImageNames.MIRAAdminButton]; // Mira HQ
-        else if (mapId == 4)
-            button = FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[
-                ImageNames.AirshipAdminButton]; // Airship
-        adminSprite = button.Image;
-        return adminSprite;
+        Team = Teams.Crewmate;
+        Color = new Color32(117, 250, 76, byte.MaxValue);
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        HackCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(HackCooldown)}",
+            Cs("Hack cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        HackingDuration = Tab.CreateFloatList(
+            $"{Key}{nameof(HackingDuration)}",
+            Cs("Hacking duration"),
+            2.5f,
+            60f,
+            10f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        OnlyColorType = Tab.CreateBool(
+            $"{Key}{nameof(OnlyColorType)}",
+            Cs("Only display color type"),
+            false,
+            SpawnRate);
+        MaxGadgetCharges = Tab.CreateFloatList(
+            $"{Key}{nameof(MaxGadgetCharges)}",
+            Cs("Max mobile gadget charges"),
+            1f,
+            30f,
+            5f,
+            1f,
+            SpawnRate);
+        RechargeTasksNumber = Tab.CreateFloatList(
+            $"{Key}{nameof(RechargeTasksNumber)}",
+            Cs("Number of tasks needed for recharging"),
+            1f,
+            5f,
+            2f,
+            1f,
+            SpawnRate);
+        CanMoveDuringGadget = Tab.CreateBool(
+            $"{Key}{nameof(CanMoveDuringGadget)}",
+            Cs("Can move during mobile gadget duration"),
+            false,
+            SpawnRate);
     }
 
-    public static void clearAndReload()
+    public override void ClearAndReload()
     {
-        hacker = null;
-        vitals = null;
-        doorLog = null;
-        hackerTimer = 0f;
-        adminSprite = null;
-        cooldown = CustomOptionHolder.hackerCooldown.getFloat();
-        duration = CustomOptionHolder.hackerHackeringDuration.getFloat();
-        onlyColorType = CustomOptionHolder.hackerOnlyColorType.getBool();
-        toolsNumber = CustomOptionHolder.hackerToolsNumber.getFloat();
-        rechargeTasksNumber = Mathf.RoundToInt(CustomOptionHolder.hackerRechargeTasksNumber.getFloat());
-        rechargedTasks = Mathf.RoundToInt(CustomOptionHolder.hackerRechargeTasksNumber.getFloat());
-        chargesVitals = Mathf.RoundToInt(CustomOptionHolder.hackerToolsNumber.getFloat()) / 2;
-        chargesAdminTable = Mathf.RoundToInt(CustomOptionHolder.hackerToolsNumber.getFloat()) / 2;
-        cantMove = CustomOptionHolder.hackerNoMove.getBool();
+        base.ClearAndReload();
+        RechargedTasks = RechargeTasksNumber;
+        VitalsCharges = MaxGadgetCharges;
+        AdminCharges = MaxGadgetCharges;
+        Vitals = null;
+        DoorLog = null;
+        Timer = 0f;
+        _adminSprite = null;
     }
 }

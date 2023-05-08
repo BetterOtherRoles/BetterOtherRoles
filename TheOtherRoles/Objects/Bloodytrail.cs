@@ -24,7 +24,7 @@ namespace TheOtherRoles.Objects {
         public Bloodytrail(PlayerControl player, PlayerControl bloodyPlayer) {
             this.color = Palette.PlayerColors[(int)bloodyPlayer.Data.DefaultOutfit.ColorId];
             var sp = getBloodySprites();
-            var index = rnd.Next(0, sp.Count);
+            var index = Rnd.Next(0, sp.Count);
 
 
             blood = new GameObject("Blood" + index);
@@ -47,7 +47,7 @@ namespace TheOtherRoles.Objects {
 
             FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(10f, new Action<float>((p) => {
             Color c = color;
-            if (Camouflager.camouflageTimer > 0) c = Palette.PlayerColors[6];
+            if (Camouflager.Instance.CamouflageTimer > 0) c = Palette.PlayerColors[6];
             if (spriteRenderer) spriteRenderer.color = new Color(c.r, c.g, c.b, Mathf.Clamp01(1 - p));
 
             if (p == 1f && blood != null) {

@@ -1,4 +1,5 @@
 using HarmonyLib;
+using TheOtherRoles.EnoFw;
 
 
 namespace TheOtherRoles.Patches
@@ -8,9 +9,9 @@ namespace TheOtherRoles.Patches
     {
         public static bool Prefix(ReactorSystemType __instance, PlayerControl player, byte opCode)
         {
-            if (GameOptionsManager.Instance.currentNormalGameOptions.MapId == 2 && opCode == 128 && !__instance.IsActive && CustomOptionHolder.enableBetterPolus.getBool())
+            if (GameOptionsManager.Instance.currentNormalGameOptions.MapId == 2 && opCode == 128 && !__instance.IsActive && CustomOptions.EnableBetterPolus)
             {
-                __instance.Countdown = CustomOptionHolder.betterPolusReactorDuration.getFloat();
+                __instance.Countdown = CustomOptions.BetterPolusReactorDuration;
                 __instance.UserConsolePairs.Clear();
                 __instance.IsDirty = true;
 

@@ -32,12 +32,12 @@ namespace TheOtherRoles.Objects {
             timeRemaining = duration;
 
             // display the ninjas color in the trace
-            float colorDuration = CustomOptionHolder.ninjaTraceColorTime.getFloat();
+            float colorDuration = Ninja.Instance.TraceColorDuration;
             FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(colorDuration, new Action<float>((p) => {
-                Color c = Palette.PlayerColors[(int)Ninja.ninja.Data.DefaultOutfit.ColorId];
-                if (Helpers.isLighterColor(Ninja.ninja.Data.DefaultOutfit.ColorId)) c = Color.white;
+                Color c = Palette.PlayerColors[(int)Ninja.Instance.Player.Data.DefaultOutfit.ColorId];
+                if (Helpers.isLighterColor(Ninja.Instance.Player.Data.DefaultOutfit.ColorId)) c = Color.white;
                 else c = Palette.PlayerColors[6];
-                //if (Camouflager.camouflageTimer > 0) {
+                //if (Camouflager.Instance.CamouflageTimer > 0) {
                 //    c = Palette.PlayerColors[6];
                 //}
 

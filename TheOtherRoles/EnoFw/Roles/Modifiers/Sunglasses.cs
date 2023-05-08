@@ -1,15 +1,28 @@
-﻿using System.Collections.Generic;
+﻿using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.EnoFw.Utils;
+using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Modifiers;
 
-public static class Sunglasses
+public class Sunglasses : AbstractMultipleModifier
 {
-    public static List<PlayerControl> sunglasses = new List<PlayerControl>();
-    public static int vision = 1;
+    public static readonly Sunglasses Instance = new();
 
-    public static void clearAndReload()
+    public readonly Option Vision;
+
+    private Sunglasses() : base(nameof(Sunglasses), "Sunglasses", Color.yellow)
     {
-        sunglasses = new List<PlayerControl>();
-        vision = CustomOptionHolder.modifierSunglassesVision.getSelection() + 1;
+        Vision = CustomOptions.ModifierSettings.CreateFloatList(
+            $"{Key}{nameof(Vision)}",
+            Colors.Cs(Color, "Vision with sunglasses"),
+            -50f,
+            -10f,
+            -30f,
+            10f,
+            SpawnRate,
+            string.Empty,
+            "%");
     }
+
 }

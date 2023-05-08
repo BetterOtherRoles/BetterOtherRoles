@@ -1,47 +1,100 @@
 ﻿using System;
 using System.Collections.Generic;
-using Hazel;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.EnoFw.Modules;
 using TheOtherRoles.Players;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Crewmate;
 
-public static class Deputy
+public class Deputy : AbstractRole
 {
-    public static PlayerControl Player;
-    public static Color Color = Sheriff.color;
+    public static readonly Deputy Instance = new();
 
-    public static PlayerControl currentTarget;
-    public static List<byte> handcuffedPlayers = new List<byte>();
-    public static int promotesToSheriff; // No: 0, Immediately: 1, After Meeting: 2
-    public static bool keepsHandcuffsOnPromotion;
-    public static float handcuffDuration;
-    public static float remainingHandcuffs;
-    public static float handcuffCooldown;
-    public static bool knowsSheriff;
-    public static Dictionary<byte, float> handcuffedKnows = new Dictionary<byte, float>();
+    // Fields
+    public readonly List<byte> HandcuffedPlayers = new();
+    public readonly Dictionary<byte, float> HandcuffedKnows = new();
+    public int UsedHandcuff;
+    public int RemainingHandcuffs => NumberOfHandcuffs - UsedHandcuff;
+    public Promotions Promotion => (Promotions)(int)PromotedWhen;
+    public string IntroTextForSheriff => Cs($"Your Deputy is {(Player != null ? Player.Data.PlayerName : "unknown")}");
 
-    private static Sprite buttonSprite;
-    private static Sprite handcuffedSprite;
+    // Options
+    public readonly Option PromotedWhen;
+    public readonly Option KeepsHandcuffsOnPromotion;
+    public readonly Option HandcuffDuration;
+    public readonly Option NumberOfHandcuffs;
+    public readonly Option HandcuffCooldown;
+    public readonly Option KnowsSheriff;
 
-    public static Sprite getButtonSprite()
+    public static Sprite HandcuffButtonSprite => GetSprite("TheOtherRoles.Resources.DeputyHandcuffButton.png", 115f);
+    public static Sprite HandcuffedButtonSprite => GetSprite("TheOtherRoles.Resources.DeputyHandcuffed.png", 115f);
+
+    private Deputy() : base(nameof(Deputy), "Deputy")
     {
-        if (buttonSprite) return buttonSprite;
-        buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.DeputyHandcuffButton.png", 115f);
-        return buttonSprite;
+        Team = Teams.Crewmate;
+        Color = new Color32(248, 205, 70, byte.MaxValue);
+        CanTarget = true;
+
+        SpawnRate = Sheriff.Instance.DeputySpawnRate;
+        
+        PromotedWhen = Tab.CreateStringList(
+            $"{Key}{nameof(PromotedWhen)}",
+            Cs("Gets promoted to Sheriff"),
+            new List<string> { "no", "yes (immediately)", "yes (after meeting)" },
+            "no",
+            SpawnRate);
+        KeepsHandcuffsOnPromotion = Tab.CreateBool(
+            $"{Key}{nameof(KeepsHandcuffsOnPromotion)}",
+            Cs("Keeps handcuffs on promotion"),
+            true,
+            PromotedWhen);
+        NumberOfHandcuffs = Tab.CreateFloatList(
+            $"{Key}{nameof(NumberOfHandcuffs)}",
+            Cs("Number of handcuffs"),
+            0f,
+            15f,
+            3f,
+            1f,
+            SpawnRate);
+        HandcuffCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(HandcuffCooldown)}",
+            Cs("Handcuff cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            NumberOfHandcuffs,
+            string.Empty,
+            "s");
+        HandcuffDuration = Tab.CreateFloatList(
+            $"{Key}{nameof(HandcuffDuration)}",
+            Cs("Handcuff duration"),
+            2f,
+            60f,
+            10f,
+            1f,
+            NumberOfHandcuffs,
+            string.Empty,
+            "s");
+        KnowsSheriff = Tab.CreateBool(
+            $"{Key}{nameof(KnowsSheriff)}",
+            Cs("Sheriff and Deputy know each other"),
+            true,
+            PromotedWhen);
     }
 
-    public static Sprite getHandcuffedButtonSprite()
+    public enum Promotions
     {
-        if (handcuffedSprite) return handcuffedSprite;
-        handcuffedSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.DeputyHandcuffed.png", 115f);
-        return handcuffedSprite;
+        No = 0,
+        Immediately,
+        AfterMeeting
     }
 
     // Can be used to enable / disable the handcuff effect on the target's buttons
-    public static void setHandcuffedKnows(bool active = true, byte playerId = byte.MaxValue)
+    public void SetHandcuffedKnows(bool active = true, byte playerId = byte.MaxValue)
     {
         if (playerId == byte.MaxValue)
             playerId = CachedPlayer.LocalPlayer.PlayerId;
@@ -54,8 +107,8 @@ public static class Deputy
 
         if (active)
         {
-            handcuffedKnows.Add(playerId, handcuffDuration);
-            handcuffedPlayers.RemoveAll(x => x == playerId);
+            HandcuffedKnows.Add(playerId, HandcuffDuration);
+            HandcuffedPlayers.RemoveAll(x => x == playerId);
         }
 
         if (playerId == CachedPlayer.LocalPlayer.PlayerId)
@@ -65,19 +118,13 @@ public static class Deputy
         }
     }
 
-    public static void ClearAndReload()
+    public override void ClearAndReload()
     {
-        Player = null;
-        currentTarget = null;
-        handcuffedPlayers = new List<byte>();
-        handcuffedKnows = new Dictionary<byte, float>();
+        base.ClearAndReload();
+        HandcuffedPlayers.Clear();
+        HandcuffedKnows.Clear();
+        UsedHandcuff = 0;
         HudManagerStartPatch.setAllButtonsHandcuffedStatus(false, true);
-        promotesToSheriff = CustomOptionHolder.deputyGetsPromoted.getSelection();
-        remainingHandcuffs = CustomOptionHolder.deputyNumberOfHandcuffs.getFloat();
-        handcuffCooldown = CustomOptionHolder.deputyHandcuffCooldown.getFloat();
-        keepsHandcuffsOnPromotion = CustomOptionHolder.deputyKeepsHandcuffs.getBool();
-        handcuffDuration = CustomOptionHolder.deputyHandcuffDuration.getFloat();
-        knowsSheriff = CustomOptionHolder.deputyKnowsSheriff.getBool();
     }
 
     public static void DeputyPromotes()
@@ -88,10 +135,10 @@ public static class Deputy
     [MethodRpc((uint)Rpc.Role.DeputyPromotes)]
     private static void Rpc_DeputyPromotes(PlayerControl sender)
     {
-        if (Player == null) return;
-        Sheriff.replaceCurrentSheriff(Player);
-        Sheriff.formerDeputy = Player;
-        Player = null;
+        if (Instance.Player == null) return;
+        Sheriff.Instance.ReplaceCurrentSheriff(Instance.Player);
+        Sheriff.Instance.FormerDeputy = Instance.Player;
+        Instance.Player = null;
     }
 
     public static void DeputyUsedHandcuffs(byte targetId)
@@ -104,7 +151,7 @@ public static class Deputy
     private static void Rpc_DeputyUsedHandcuffs(PlayerControl sender, string rawData)
     {
         var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
-        remainingHandcuffs--;
-        handcuffedPlayers.Add(targetId);
+        Instance.UsedHandcuff++;
+        Instance.HandcuffedPlayers.Add(targetId);
     }
 }

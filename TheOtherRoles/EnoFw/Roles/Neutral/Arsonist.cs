@@ -1,67 +1,80 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Players;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Neutral;
 
-public static class Arsonist
+public class Arsonist : AbstractRole
 {
-    public static PlayerControl arsonist;
-    public static Color color = new Color32(238, 112, 46, byte.MaxValue);
+    public static readonly Arsonist Instance = new();
+    
+    // Fields
+    public PlayerControl DouseTarget;
+    public readonly List<PlayerControl> DousedPlayers = new();
+    public bool TriggerArsonistWin;
 
-    public static float cooldown = 30f;
-    public static float duration = 3f;
-    public static bool triggerArsonistWin = false;
+    // Options
+    public readonly Option DouseCooldown;
+    public readonly Option DouseDuration;
 
-    public static PlayerControl currentTarget;
-    public static PlayerControl douseTarget;
-    public static List<PlayerControl> dousedPlayers = new List<PlayerControl>();
+    public static Sprite DouseButtonSprite => GetSprite("TheOtherRoles.Resources.DouseButton.png", 115f);
+    public static Sprite IgniteButtonSprite => GetSprite("TheOtherRoles.Resources.IgniteButton.png", 115f);
 
-    private static Sprite douseSprite;
-
-    public static Sprite getDouseSprite()
+    private Arsonist() : base(nameof(Arsonist), "Arsonist")
     {
-        if (douseSprite) return douseSprite;
-        douseSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.DouseButton.png", 115f);
-        return douseSprite;
+        Team = Teams.Neutral;
+        Color = new Color32(238, 112, 46, byte.MaxValue);
+        CanTarget = true;
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        DouseCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(DouseCooldown)}",
+            Cs("Douse cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        DouseDuration = Tab.CreateFloatList(
+            $"{Key}{nameof(DouseDuration)}",
+            Cs("Douse duration"),
+            0f,
+            10f,
+            1f,
+            1f,
+            SpawnRate,
+            string.Empty,
+            "s");
     }
 
-    private static Sprite igniteSprite;
-
-    public static Sprite getIgniteSprite()
-    {
-        if (igniteSprite) return igniteSprite;
-        igniteSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.IgniteButton.png", 115f);
-        return igniteSprite;
-    }
-
-    public static bool dousedEveryoneAlive()
+    public bool DousedEveryoneAlive()
     {
         return CachedPlayer.AllPlayers.All(x =>
         {
-            return x.PlayerControl == Arsonist.arsonist || x.Data.IsDead || x.Data.Disconnected ||
-                   Arsonist.dousedPlayers.Any(y => y.PlayerId == x.PlayerId);
+            return x.PlayerControl == Player || x.Data.IsDead || x.Data.Disconnected ||
+                   DousedPlayers.Any(y => y.PlayerId == x.PlayerId);
         });
     }
-
-    public static void clearAndReload()
+    
+    public override void ClearAndReload()
     {
-        arsonist = null;
-        currentTarget = null;
-        douseTarget = null;
-        triggerArsonistWin = false;
-        dousedPlayers = new List<PlayerControl>();
-        foreach (PoolablePlayer p in TORMapOptions.playerIcons.Values)
+        base.ClearAndReload();
+        DouseTarget = null;
+        DousedPlayers.Clear();
+        TriggerArsonistWin = false;
+        foreach (var p in TORMapOptions.playerIcons.Values)
         {
             if (p != null && p.gameObject != null) p.gameObject.SetActive(false);
         }
-
-        cooldown = CustomOptionHolder.arsonistCooldown.getFloat();
-        duration = CustomOptionHolder.arsonistDuration.getFloat();
     }
-
+    
     public static void ArsonistWin()
     {
         Rpc_ArsonistWin(PlayerControl.LocalPlayer);
@@ -70,10 +83,10 @@ public static class Arsonist
     [MethodRpc((uint)Rpc.Role.ArsonistWin)]
     private static void Rpc_ArsonistWin(PlayerControl sender)
     {
-        triggerArsonistWin = true;
+        Instance.TriggerArsonistWin = true;
         foreach (var player in CachedPlayer.AllPlayers.Select(p => p.PlayerControl))
         {
-            if (player != arsonist)
+            if (player != Instance.Player)
             {
                 player.Exiled();
             }

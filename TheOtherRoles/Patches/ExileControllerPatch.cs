@@ -24,29 +24,29 @@ namespace TheOtherRoles.Patches {
             lastExiled = exiled;
 
             // Medic shield
-            if (Medic.medic != null && AmongUsClient.Instance.AmHost && Medic.futureShielded != null && !Medic.medic.Data.IsDead) { // We need to send the RPC from the host here, to make sure that the order of shifting and setting the shield is correct(for that reason the futureShifted and futureShielded are being synced)
-                Medic.MedicSetShielded(Medic.futureShielded.PlayerId);
+            if (Medic.Instance.Player != null && AmongUsClient.Instance.AmHost && Medic.Instance.FutureShielded != null && !Medic.Instance.Player.Data.IsDead) { // We need to send the RPC from the host here, to make sure that the order of shifting and setting the shield is correct(for that reason the futureShifted and futureShielded are being synced)
+                Medic.MedicSetShielded(Medic.Instance.FutureShielded.PlayerId);
             }
-            if (Medic.usedShield) Medic.meetingAfterShielding = true;  // Has to be after the setting of the shield
+            if (Medic.Instance.UsedShield) Medic.Instance.MeetingAfterShielding = true;  // Has to be after the setting of the shield
 
             // Shifter shift
-            if (Shifter.shifter != null && AmongUsClient.Instance.AmHost && Shifter.futureShift != null) { // We need to send the RPC from the host here, to make sure that the order of shifting and erasing is correct (for that reason the futureShifted and futureErased are being synced)
-                Shifter.ShifterShift(Shifter.futureShift.PlayerId);
+            if (Shifter.Instance.Player != null && AmongUsClient.Instance.AmHost && Shifter.Instance.FutureShift != null) { // We need to send the RPC from the host here, to make sure that the order of shifting and erasing is correct (for that reason the futureShifted and futureErased are being synced)
+                Shifter.ShifterShift(Shifter.Instance.FutureShift.PlayerId);
             }
-            Shifter.futureShift = null;
+            Shifter.Instance.FutureShift = null;
 
             // Eraser erase
-            if (Eraser.eraser != null && AmongUsClient.Instance.AmHost) {  // We need to send the RPC from the host here, to make sure that the order of shifting and erasing is correct (for that reason the futureShifted and futureErased are being synced)
-                foreach (var target in Eraser.futureErased) {
+            if (Eraser.Instance.Player != null && AmongUsClient.Instance.AmHost) {  // We need to send the RPC from the host here, to make sure that the order of shifting and erasing is correct (for that reason the futureShifted and futureErased are being synced)
+                foreach (var target in Eraser.Instance.FutureErased) {
                     if (target != null && target.canBeErased()) {
                         CommonRpc.ErasePlayerRoles(target.PlayerId);
                     }
                 }
             }
-            Eraser.futureErased.Clear();
+            Eraser.Instance.FutureErased.Clear();
 
             // Trickster boxes
-            if (Trickster.trickster != null && JackInTheBox.hasJackInTheBoxLimitReached()) {
+            if (Trickster.Instance.Player != null && JackInTheBox.hasJackInTheBoxLimitReached()) {
                 JackInTheBox.convertToVents();
             }
 
@@ -54,24 +54,24 @@ namespace TheOtherRoles.Patches {
             Portal.meetingEndsUpdate();
 
             // Witch execute casted spells
-            if (Witch.witch != null && Witch.futureSpelled != null && AmongUsClient.Instance.AmHost) {
-                bool exiledIsWitch = exiled != null && exiled.PlayerId == Witch.witch.PlayerId;
-                bool witchDiesWithExiledLover = exiled != null && Lovers.existing() && Lovers.bothDie && (Lovers.lover1.PlayerId == Witch.witch.PlayerId || Lovers.lover2.PlayerId == Witch.witch.PlayerId) && (exiled.PlayerId == Lovers.lover1.PlayerId || exiled.PlayerId == Lovers.lover2.PlayerId);
+            if (Witch.Instance.Player != null && Witch.Instance.FutureSpelled != null && AmongUsClient.Instance.AmHost) {
+                bool exiledIsWitch = exiled != null && exiled.PlayerId == Witch.Instance.Player.PlayerId;
+                bool witchDiesWithExiledLover = exiled != null && Lovers.Instance.Existing && Lovers.Instance.BothDie && (Lovers.Instance.Lover1.PlayerId == Witch.Instance.Player.PlayerId || Lovers.Instance.Lover2.PlayerId == Witch.Instance.Player.PlayerId) && (exiled.PlayerId == Lovers.Instance.Lover1.PlayerId || exiled.PlayerId == Lovers.Instance.Lover2.PlayerId);
 
-                if ((witchDiesWithExiledLover || exiledIsWitch) && Witch.witchVoteSavesTargets) Witch.futureSpelled = new List<PlayerControl>();
-                foreach (PlayerControl target in Witch.futureSpelled) {
-                    if (target != null && !target.Data.IsDead && Helpers.checkMurderAttempt(Witch.witch, target, true) == MurderAttemptResult.PerformKill)
+                if ((witchDiesWithExiledLover || exiledIsWitch) && Witch.Instance.WitchVoteSaveTargets) Witch.Instance.FutureSpelled.Clear();
+                foreach (PlayerControl target in Witch.Instance.FutureSpelled) {
+                    if (target != null && !target.Data.IsDead && Helpers.checkMurderAttempt(Witch.Instance.Player, target, true) == MurderAttemptResult.PerformKill)
                     {
-                        if (exiled != null && Lawyer.lawyer != null && (target == Lawyer.lawyer || target == Lovers.otherLover(Lawyer.lawyer)) && Lawyer.target != null && Lawyer.isProsecutor && Lawyer.target.PlayerId == exiled.PlayerId)
+                        if (exiled != null && Lawyer.Instance.Player != null && (target == Lawyer.Instance.Player || target == Lovers.Instance.OtherLover(Lawyer.Instance.Player)) && Lawyer.Instance.Target != null && Lawyer.Instance.IsProsecutor && Lawyer.Instance.Target.PlayerId == exiled.PlayerId)
                             continue;
                         KernelRpc.UncheckedExilePlayer(target.PlayerId);
-                        if (target == Lawyer.target && Lawyer.lawyer != null) {
+                        if (target == Lawyer.Instance.Target && Lawyer.Instance.Player != null) {
                             Lawyer.LawyerPromotesToPursuer();
                         }
                     }
                 }
             }
-            Witch.futureSpelled = new List<PlayerControl>();
+            Witch.Instance.FutureSpelled.Clear();
 
             // SecurityGuard vents and cameras
             var allCameras = MapUtilities.CachedShipStatus.AllCameras.ToList();
@@ -87,9 +87,9 @@ namespace TheOtherRoles.Patches {
                 PowerTools.SpriteAnim animator = vent.GetComponent<PowerTools.SpriteAnim>(); 
                 animator?.Stop();
                 vent.EnterVentAnim = vent.ExitVentAnim = null;
-                vent.myRend.sprite = animator == null ? SecurityGuard.getStaticVentSealedSprite() : SecurityGuard.getAnimatedVentSealedSprite();
-                if (SubmergedCompatibility.IsSubmerged && vent.Id == 0) vent.myRend.sprite = SecurityGuard.getSubmergedCentralUpperSealedSprite();
-                if (SubmergedCompatibility.IsSubmerged && vent.Id == 14) vent.myRend.sprite = SecurityGuard.getSubmergedCentralLowerSealedSprite();
+                vent.myRend.sprite = animator == null ? SecurityGuard.StaticVentSealedSprite : SecurityGuard.AnimatedVentSealedSprite;
+                if (SubmergedCompatibility.IsSubmerged && vent.Id == 0) vent.myRend.sprite = SecurityGuard.SubmergedCentralUpperSealedSprite;
+                if (SubmergedCompatibility.IsSubmerged && vent.Id == 14) vent.myRend.sprite = SecurityGuard.SubmergedCentralLowerSealedSprite;
                 vent.myRend.color = Color.white;
                 vent.name = "SealedVent_" + vent.name;
             }
@@ -123,51 +123,51 @@ namespace TheOtherRoles.Patches {
             if (obj.name.Contains("ExileCutscene")) {
                 WrapUpPostfix(ExileControllerBeginPatch.lastExiled);
             } else if (obj.name.Contains("SpawnInMinigame")) {
-                AntiTeleport.setPosition();
-                Chameleon.lastMoved.Clear();
+                AntiTeleport.Instance.SetPosition();
+                Chameleon.Instance.LastMoved.Clear();
             }
         }
 
         static void WrapUpPostfix(GameData.PlayerInfo exiled) {
             // Prosecutor win condition
-            if (exiled != null && Lawyer.lawyer != null && Lawyer.target != null && Lawyer.isProsecutor && Lawyer.target.PlayerId == exiled.PlayerId && !Lawyer.lawyer.Data.IsDead)
-                Lawyer.triggerProsecutorWin = true;
+            if (exiled != null && Lawyer.Instance.Player != null && Lawyer.Instance.Target != null && Lawyer.Instance.IsProsecutor && Lawyer.Instance.Target.PlayerId == exiled.PlayerId && !Lawyer.Instance.Player.Data.IsDead)
+                Lawyer.Instance.TriggerProsecutorWin = true;
 
             // Mini exile lose condition
-            else if (exiled != null && Mini.mini != null && Mini.mini.PlayerId == exiled.PlayerId && !Mini.isGrownUp() && !Mini.mini.Data.Role.IsImpostor && !RoleInfo.getRoleInfoForPlayer(Mini.mini).Any(x => x.isNeutral)) {
-                Mini.triggerMiniLose = true;
+            else if (exiled != null && Mini.Instance.Player != null && Mini.Instance.Player.PlayerId == exiled.PlayerId && !Mini.Instance.IsGrownUp && !Mini.Instance.Player.Data.Role.IsImpostor && !RoleInfo.getRoleInfoForPlayer(Mini.Instance.Player).Any(x => x.isNeutral)) {
+                Mini.Instance.TriggerMiniLose = true;
             }
             // Jester win condition
-            else if (exiled != null && Jester.jester != null && Jester.jester.PlayerId == exiled.PlayerId) {
-                Jester.triggerJesterWin = true;
+            else if (exiled != null && Jester.Instance.HasPlayer && Jester.Instance.Player.PlayerId == exiled.PlayerId) {
+                Jester.Instance.TriggerJesterWin = true;
             }
             // Prosecutor win condition
-            else if (exiled != null && Lawyer.lawyer != null && Lawyer.target != null && Lawyer.isProsecutor && Lawyer.target.PlayerId == exiled.PlayerId && !Lawyer.lawyer.Data.IsDead)
-                Lawyer.triggerProsecutorWin = true;
+            else if (exiled != null && Lawyer.Instance.Player != null && Lawyer.Instance.Target != null && Lawyer.Instance.IsProsecutor && Lawyer.Instance.Target.PlayerId == exiled.PlayerId && !Lawyer.Instance.Player.Data.IsDead)
+                Lawyer.Instance.TriggerProsecutorWin = true;
 
 
             // Reset custom button timers where necessary
             CustomButton.MeetingEndedUpdate();
 
             // Mini set adapted cooldown
-            if (Mini.mini != null && CachedPlayer.LocalPlayer.PlayerControl == Mini.mini && Mini.mini.Data.Role.IsImpostor) {
-                var multiplier = Mini.isGrownUp() ? 0.66f : 2f;
-                Mini.mini.SetKillTimer(GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown * multiplier);
+            if (Mini.Instance.Player != null && CachedPlayer.LocalPlayer.PlayerControl == Mini.Instance.Player && Mini.Instance.Player.Data.Role.IsImpostor) {
+                var multiplier = Mini.Instance.IsGrownUp ? 0.66f : 2f;
+                Mini.Instance.Player.SetKillTimer(GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown * multiplier);
             }
 
             // Seer spawn souls
-            if (Seer.deadBodyPositions != null && Seer.seer != null && CachedPlayer.LocalPlayer.PlayerControl == Seer.seer && (Seer.mode == 0 || Seer.mode == 2)) {
-                foreach (Vector3 pos in Seer.deadBodyPositions) {
+            if (Seer.Instance.DeadBodyPositions != null && Seer.Instance.Player != null && CachedPlayer.LocalPlayer.PlayerControl == Seer.Instance.Player && Seer.Instance.ShowDeathSouls) {
+                foreach (Vector3 pos in Seer.Instance.DeadBodyPositions) {
                     GameObject soul = new GameObject();
                     //soul.transform.position = pos;
                     soul.transform.position = new Vector3(pos.x, pos.y, pos.y / 1000 - 1f);
                     soul.layer = 5;
                     var rend = soul.AddComponent<SpriteRenderer>();
                     soul.AddSubmergedComponent(SubmergedCompatibility.Classes.ElevatorMover);
-                    rend.sprite = Seer.getSoulSprite();
+                    rend.sprite = Seer.SoulSprite;
                     
-                    if(Seer.limitSoulDuration) {
-                        FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Seer.soulDuration, new Action<float>((p) => {
+                    if(Seer.Instance.LimitSoulsDuration) {
+                        FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Seer.Instance.SoulsDuration, new Action<float>((p) => {
                             if (rend != null) {
                                 var tmp = rend.color;
                                 tmp.a = Mathf.Clamp01(1 - p);
@@ -177,14 +177,14 @@ namespace TheOtherRoles.Patches {
                         })));
                     }
                 }
-                Seer.deadBodyPositions = new List<Vector3>();
+                Seer.Instance.DeadBodyPositions.Clear();
             }
 
             // Tracker reset deadBodyPositions
-            Tracker.deadBodyPositions = new List<Vector3>();
+            Tracker.Instance.DeadBodyPositions.Clear();
 
             // Arsonist deactivate dead poolable players
-            if (Arsonist.arsonist != null && Arsonist.arsonist == CachedPlayer.LocalPlayer.PlayerControl) {
+            if (Arsonist.Instance.Player != null && Arsonist.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl) {
                 int visibleCounter = 0;
                 Vector3 newBottomLeft = IntroCutsceneOnDestroyPatch.bottomLeft;
                 var BottomLeft = newBottomLeft + new Vector3(-0.25f, -0.25f, 0);
@@ -200,45 +200,45 @@ namespace TheOtherRoles.Patches {
             }
 
             // Deputy check Promotion, see if the sheriff still exists. The promotion will be after the meeting.
-            if (Deputy.Player != null)
+            if (Deputy.Instance.Player != null)
             {
                 PlayerControlFixedUpdatePatch.deputyCheckPromotion(isMeeting: true);
             }
 
             // Force Bounty Hunter Bounty Update
-            if (BountyHunter.bountyHunter != null && BountyHunter.bountyHunter == CachedPlayer.LocalPlayer.PlayerControl)
-                BountyHunter.bountyUpdateTimer = 0f;
+            if (BountyHunter.Instance.Player != null && BountyHunter.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl)
+                BountyHunter.Instance.BountyUpdateTimer = 0f;
 
             // Medium spawn souls
-            if (Medium.medium != null && CachedPlayer.LocalPlayer.PlayerControl == Medium.medium) {
-                if (Medium.souls != null) {
-                    foreach (SpriteRenderer sr in Medium.souls) UnityEngine.Object.Destroy(sr.gameObject);
-                    Medium.souls = new List<SpriteRenderer>();
+            if (Medium.Instance.IsLocalPlayer) {
+                if (Medium.Instance.Souls != null) {
+                    foreach (SpriteRenderer sr in Medium.Instance.Souls) UnityEngine.Object.Destroy(sr.gameObject);
+                    Medium.Instance.Souls.Clear();
                 }
 
-                if (Medium.featureDeadBodies != null) {
-                    foreach ((DeadPlayer db, Vector3 ps) in Medium.featureDeadBodies) {
-                        GameObject s = new GameObject();
+                if (Medium.Instance.FeatureDeadBodies != null) {
+                    foreach (var (db, ps) in Medium.Instance.FeatureDeadBodies) {
+                        var s = new GameObject();
                         //s.transform.position = ps;
                         s.transform.position = new Vector3(ps.x, ps.y, ps.y / 1000 - 1f);
                         s.layer = 5;
                         var rend = s.AddComponent<SpriteRenderer>();
                         s.AddSubmergedComponent(SubmergedCompatibility.Classes.ElevatorMover);
-                        rend.sprite = Medium.getSoulSprite();
-                        Medium.souls.Add(rend);
+                        rend.sprite = Medium.SoulSprite;
+                        Medium.Instance.Souls.Add(rend);
                     }
-                    Medium.deadBodies = Medium.featureDeadBodies;
-                    Medium.featureDeadBodies = new List<Tuple<DeadPlayer, Vector3>>();
+                    Medium.Instance.DeadBodies.AddRange(Medium.Instance.FeatureDeadBodies);
+                    Medium.Instance.FeatureDeadBodies.Clear();
                 }
             }
 
             // AntiTeleport set position
-            AntiTeleport.setPosition();
+            AntiTeleport.Instance.SetPosition();
 
             // Invert add meeting
-            if (Invert.meetings > 0) Invert.meetings--;
+            if (Invert.Instance.Meetings > 0) Invert.Instance.Meetings--;
 
-            Chameleon.lastMoved.Clear();
+            Chameleon.Instance.LastMoved.Clear();
 
             foreach (Trap trap in Trap.traps) trap.triggerable = false;
             FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown / 2 + 2, new Action<float>((p) => {
@@ -250,8 +250,8 @@ namespace TheOtherRoles.Patches {
     [HarmonyPatch(typeof(SpawnInMinigame), nameof(SpawnInMinigame.Close))]  // Set position of AntiTp players AFTER they have selected a spawn.
     class AirshipSpawnInPatch {
         static void Postfix() {
-            AntiTeleport.setPosition();
-            Chameleon.lastMoved.Clear();
+            AntiTeleport.Instance.SetPosition();
+            Chameleon.Instance.LastMoved.Clear();
         }
     }
 
@@ -268,10 +268,10 @@ namespace TheOtherRoles.Patches {
                     }
                     // Hide number of remaining impostors on Jester win
                     if (id == StringNames.ImpostorsRemainP || id == StringNames.ImpostorsRemainS) {
-                        if (Jester.jester != null && player.PlayerId == Jester.jester.PlayerId) __result = "";
+                        if (Jester.Instance.HasPlayer && player.PlayerId == Jester.Instance.Player.PlayerId) __result = "";
                     }
-                    if (Tiebreaker.isTiebreak) __result += " (Tiebreaker)";
-                    Tiebreaker.isTiebreak = false;
+                    if (Tiebreaker.Instance.IsTiebreak) __result += " (Tiebreaker)";
+                    Tiebreaker.Instance.IsTiebreak = false;
                 }
             } catch {
                 // pass - Hopefully prevent leaving while exiling to softlock game

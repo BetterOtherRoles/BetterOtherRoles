@@ -1,14 +1,15 @@
-﻿using UnityEngine;
+﻿using TheOtherRoles.EnoFw.Kernel;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
 
-public static class Mafioso
+public class Mafioso : AbstractRole
 {
-    public static PlayerControl mafioso;
-    public static Color color = Palette.ImpostorRed;
+    public static readonly Mafioso Instance = new();
 
-    public static void clearAndReload()
+    private Mafioso() : base(nameof(Mafioso), "Mafioso", false)
     {
-        mafioso = null;
+        Team = Teams.Impostor;
+        Color = Palette.ImpostorRed;
+        CanTarget = false;
     }
 }

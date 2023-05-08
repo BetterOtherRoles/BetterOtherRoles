@@ -1,41 +1,72 @@
 ﻿using System;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Crewmate;
 
-public static class TimeMaster
+public class TimeMaster : AbstractRole
 {
-    public static PlayerControl timeMaster;
-    public static Color color = new Color32(112, 142, 239, byte.MaxValue);
+    public static readonly TimeMaster Instance = new();
+    
+    // Fields
+    public bool ShieldActive;
+    public bool IsRewinding;
+    
+    // Options
+    public readonly Option TimeShieldCooldown;
+    public readonly Option ShieldDuration;
+    public readonly Option RewindTime;
 
-    public static bool reviveDuringRewind = false;
-    public static float rewindTime = 3f;
-    public static float shieldDuration = 3f;
-    public static float cooldown = 30f;
+    public static Sprite TimeShieldButtonSprite => GetSprite("TheOtherRoles.Resources.TimeShieldButton.png", 115f);
 
-    public static bool shieldActive = false;
-    public static bool isRewinding = false;
-
-    private static Sprite buttonSprite;
-
-    public static Sprite getButtonSprite()
+    private TimeMaster() : base(nameof(TimeMaster), "Time master")
     {
-        if (buttonSprite) return buttonSprite;
-        buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.TimeShieldButton.png", 115f);
-        return buttonSprite;
+        Team = Teams.Crewmate;
+        Color = new Color32(112, 142, 239, byte.MaxValue);
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        TimeShieldCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(TimeShieldCooldown)}",
+            Cs("Time shield cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        ShieldDuration = Tab.CreateFloatList(
+            $"{Key}{nameof(ShieldDuration)}",
+            Cs("Time shield duration"),
+            1f,
+            20f,
+            3f,
+            1f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        RewindTime = Tab.CreateFloatList(
+            $"{Key}{nameof(RewindTime)}",
+            Cs("Rewind time"),
+            1f,
+            10f,
+            3f,
+            1f,
+            SpawnRate,
+            string.Empty,
+            "s");
     }
 
-    public static void clearAndReload()
+    public override void ClearAndReload()
     {
-        timeMaster = null;
-        isRewinding = false;
-        shieldActive = false;
-        rewindTime = CustomOptionHolder.timeMasterRewindTime.getFloat();
-        shieldDuration = CustomOptionHolder.timeMasterShieldDuration.getFloat();
-        cooldown = CustomOptionHolder.timeMasterCooldown.getFloat();
+        base.ClearAndReload();
+        IsRewinding = false;
+        ShieldActive = false;
     }
 
     public static void TimeMasterRewindTime()
@@ -46,20 +77,20 @@ public static class TimeMaster
     [MethodRpc((uint)Rpc.Role.TimeMasterRewindTime)]
     private static void Rpc_TimeMasterRewindTime(PlayerControl sender)
     {
-        shieldActive = true;
+        Instance.ShieldActive = true;
         SoundEffectsManager.stop("timemasterShield");
-        if (timeMaster != null && timeMaster == CachedPlayer.LocalPlayer.PlayerControl)
+        if (Instance.IsLocalPlayer)
         {
             HudManagerStartPatch.resetTimeMasterButton();
         }
         FastDestroyableSingleton<HudManager>.Instance.FullScreen.color = new Color(0f, 0.5f, 0.8f, 0.3f);
         FastDestroyableSingleton<HudManager>.Instance.FullScreen.enabled = true;
         FastDestroyableSingleton<HudManager>.Instance.FullScreen.gameObject.SetActive(true);
-        FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(TimeMaster.rewindTime / 2, new Action<float>((p) => {
+        FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp((float)Instance.RewindTime / 2, new Action<float>((p) => {
             if (p == 1f) FastDestroyableSingleton<HudManager>.Instance.FullScreen.enabled = false;
         })));
-        if (timeMaster == null || CachedPlayer.LocalPlayer.PlayerControl == timeMaster) return;
-        isRewinding = true;
+        if (!Instance.IsLocalPlayer) return;
+        Instance.IsRewinding = true;
         if (MapBehaviour.Instance)
             MapBehaviour.Instance.Close();
         if (Minigame.Instance)
@@ -75,9 +106,9 @@ public static class TimeMaster
     [MethodRpc((uint)Rpc.Role.TimeMasterShield)]
     private static void Rpc_TimeMasterShield(PlayerControl sender)
     {
-        shieldActive = true;
-        FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(shieldDuration, new Action<float>(p => {
-            if (p == 1f) shieldActive = false;
+        Instance.ShieldActive = true;
+        FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Instance.ShieldDuration, new Action<float>(p => {
+            if (p == 1f) Instance.ShieldActive = false;
         })));
     }
 }

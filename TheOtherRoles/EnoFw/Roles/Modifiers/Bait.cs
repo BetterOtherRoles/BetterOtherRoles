@@ -1,25 +1,59 @@
 ﻿using System.Collections.Generic;
+using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.EnoFw.Utils;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Modifiers;
 
-public static class Bait
+public class Bait : AbstractMultipleModifier
 {
-    public static List<PlayerControl> bait = new List<PlayerControl>();
-    public static Dictionary<DeadPlayer, float> active = new Dictionary<DeadPlayer, float>();
-    public static Color color = new Color32(0, 247, 255, byte.MaxValue);
+    public static readonly Bait Instance = new();
+    
+    public readonly Dictionary<DeadPlayer, float> Active = new();
 
-    public static float reportDelayMin = 0f;
-    public static float reportDelayMax = 0f;
-    public static bool showKillFlash = true;
+    public readonly Option ReportDelayMinOption;
+    public readonly Option ReportDelayMaxOption;
+    public readonly Option ShowKillFlash;
 
-    public static void clearAndReload()
+    public float ReportDelayMin { get; private set; }
+    public float ReportDelayMax { get; private set; }
+
+    private Bait() : base(nameof(Bait), "Bait", Color.yellow)
     {
-        bait = new List<PlayerControl>();
-        active = new Dictionary<DeadPlayer, float>();
-        reportDelayMin = CustomOptionHolder.modifierBaitReportDelayMin.getFloat();
-        reportDelayMax = CustomOptionHolder.modifierBaitReportDelayMax.getFloat();
-        if (reportDelayMin > reportDelayMax) reportDelayMin = reportDelayMax;
-        showKillFlash = CustomOptionHolder.modifierBaitShowKillFlash.getBool();
+        ReportDelayMinOption = CustomOptions.ModifierSettings.CreateFloatList(
+            $"{Key}{nameof(ReportDelayMinOption)}",
+            Colors.Cs(Color, "Report delay min"),
+            0f,
+            10f,
+            0f,
+            1f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        ReportDelayMaxOption = CustomOptions.ModifierSettings.CreateFloatList(
+            $"{Key}{nameof(ReportDelayMaxOption)}",
+            Colors.Cs(Color, "Report delay max"),
+            0f,
+            10f,
+            0f,
+            1f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        ShowKillFlash = CustomOptions.ModifierSettings.CreateBool(
+            $"{Key}{nameof(ShowKillFlash)}",
+            Colors.Cs(Color, "Warn the killer with a flash"),
+            false,
+            SpawnRate);
+    }
+
+    public override void ClearAndReload()
+    {
+        base.ClearAndReload();
+        Active.Clear();
+        ReportDelayMin = ReportDelayMinOption;
+        ReportDelayMax = ReportDelayMaxOption;
+        if (ReportDelayMin > ReportDelayMax) ReportDelayMin = ReportDelayMax;
     }
 }

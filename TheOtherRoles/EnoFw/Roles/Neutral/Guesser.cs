@@ -2,58 +2,126 @@
 using System.Linq;
 using Reactor.Networking.Attributes;
 using TheOtherRoles.CustomGameModes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.EnoFw.Roles.Modifiers;
 using TheOtherRoles.Patches;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Neutral;
 
-public static class Guesser
+public class Guesser : AbstractRole
 {
-    public static PlayerControl niceGuesser;
-    public static PlayerControl evilGuesser;
-    public static Color color = new Color32(255, 255, 0, byte.MaxValue);
+    public static readonly Guesser Instance = new();
+    
+    // Fields
+    public PlayerControl NiceGuesser;
+    public PlayerControl EvilGuesser;
+    public int EvilGuesserRemainingShots = 2;
+    public int NiceGuesserRemainingShots = 2;
+    
+    // Options
+    public readonly Option IsImpostorRate;
+    public readonly Option NumberOfShots;
+    public readonly Option MultipleShotsPerMeeting;
+    public readonly Option KillTroughShield;
+    public readonly Option CanKillSpy;
+    public readonly Option SpawnBothRate;
+    public readonly Option CantGuessSnitchIfTasksDone;
 
-    public static int remainingShotsEvilGuesser = 2;
-    public static int remainingShotsNiceGuesser = 2;
-
-    public static bool isGuesser(byte playerId)
+    private Guesser() : base(nameof(Guesser), "Guesser")
     {
-        if ((niceGuesser != null && niceGuesser.PlayerId == playerId) ||
-            (evilGuesser != null && evilGuesser.PlayerId == playerId)) return true;
-        return false;
+        Team = Teams.Neutral;
+        Color = new Color32(255, 255, 0, byte.MaxValue);
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        IsImpostorRate = Tab.CreateFloatList(
+            $"{Key}{nameof(IsImpostorRate)}",
+            Cs("Chance that the guesser is an impostor"),
+            0f,
+            100f,
+            50f,
+            10f,
+            null,
+            string.Empty,
+            "%");
+        NumberOfShots = Tab.CreateFloatList(
+            $"{Key}{nameof(NumberOfShots)}",
+            Cs("Number of shots"),
+            1f,
+            15f,
+            1f,
+            1f,
+            SpawnRate);
+        MultipleShotsPerMeeting = Tab.CreateBool(
+            $"{Key}{nameof(MultipleShotsPerMeeting)}",
+            Cs("Can guess multiple time per meeting"),
+            false,
+            SpawnRate);
+        KillTroughShield = Tab.CreateBool(
+            $"{Key}{nameof(KillTroughShield)}",
+            Cs("Guess ignore medic shield"),
+            false,
+            SpawnRate);
+        CanKillSpy = Tab.CreateBool(
+            $"{Name}{nameof(CanKillSpy)}",
+            Cs("Evil guesser can guess Spy"),
+            false,
+            IsImpostorRate);
+        SpawnBothRate = Tab.CreateFloatList(
+            $"{Key}{nameof(SpawnBothRate)}",
+            Cs("Both guesser spawn rate"),
+            0f,
+            100f,
+            50f,
+            10f,
+            null,
+            string.Empty,
+            "%");
+        CantGuessSnitchIfTasksDone = Tab.CreateBool(
+            $"{Key}{nameof(CantGuessSnitchIfTasksDone)}",
+            Cs("Can guess Snitch when tasks completed"),
+            true,
+            IsImpostorRate);
     }
 
-    public static void clear(byte playerId)
+    public bool IsGuesser(byte playerId)
     {
-        if (niceGuesser != null && niceGuesser.PlayerId == playerId) niceGuesser = null;
-        else if (evilGuesser != null && evilGuesser.PlayerId == playerId) evilGuesser = null;
+        return (NiceGuesser != null && NiceGuesser.PlayerId == playerId) ||
+               (EvilGuesser != null && EvilGuesser.PlayerId == playerId);
     }
 
-    public static int remainingShots(byte playerId, bool shoot = false)
+    public void Clear(byte playerId)
     {
-        int remainingShots = remainingShotsEvilGuesser;
-        if (niceGuesser != null && niceGuesser.PlayerId == playerId)
+        if (NiceGuesser != null && NiceGuesser.PlayerId == playerId) NiceGuesser = null;
+        else if (EvilGuesser != null && EvilGuesser.PlayerId == playerId) EvilGuesser = null;
+    }
+
+    public int RemainingShots(byte playerId, bool shoot = false)
+    {
+        var remainingShots = EvilGuesserRemainingShots;
+        if (NiceGuesser != null && NiceGuesser.PlayerId == playerId)
         {
-            remainingShots = remainingShotsNiceGuesser;
-            if (shoot) remainingShotsNiceGuesser = Mathf.Max(0, remainingShotsNiceGuesser - 1);
-        }
-        else if (shoot)
+            remainingShots = NiceGuesserRemainingShots;
+            if (shoot) NiceGuesserRemainingShots = Mathf.Max(0, NiceGuesserRemainingShots - 1);
+        } else if (shoot)
         {
-            remainingShotsEvilGuesser = Mathf.Max(0, remainingShotsEvilGuesser - 1);
+            EvilGuesserRemainingShots = Mathf.Max(0, EvilGuesserRemainingShots - 1);
         }
 
         return remainingShots;
     }
 
-    public static void clearAndReload()
+    public override void ClearAndReload()
     {
-        niceGuesser = null;
-        evilGuesser = null;
-        remainingShotsEvilGuesser = Mathf.RoundToInt(CustomOptionHolder.guesserNumberOfShots.getFloat());
-        remainingShotsNiceGuesser = Mathf.RoundToInt(CustomOptionHolder.guesserNumberOfShots.getFloat());
+        base.ClearAndReload();
+        NiceGuesser = null;
+        EvilGuesser = null;
+        EvilGuesserRemainingShots = NumberOfShots;
+        NiceGuesserRemainingShots = NumberOfShots;
     }
 
     public static void GuesserShoot(byte killerId, byte dyingTargetId, byte guessedTargetId, byte guessedRoleId)
@@ -70,11 +138,11 @@ public static class Guesser
 
         var dyingTarget = Helpers.playerById(dyingTargetId);
         if (dyingTarget == null) return;
-        if (Lawyer.target != null && dyingTarget == Lawyer.target)
-            Lawyer.targetWasGuessed = true; // Lawyer shouldn't be exiled with the client for guesses
-        var dyingLoverPartner = Lovers.bothDie ? dyingTarget.getPartner() : null; // Lover check
-        if (Lawyer.target != null && dyingLoverPartner == Lawyer.target)
-            Lawyer.targetWasGuessed = true; // Lawyer shouldn't be exiled with the client for guesses
+        if (Lawyer.Instance.Target != null && dyingTarget == Lawyer.Instance.Target)
+            Lawyer.Instance.TargetWasGuessed = true; // Lawyer shouldn't be exiled with the client for guesses
+        var dyingLoverPartner = Lovers.Instance.BothDie ? dyingTarget.GetPartner() : null; // Lover check
+        if (Lawyer.Instance.Target != null && dyingLoverPartner == Lawyer.Instance.Target)
+            Lawyer.Instance.TargetWasGuessed = true; // Lawyer shouldn't be exiled with the client for guesses
         dyingTarget.Exiled();
         var partnerId = dyingLoverPartner != null ? dyingLoverPartner.PlayerId : dyingTargetId;
 

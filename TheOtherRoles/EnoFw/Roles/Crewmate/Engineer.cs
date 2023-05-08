@@ -1,32 +1,57 @@
 ﻿using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Utilities;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Crewmate;
 
-public static class Engineer
+public class Engineer : AbstractRole
 {
-    public static PlayerControl engineer;
-    public static Color color = new Color32(0, 40, 245, byte.MaxValue);
-    private static Sprite buttonSprite;
+    public static readonly Engineer Instance = new();
+    
+    // Fields
+    public int UsedFixes;
+    public int RemainingFixes => NumberOfFixes - UsedFixes;
+    
+    // Options
+    public readonly Option NumberOfFixes;
+    public readonly Option HighlightVentsForImpostors;
+    public readonly Option HighlightVentsForNeutrals;
 
-    public static int remainingFixes = 1;
-    public static bool highlightForImpostors = true;
-    public static bool highlightForTeamJackal = true;
+    public static Sprite RepairButtonSprite => GetSprite("TheOtherRoles.Resources.RepairButton.png", 115f);
 
-    public static Sprite getButtonSprite()
+    private Engineer() : base(nameof(Engineer), "Engineer")
     {
-        if (buttonSprite) return buttonSprite;
-        buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.RepairButton.png", 115f);
-        return buttonSprite;
+        Team = Teams.Crewmate;
+        Color = new Color32(0, 40, 245, byte.MaxValue);
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        NumberOfFixes = Tab.CreateFloatList(
+            $"{Name}{nameof(NumberOfFixes)}",
+            Cs("Number of sabotage fixes"),
+            1f,
+            3f,
+            1f,
+            1f,
+            SpawnRate);
+        HighlightVentsForImpostors = Tab.CreateBool(
+            $"{Name}{nameof(HighlightVentsForImpostors)}",
+            Cs("Impostors see vents highlighted"),
+            true,
+            SpawnRate);
+        HighlightVentsForNeutrals = Tab.CreateBool(
+            $"{Name}{nameof(HighlightVentsForNeutrals)}",
+            Cs("Neutrals see vents highlighted"),
+            false,
+            SpawnRate);
     }
 
-    public static void clearAndReload()
+    public override void ClearAndReload()
     {
-        engineer = null;
-        remainingFixes = Mathf.RoundToInt(CustomOptionHolder.engineerNumberOfFixes.getFloat());
-        highlightForImpostors = CustomOptionHolder.engineerHighlightForImpostors.getBool();
-        highlightForTeamJackal = CustomOptionHolder.engineerHighlightForTeamJackal.getBool();
+        base.ClearAndReload();
+        UsedFixes = 0;
     }
 
     public static void EngineerUsedRepair()
@@ -37,9 +62,9 @@ public static class Engineer
     [MethodRpc((uint)Rpc.Role.EngineerUsedRepair)]
     private static void Rpc_EngineerUsedRepair(PlayerControl sender)
     {
-        remainingFixes--;
+        Instance.UsedFixes++;
         if (!Helpers.shouldShowGhostInfo()) return;
-        Helpers.showFlash(color, 0.5f, "Engineer Fix");
+        Helpers.showFlash(Instance.Color, 0.5f, "Engineer Fix");
     }
 
     public static void EngineerFixSubmergedOxygen()

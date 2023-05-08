@@ -90,7 +90,7 @@ namespace TheOtherRoles.Objects {
                 this.OnClick();
 
                 // Deputy skip onClickEvent if handcuffed
-                if (Deputy.handcuffedKnows.ContainsKey(CachedPlayer.LocalPlayer.PlayerId) && Deputy.handcuffedKnows[CachedPlayer.LocalPlayer.PlayerId] > 0f) return;
+                if (Deputy.Instance.HandcuffedKnows.ContainsKey(CachedPlayer.LocalPlayer.PlayerId) && Deputy.Instance.HandcuffedKnows[CachedPlayer.LocalPlayer.PlayerId] > 0f) return;
 
                 if (this.HasEffect && !this.isEffectActive) {
                     this.DeputyTimer = this.EffectDuration;
@@ -231,9 +231,9 @@ namespace TheOtherRoles.Objects {
             if (!actionName.IsNullOrWhiteSpace() && Rewired.ReInput.players.GetPlayer(0).GetButtonDown(actionName)) onClickEvent();
 
             // Deputy disable the button and display Handcuffs instead...
-            if (Deputy.handcuffedPlayers.Contains(localPlayer.PlayerId)) {
+            if (Deputy.Instance.HandcuffedPlayers.Contains(localPlayer.PlayerId)) {
                 OnClick = () => {
-                    Deputy.setHandcuffedKnows();
+                    Deputy.Instance.SetHandcuffedKnows();
                 };
             } else // Reset.
             {

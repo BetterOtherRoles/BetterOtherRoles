@@ -25,8 +25,8 @@ namespace TheOtherRoles.Objects
         private static Sprite _footprintSprite;
         private static Sprite FootprintSprite => _footprintSprite ??= Helpers.loadSpriteFromResources("TheOtherRoles.Resources.Footprint.png", 600f);
 
-        private static bool AnonymousFootprints => Detective.anonymousFootprints;
-        private static float FootprintDuration => Detective.footprintDuration;
+        private static bool AnonymousFootprints => Detective.Instance.AnonymousFootprint;
+        private static float FootprintDuration => Detective.Instance.FootprintDuration;
         
         private class Footprint
         {
@@ -88,13 +88,13 @@ namespace TheOtherRoles.Objects
                 }
                 
                 Color color;
-                if (AnonymousFootprints || Camouflager.camouflageTimer > 0)
+                if (AnonymousFootprints || Camouflager.Instance.CamouflageTimer > 0)
                 {
                     color = Palette.PlayerColors[6];
                 }
-                else if (activeFootprint.Owner == Morphling.morphling && Morphling.morphTimer > 0 && Morphling.morphTarget && Morphling.morphTarget.Data != null)
+                else if (activeFootprint.Owner == Morphling.Instance.Player && Morphling.Instance.MorphTimer > 0 && Morphling.Instance.MorphTarget && Morphling.Instance.MorphTarget.Data != null)
                 {
-                    color = Palette.PlayerColors[Morphling.morphTarget.Data.DefaultOutfit.ColorId];
+                    color = Palette.PlayerColors[Morphling.Instance.MorphTarget.Data.DefaultOutfit.ColorId];
                 }
                 else
                 {

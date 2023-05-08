@@ -1,61 +1,115 @@
 ﻿using System;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Objects;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
 
-public static class Bomber
+public class Bomber : AbstractRole
 {
-    public static PlayerControl bomber = null;
-    public static Color color = Palette.ImpostorRed;
+    public static readonly Bomber Instance = new();
+    
+    // Fields
+    public Bomb Bomb;
+    public bool IsPlanted;
+    public bool IsActive;
+    
+    // Options
+    public readonly Option BombCooldown;
+    public readonly Option BombDestructionTime;
+    public readonly Option BombActivationTime;
+    public readonly Option BombDestructionRange;
+    public readonly Option BombHearRange;
+    public readonly Option BombDefuseDuration;
 
-    public static Bomb bomb = null;
-    public static bool isPlanted = false;
-    public static bool isActive = false;
-    public static float destructionTime = 20f;
-    public static float destructionRange = 2f;
-    public static float hearRange = 30f;
-    public static float defuseDuration = 3f;
-    public static float bombCooldown = 15f;
-    public static float bombActiveAfter = 3f;
+    public static Sprite PlantBombButtonSprite => GetSprite("TheOtherRoles.Resources.Bomb_Button_Plant.png", 115f);
 
-    private static Sprite buttonSprite;
-
-    public static Sprite getButtonSprite()
+    private Bomber() : base(nameof(Bomber), "Bomber")
     {
-        if (buttonSprite) return buttonSprite;
-        buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.Bomb_Button_Plant.png", 115f);
-        return buttonSprite;
+        Team = Teams.Impostor;
+        Color = Palette.ImpostorRed;
+        CanTarget = true;
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        BombCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(BombCooldown)}",
+            Cs("Plant bomb cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        BombDestructionTime = Tab.CreateFloatList(
+            $"{Key}{nameof(BombDestructionTime)}",
+            Cs("Bomb explosion time"),
+            2f,
+            60f,
+            20f,
+            1f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        BombActivationTime = Tab.CreateFloatList(
+            $"{Key}{nameof(BombActivationTime)}",
+            Cs("Bomb activation time"),
+            2f,
+            30f,
+            3f,
+            0.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        BombDestructionRange = Tab.CreateFloatList(
+            $"{Key}{nameof(BombDestructionRange)}",
+            Cs("Bomb explosion range"),
+            5f,
+            150f,
+            50f,
+            5f,
+            SpawnRate);
+        BombHearRange = Tab.CreateFloatList(
+            $"{Key}{nameof(BombHearRange)}",
+            Cs("Bomb hear range"),
+            5f,
+            150f,
+            50f,
+            5f,
+            SpawnRate);
+        BombDefuseDuration = Tab.CreateFloatList(
+            $"{Key}{nameof(BombDefuseDuration)}",
+            Cs("Bomb defuse duration"),
+            0.5f,
+            15f,
+            3f,
+            0.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
     }
 
-    public static void clearBomb(bool flag = true)
+    public void ClearBomb(bool stopSound = true)
     {
-        if (bomb != null)
+        if (Bomb != null)
         {
-            UnityEngine.Object.Destroy(bomb.bomb);
-            UnityEngine.Object.Destroy(bomb.background);
-            bomb = null;
+            UnityEngine.Object.Destroy(Bomb.bomb);
+            UnityEngine.Object.Destroy(Bomb.background);
+            Bomb = null;
         }
 
-        isPlanted = false;
-        isActive = false;
-        if (flag) SoundEffectsManager.stop("bombFuseBurning");
+        IsPlanted = false;
+        IsActive = false;
+        if (stopSound) SoundEffectsManager.stop("bombFuseBurning");
     }
 
-    public static void clearAndReload()
+    public override void ClearAndReload()
     {
-        clearBomb(false);
-        bomber = null;
-        bomb = null;
-        isPlanted = false;
-        isActive = false;
-        destructionTime = CustomOptionHolder.bomberBombDestructionTime.getFloat();
-        destructionRange = CustomOptionHolder.bomberBombDestructionRange.getFloat() / 10;
-        hearRange = CustomOptionHolder.bomberBombHearRange.getFloat() / 10;
-        defuseDuration = CustomOptionHolder.bomberDefuseDuration.getFloat();
-        bombCooldown = CustomOptionHolder.bomberBombCooldown.getFloat();
-        bombActiveAfter = CustomOptionHolder.bomberBombActiveAfter.getFloat();
+        base.ClearAndReload();
+        ClearBomb(false);
         Bomb.clearBackgroundSprite();
     }
 
@@ -67,8 +121,8 @@ public static class Bomber
     [MethodRpc((uint)Rpc.Role.DefuseBomb)]
     private static void Rpc_DefuseBomb(PlayerControl sender)
     {
-        SoundEffectsManager.playAtPosition("bombDefused", Bomber.bomb.bomb.transform.position, range: Bomber.hearRange);
-        clearBomb();
+        SoundEffectsManager.playAtPosition("bombDefused", Instance.Bomb.bomb.transform.position, range: Instance.BombHearRange);
+        Instance.ClearBomb();
         HudManagerStartPatch.bomberButton.Timer = HudManagerStartPatch.bomberButton.MaxTimer;
         HudManagerStartPatch.bomberButton.isEffectActive = false;
         HudManagerStartPatch.bomberButton.actionButton.cooldownTimerText.color = Palette.EnabledColor;
@@ -84,7 +138,7 @@ public static class Bomber
     private static void Rpc_PlaceBomb(PlayerControl sender, string rawData)
     {
         var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawData);
-        if (bomber == null) return;
+        if (Instance.Player == null) return;
         var position = Vector3.zero;
         position.x = x;
         position.y = y;

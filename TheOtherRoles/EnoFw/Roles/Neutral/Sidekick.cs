@@ -1,35 +1,49 @@
 ﻿using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Neutral;
 
-public static class Sidekick
+public class Sidekick : AbstractRole
 {
-    public static PlayerControl sidekick;
-    public static Color color = new Color32(0, 180, 235, byte.MaxValue);
+    public static readonly Sidekick Instance = new();
+    
+    // Fields
+    public bool WasTeamRed;
+    public bool WasImpostor;
+    public bool WasSpy;
+    
+    // Options
+    public readonly Option CanKill;
+    public readonly Option CanUseVents;
+    public Option PromotesToJackal => Jackal.Instance.SidekickPromoteToJackal;
+    public Option HasImpostorVision => Jackal.Instance.HasImpostorVision;
 
-    public static PlayerControl currentTarget;
-
-    public static bool wasTeamRed;
-    public static bool wasImpostor;
-    public static bool wasSpy;
-
-    public static float cooldown = 30f;
-    public static bool canUseVents = true;
-    public static bool canKill = true;
-    public static bool promotesToJackal = true;
-    public static bool hasImpostorVision;
-
-    public static void clearAndReload()
+    private Sidekick() : base(nameof(Sidekick), "Sidekick", false)
     {
-        sidekick = null;
-        currentTarget = null;
-        cooldown = CustomOptionHolder.jackalKillCooldown.getFloat();
-        canUseVents = CustomOptionHolder.sidekickCanUseVents.getBool();
-        canKill = CustomOptionHolder.sidekickCanKill.getBool();
-        promotesToJackal = CustomOptionHolder.sidekickPromotesToJackal.getBool();
-        hasImpostorVision = CustomOptionHolder.jackalAndSidekickHaveImpostorVision.getBool();
-        wasTeamRed = wasImpostor = wasSpy = false;
+        Team = Teams.Neutral;
+        Color = new Color32(0, 180, 235, byte.MaxValue);
+        CanTarget = true;
+
+        CanKill = Tab.CreateBool(
+            $"{Key}{nameof(CanKill)}",
+            Cs("Sidekick can kill"),
+            false,
+            Jackal.Instance.SpawnRate);
+        CanUseVents = Tab.CreateBool(
+            $"{Key}{nameof(CanUseVents)}",
+            Cs("Sidekick can use vents"),
+            false,
+            Jackal.Instance.SpawnRate);
+    }
+
+    public override void ClearAndReload()
+    {
+        base.ClearAndReload();
+        WasTeamRed = false;
+        WasImpostor = false;
+        WasSpy = false;
     }
 
     public static void SidekickPromotes()
@@ -45,12 +59,12 @@ public static class Sidekick
 
     public static void Local_SidekickPromotes()
     {
-        Jackal.removeCurrentJackal();
-        Jackal.jackal = sidekick;
-        Jackal.canCreateSidekick = Jackal.jackalPromotedFromSidekickCanCreateSidekick;
-        Jackal.wasTeamRed = wasTeamRed;
-        Jackal.wasSpy = wasSpy;
-        Jackal.wasImpostor = wasImpostor;
-        clearAndReload();
+        Jackal.Instance.RemoveCurrentJackal();
+        Jackal.Instance.Player = Instance.Player;
+        Jackal.Instance.CanCreateSidekick = Jackal.Instance.PromotedFromSidekickCanCreateSidekick;
+        Jackal.Instance.WasTeamRed = Instance.WasTeamRed;
+        Jackal.Instance.WasSpy = Instance.WasSpy;
+        Jackal.Instance.WasImpostor = Instance.WasImpostor;
+        Instance.ClearAndReload();
     }
 }

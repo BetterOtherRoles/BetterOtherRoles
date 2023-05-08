@@ -1,46 +1,107 @@
 ﻿using System;
 using System.Collections.Generic;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Objects;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Crewmate;
 
-public static class Trapper {
-    public static PlayerControl trapper;
-    public static Color color = new Color32(110, 57, 105, byte.MaxValue);
+public class Trapper : AbstractRole
+{
+    public static readonly Trapper Instance = new();
+    
+    // Fields
+    public readonly List<PlayerControl> PlayersOnMap = new();
+    public int RechargedTasks;
+    public int Charges;
+    
+    // Options
+    public readonly Option PlaceTrapCooldown;
+    public readonly Option MaxCharges;
+    public readonly Option RechargeTasksNumber;
+    public readonly Option TrapNeededTriggerToReveal;
+    public readonly Option AnonymousMap;
+    public readonly Option InfoType;
+    public readonly Option TrapDuration;
 
-    public static float cooldown = 30f;
-    public static int maxCharges = 5;
-    public static int rechargeTasksNumber = 3;
-    public static int rechargedTasks = 3;
-    public static int charges = 1;
-    public static int trapCountToReveal = 2;
-    public static List<PlayerControl> playersOnMap = new List<PlayerControl>();
-    public static bool anonymousMap = false;
-    public static int infoType = 0; // 0 = Role, 1 = Good/Evil, 2 = Name
-    public static float trapDuration = 5f; 
+    public static Sprite TrapButtonSprite => GetSprite("TheOtherRoles.Resources.Trapper_Place_Button.png", 115f);
 
-    private static Sprite trapButtonSprite;
-
-    public static Sprite getButtonSprite() {
-        if (trapButtonSprite) return trapButtonSprite;
-        trapButtonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.Trapper_Place_Button.png", 115f);
-        return trapButtonSprite;
+    private Trapper() : base(nameof(Trapper), "Trapper")
+    {
+        Team = Teams.Crewmate;
+        Color = new Color32(110, 57, 105, byte.MaxValue);
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        PlaceTrapCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(PlaceTrapCooldown)}",
+            Cs("Place trap cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        MaxCharges = Tab.CreateFloatList(
+            $"{Key}{nameof(MaxCharges)}",
+            Cs("Max traps charges"),
+            1f,
+            15f,
+            5f,
+            1f,
+            SpawnRate);
+        RechargeTasksNumber = Tab.CreateFloatList(
+            $"{Key}{nameof(RechargeTasksNumber)}",
+            Cs("Number of tasks needed for recharging"),
+            1f,
+            15f,
+            2f,
+            1f,
+            SpawnRate);
+        TrapNeededTriggerToReveal = Tab.CreateFloatList(
+            $"{Key}{nameof(TrapNeededTriggerToReveal)}",
+            Cs("Trap needed trigger to reveal"),
+            2f,
+            10f,
+            3f,
+            1f,
+            SpawnRate);
+        AnonymousMap = Tab.CreateBool(
+            $"{Key}{nameof(AnonymousMap)}",
+            Cs("Show anonymous map"),
+            true,
+            SpawnRate);
+        InfoType = Tab.CreateStringList(
+            $"{Key}{nameof(InfoType)}",
+            Cs("Trap information type"),
+            new List<string> { "role", "name", "good/evil" },
+            "good/evil",
+            SpawnRate);
+        TrapDuration = Tab.CreateFloatList(
+            $"{Key}{nameof(TrapDuration)}",
+            Cs("Trap duration"),
+            1f,
+            15f,
+            5f,
+            1f,
+            SpawnRate,
+            string.Empty,
+            "s");
     }
 
-    public static void clearAndReload() {
-        trapper = null;
-        cooldown = CustomOptionHolder.trapperCooldown.getFloat();
-        maxCharges = Mathf.RoundToInt(CustomOptionHolder.trapperMaxCharges.getFloat());
-        rechargeTasksNumber = Mathf.RoundToInt(CustomOptionHolder.trapperRechargeTasksNumber.getFloat());
-        rechargedTasks = Mathf.RoundToInt(CustomOptionHolder.trapperRechargeTasksNumber.getFloat());
-        charges = Mathf.RoundToInt(CustomOptionHolder.trapperMaxCharges.getFloat()) / 2;
-        trapCountToReveal = Mathf.RoundToInt(CustomOptionHolder.trapperTrapNeededTriggerToReveal.getFloat());
-        playersOnMap = new List<PlayerControl>();
-        anonymousMap = CustomOptionHolder.trapperAnonymousMap.getBool();
-        infoType = CustomOptionHolder.trapperInfoType.getSelection();
-        trapDuration = CustomOptionHolder.trapperTrapDuration.getFloat();
+    public bool InfoTypeRole => (string)InfoType is "role";
+    public bool InfoTypeName => (string)InfoType is "name";
+    public bool InfoTypeGoodOrEvil => (string)InfoType is "good/evil";
+
+    public override void ClearAndReload()
+    {
+        base.ClearAndReload();
+        RechargedTasks = 0;
+        Charges = 0;
+        PlayersOnMap.Clear();
     }
 
     public static void TriggerTrap(byte playerId, byte trapId)
@@ -65,9 +126,9 @@ public static class Trapper {
     [MethodRpc((uint)Rpc.Role.SetTrap)]
     private static void Rpc_SetTrap(PlayerControl sender, string rawData)
     {
-        if (trapper == null) return;
+        if (Instance.Player == null) return;
         var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawData);
-        charges--;
+        Instance.Charges--;
         var position = Vector3.zero;
         position.x = x;
         position.y = y;

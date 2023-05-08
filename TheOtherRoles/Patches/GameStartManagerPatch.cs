@@ -6,6 +6,7 @@ using System;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using System.Linq;
+using TheOtherRoles.EnoFw;
 using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Modules;
 
@@ -187,11 +188,11 @@ namespace TheOtherRoles.Patches {
                         }
                     }
                     if (continueStart && TORMapOptions.gameMode == CustomGamemodes.HideNSeek) {
-                        byte mapId = (byte) CustomOptionHolder.hideNSeekMap.getSelection();
+                        byte mapId = (byte) CustomOptions.HideNSeekMap.SelectionIndex;
                         if (mapId >= 3) mapId++;
                         KernelRpc.DynamicMapOption(mapId);
                     }            
-                    else if (CustomOptionHolder.dynamicMap.getBool() && continueStart) {
+                    else if (CustomOptions.DynamicMap && continueStart) {
                         // 0 = Skeld
                         // 1 = Mira HQ
                         // 2 = Polus
@@ -200,11 +201,11 @@ namespace TheOtherRoles.Patches {
                         // 5 = Submerged
                         byte chosenMapId = 0;
                         List<float> probabilities = new List<float>();
-                        probabilities.Add(CustomOptionHolder.dynamicMapEnableSkeld.getSelection() / 10f);
-                        probabilities.Add(CustomOptionHolder.dynamicMapEnableMira.getSelection() / 10f);
-                        probabilities.Add(CustomOptionHolder.dynamicMapEnablePolus.getSelection() / 10f);
-                        probabilities.Add(CustomOptionHolder.dynamicMapEnableAirShip.getSelection() / 10f);
-                        probabilities.Add(CustomOptionHolder.dynamicMapEnableSubmerged.getSelection() / 10f);
+                        probabilities.Add(CustomOptions.DynamicMapEnableSkeld / 10f);
+                        probabilities.Add(CustomOptions.DynamicMapEnableMira / 10f);
+                        probabilities.Add(CustomOptions.DynamicMapEnablePolus / 10f);
+                        probabilities.Add(CustomOptions.DynamicMapEnableAirShip / 10f);
+                        probabilities.Add(CustomOptions.DynamicMapEnableSubmerged / 10f);
 
                         // if any map is at 100%, remove all maps that are not!
                         if (probabilities.Contains(1.0f)) {
@@ -218,7 +219,7 @@ namespace TheOtherRoles.Patches {
                         for (int i = 0; i < probabilities.Count; i++) {  // Normalize to [0,1]
                             probabilities[i] /= sum;
                         }
-                        float selection = (float)TheOtherRoles.rnd.NextDouble();
+                        float selection = (float)TheOtherRoles.Rnd.NextDouble();
                         float cumsum = 0;
                         for (byte i = 0; i < probabilities.Count; i++) {
                             cumsum += probabilities[i];
@@ -229,8 +230,8 @@ namespace TheOtherRoles.Patches {
                         }
 
                         // Translate chosen map to presets page and use that maps random map preset page
-                        if (CustomOptionHolder.dynamicMapSeparateSettings.getBool()) {
-                            CustomOptionHolder.presetSelection.updateSelection(chosenMapId + 2);
+                        if (CustomOptions.DynamicMapSeparateSettings) {
+                            CustomOptions.Preset.UpdateSelection(chosenMapId + 2);
                         }
                         if (chosenMapId >= 3) chosenMapId++;  // Skip dlekS
                         KernelRpc.DynamicMapOption(chosenMapId);

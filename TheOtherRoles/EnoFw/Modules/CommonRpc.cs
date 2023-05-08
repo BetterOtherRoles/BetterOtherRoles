@@ -2,6 +2,7 @@
 using System.Linq;
 using Reactor.Networking.Attributes;
 using TheOtherRoles.CustomGameModes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.EnoFw.Roles.Crewmate;
 using TheOtherRoles.EnoFw.Roles.Impostor;
 using TheOtherRoles.EnoFw.Roles.Modifiers;
@@ -25,7 +26,7 @@ public static class CommonRpc
     {
         if (sender.PlayerId == CachedPlayer.LocalPlayer.PlayerId) return;
         var (playerId, roomId) = Rpc.Deserialize<Tuple<byte, byte>>(rawData);
-        Snitch.playerRoomMap[playerId] = roomId;
+        Snitch.Instance.PlayerRoomMap[playerId] = roomId;
     }
     
     public static void HuntedRewindTime(byte playerId)
@@ -52,7 +53,7 @@ public static class CommonRpc
 
         if (!CachedPlayer.LocalPlayer.Data.Role.IsImpostor) return; // only rewind hunter
 
-        TimeMaster.isRewinding = true;
+        TimeMaster.Instance.IsRewinding = true;
 
         if (MapBehaviour.Instance)
             MapBehaviour.Instance.Close();
@@ -115,9 +116,9 @@ public static class CommonRpc
     private static void Rpc_CleanBody(PlayerControl sender, string rawData)
     {
         var (playerId, cleaningPlayerId) = Rpc.Deserialize<Tuple<byte, byte>>(rawData);
-        if (Medium.featureDeadBodies != null)
+        if (Medium.Instance.FeatureDeadBodies != null)
         {
-            var deadBody = Medium.featureDeadBodies.Find(x => x.Item1.player.PlayerId == playerId).Item1;
+            var deadBody = Medium.Instance.FeatureDeadBodies.Find(x => x.Item1.player.PlayerId == playerId).Item1;
             if (deadBody != null) deadBody.wasCleaned = true;
         }
 
@@ -130,11 +131,11 @@ public static class CommonRpc
             }
         }
 
-        if (Vulture.vulture == null || cleaningPlayerId != Vulture.vulture.PlayerId) return;
-        Vulture.eatenBodies++;
-        if (Vulture.eatenBodies == Vulture.vultureNumberToWin)
+        if (Vulture.Instance.Player == null || cleaningPlayerId != Vulture.Instance.Player.PlayerId) return;
+        Vulture.Instance.EatenBodies++;
+        if (Vulture.Instance.EatenBodies == Vulture.Instance.EatNumberToWin)
         {
-            Vulture.triggerVultureWin = true;
+            Vulture.Instance.TriggerVultureWin = true;
         }
     }
 
@@ -149,7 +150,7 @@ public static class CommonRpc
     {
         var (playerId, ignoreModifier) = Rpc.Deserialize<Tuple<byte, bool>>(rawData);
         Local_ErasePlayerRoles(playerId, ignoreModifier);
-        Eraser.alreadyErased.Add(playerId);
+        Eraser.Instance.AlreadyErased.Add(playerId);
     }
 
     public static void Local_ErasePlayerRoles(byte playerId, bool ignoreModifier = true)
@@ -157,86 +158,47 @@ public static class CommonRpc
         var player = Helpers.playerById(playerId);
         if (player == null) return;
         // Crewmate roles
-        if (player == Mayor.mayor) Mayor.clearAndReload();
-        if (player == Portalmaker.portalmaker) Portalmaker.clearAndReload();
-        if (player == Engineer.engineer) Engineer.clearAndReload();
-        if (player == Sheriff.sheriff) Sheriff.clearAndReload();
-        if (player == Deputy.Player) Deputy.ClearAndReload();
-        if (player == Lighter.lighter) Lighter.clearAndReload();
-        if (player == Detective.detective) Detective.clearAndReload();
-        if (player == TimeMaster.timeMaster) TimeMaster.clearAndReload();
-        if (player == Medic.medic) Medic.clearAndReload();
-        if (player == Shifter.shifter) Shifter.clearAndReload();
-        if (player == Seer.seer) Seer.clearAndReload();
-        if (player == Hacker.hacker) Hacker.clearAndReload();
-        if (player == Tracker.tracker) Tracker.clearAndReload();
-        if (player == Snitch.snitch) Snitch.clearAndReload();
-        if (player == Swapper.swapper) Swapper.clearAndReload();
-        if (player == Spy.spy) Spy.clearAndReload();
-        if (player == SecurityGuard.securityGuard) SecurityGuard.clearAndReload();
-        if (player == Medium.medium) Medium.clearAndReload();
-        if (player == Trapper.trapper) Trapper.clearAndReload();
+        if (player == Shifter.Instance.Player) Shifter.Instance.ClearAndReload();
 
         // Impostor roles
-        if (player == Morphling.morphling) Morphling.clearAndReload();
-        if (player == Camouflager.camouflager) Camouflager.clearAndReload();
-        if (player == Godfather.godfather) Godfather.clearAndReload();
-        if (player == Mafioso.mafioso) Mafioso.clearAndReload();
-        if (player == Janitor.janitor) Janitor.clearAndReload();
-        if (player == Vampire.vampire) Vampire.clearAndReload();
-        if (player == Whisperer.whisperer) Whisperer.clearAndReload();
-        if (player == Undertaker.undertaker) Undertaker.clearAndReload();
-        if (player == Eraser.eraser) Eraser.clearAndReload();
-        if (player == Trickster.trickster) Trickster.clearAndReload();
-        if (player == Cleaner.cleaner) Cleaner.clearAndReload();
-        if (player == Warlock.warlock) Warlock.clearAndReload();
-        if (player == Witch.witch) Witch.clearAndReload();
-        if (player == Ninja.ninja) Ninja.clearAndReload();
-        if (player == Bomber.bomber) Bomber.clearAndReload();
 
         // Other roles
-        if (player == Jester.jester) Jester.clearAndReload();
-        if (player == Arsonist.arsonist) Arsonist.clearAndReload();
-        if (Guesser.isGuesser(player.PlayerId)) Guesser.clear(player.PlayerId);
-        if (player == Jackal.jackal)
+        if (Guesser.Instance.IsGuesser(player.PlayerId)) Guesser.Instance.Clear(player.PlayerId);
+        if (player == Jackal.Instance.Player)
         {
             // Promote Sidekick and hence override the the Jackal or erase Jackal
-            if (Sidekick.promotesToJackal && Sidekick.sidekick != null && !Sidekick.sidekick.Data.IsDead)
+            if (Sidekick.Instance.PromotesToJackal && Sidekick.Instance.Player != null && !Sidekick.Instance.Player.Data.IsDead)
             {
                 Sidekick.Local_SidekickPromotes();
             }
             else
             {
-                Jackal.clearAndReload();
+                Jackal.Instance.ClearAndReload();
             }
         }
-
-        if (player == Sidekick.sidekick) Sidekick.clearAndReload();
-        if (player == BountyHunter.bountyHunter) BountyHunter.clearAndReload();
-        if (player == Vulture.vulture) Vulture.clearAndReload();
-        if (player == Lawyer.lawyer) Lawyer.clearAndReload();
-        if (player == Pursuer.pursuer) Pursuer.clearAndReload();
-        if (player == Thief.thief) Thief.clearAndReload();
-        if (player == Fallen.fallen) Fallen.clearAndReload();
+        foreach (var role in AbstractRole.AllRoles.Where(role => role.Value.HasPlayer && player == role.Value.Player))
+        {
+            role.Value.ClearAndReload();
+        }
 
         // Modifier
         if (ignoreModifier) return;
-        if (player == Lovers.lover1 || player == Lovers.lover2)
-            Lovers.clearAndReload(); // The whole Lover couple is being erased
-        if (Bait.bait.Any(x => x.PlayerId == player.PlayerId))
-            Bait.bait.RemoveAll(x => x.PlayerId == player.PlayerId);
-        if (Bloody.bloody.Any(x => x.PlayerId == player.PlayerId))
-            Bloody.bloody.RemoveAll(x => x.PlayerId == player.PlayerId);
-        if (AntiTeleport.antiTeleport.Any(x => x.PlayerId == player.PlayerId))
-            AntiTeleport.antiTeleport.RemoveAll(x => x.PlayerId == player.PlayerId);
-        if (Sunglasses.sunglasses.Any(x => x.PlayerId == player.PlayerId))
-            Sunglasses.sunglasses.RemoveAll(x => x.PlayerId == player.PlayerId);
-        if (player == Tiebreaker.tiebreaker) Tiebreaker.clearAndReload();
-        if (player == Mini.mini) Mini.clearAndReload();
-        if (Vip.vip.Any(x => x.PlayerId == player.PlayerId)) Vip.vip.RemoveAll(x => x.PlayerId == player.PlayerId);
-        if (Invert.invert.Any(x => x.PlayerId == player.PlayerId))
-            Invert.invert.RemoveAll(x => x.PlayerId == player.PlayerId);
-        if (Chameleon.chameleon.Any(x => x.PlayerId == player.PlayerId))
-            Chameleon.chameleon.RemoveAll(x => x.PlayerId == player.PlayerId);
+        if (Lovers.Instance.Is(player))
+            Lovers.Instance.ClearAndReload(); // The whole Lover couple is being erased
+        if (Bait.Instance.Is(player))
+            Bait.Instance.Players.RemoveAll(x => x.PlayerId == player.PlayerId);
+        if (Bloody.Instance.Is(player))
+            Bloody.Instance.Players.RemoveAll(x => x.PlayerId == player.PlayerId);
+        if (AntiTeleport.Instance.Is(player))
+            AntiTeleport.Instance.Players.RemoveAll(x => x.PlayerId == player.PlayerId);
+        if (Sunglasses.Instance.Is(player))
+            Sunglasses.Instance.Players.RemoveAll(x => x.PlayerId == player.PlayerId);
+        if (player == Tiebreaker.Instance.Player) Tiebreaker.Instance.ClearAndReload();
+        if (player == Mini.Instance.Player) Mini.Instance.ClearAndReload();
+        if (Vip.Instance.Is(player)) Vip.Instance.Players.RemoveAll(x => x.PlayerId == player.PlayerId);
+        if (Invert.Instance.Is(player))
+            Invert.Instance.Players.RemoveAll(x => x.PlayerId == player.PlayerId);
+        if (Chameleon.Instance.Is(player))
+            Chameleon.Instance.Players.RemoveAll(x => x.PlayerId == player.PlayerId);
     }
 }

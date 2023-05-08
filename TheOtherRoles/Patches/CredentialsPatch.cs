@@ -49,11 +49,7 @@ namespace TheOtherRoles.Patches
                     else if (HandleGuesser.isGuesserGm) gameModeText = "Guesser";
                     if (gameModeText != "") gameModeText = Helpers.cs(Color.yellow, gameModeText) + "\n";
                     __instance.text.text = $"{FullCredentialsVersion}\n{gameModeText}" + __instance.text.text;
-                    if (CachedPlayer.LocalPlayer.Data.IsDead || (!(CachedPlayer.LocalPlayer.PlayerControl == null) &&
-                                                                 (CachedPlayer.LocalPlayer.PlayerControl ==
-                                                                  Lovers.lover1 ||
-                                                                  CachedPlayer.LocalPlayer.PlayerControl ==
-                                                                  Lovers.lover2)))
+                    if (CachedPlayer.LocalPlayer.Data.IsDead || (!(CachedPlayer.LocalPlayer.PlayerControl == null) && Lovers.Instance.Is(CachedPlayer.LocalPlayer.PlayerControl)))
                     {
                         var transform = __instance.transform;
                         var localPosition = transform.localPosition;

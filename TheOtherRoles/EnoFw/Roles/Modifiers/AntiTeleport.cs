@@ -1,31 +1,37 @@
 ﻿using System.Collections.Generic;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Players;
 using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Roles.Modifiers;
 
-public static class AntiTeleport
+public class AntiTeleport : AbstractMultipleModifier
 {
-    public static List<PlayerControl> antiTeleport = new List<PlayerControl>();
-    public static Vector3 position;
+    public static readonly AntiTeleport Instance = new();
 
-    public static void clearAndReload()
+    public Vector3 Position = Vector3.zero;
+    
+
+    private AntiTeleport() : base(nameof(AntiTeleport), "Anti Teleport", Color.yellow)
     {
-        antiTeleport = new List<PlayerControl>();
-        position = Vector3.zero;
+        
     }
 
-    public static void setPosition()
+    public override void ClearAndReload()
     {
-        if (position == Vector3.zero)
-            return; // Check if this has been set, otherwise first spawn on submerged will fail
-        if (antiTeleport.FindAll(x => x.PlayerId == CachedPlayer.LocalPlayer.PlayerId).Count > 0)
+        base.ClearAndReload();
+        Position = Vector3.zero;
+    }
+
+    public void SetPosition()
+    {
+        // Check if this has been set, otherwise first spawn on submerged will fail
+        if (Position == Vector3.zero) return;
+        if (!Is(CachedPlayer.LocalPlayer.PlayerControl)) return;
+        CachedPlayer.LocalPlayer.NetTransform.RpcSnapTo(Position);
+        if (SubmergedCompatibility.IsSubmerged)
         {
-            CachedPlayer.LocalPlayer.NetTransform.RpcSnapTo(position);
-            if (SubmergedCompatibility.IsSubmerged)
-            {
-                SubmergedCompatibility.ChangeFloor(position.y > -7);
-            }
+            SubmergedCompatibility.ChangeFloor(Position.y > -7);
         }
     }
 }

@@ -2,136 +2,176 @@
 using System.Linq;
 using PowerTools;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Crewmate;
 
-public static class SecurityGuard
+public class SecurityGuard : AbstractRole
 {
-    public static PlayerControl securityGuard;
-    public static Color color = new Color32(195, 178, 95, byte.MaxValue);
+    public static readonly SecurityGuard Instance = new();
+    
+    // Fields
+    public int UsedScrews;
+    public int UsedCharges;
+    public int RechargedTasks;
+    public Vent VentTarget;
+    public Minigame Minigame;
+    public int PlacedCameras;
 
-    public static float cooldown = 30f;
-    public static int remainingScrews = 7;
-    public static int totalScrews = 7;
-    public static int ventPrice = 1;
-    public static int camPrice = 2;
-    public static int placedCameras;
-    public static float duration = 10f;
-    public static int maxCharges = 5;
-    public static int rechargeTasksNumber = 3;
-    public static int rechargedTasks = 3;
-    public static int charges = 1;
-    public static bool cantMove = true;
-    public static Vent ventTarget;
-    public static Minigame minigame;
+    public int RemainingScrews => TotalScrews - UsedScrews;
+    public int RemainingCharges => CamMaxCharges - UsedCharges;
+    
+    // Options
+    public readonly Option Cooldown;
+    public readonly Option TotalScrews;
+    public readonly Option CamPrice;
+    public readonly Option VentPrice;
+    public readonly Option CamDuration;
+    public readonly Option CamMaxCharges;
+    public readonly Option CamRechargeTaskNumber;
+    public readonly Option CanMoveDuringCam;
 
-    private static Sprite closeVentButtonSprite;
+    public static Sprite CloseVentButtonSprite => GetSprite("TheOtherRoles.Resources.CloseVentButton.png", 115f);
+    public static Sprite PlaceCameraButtonSprite => GetSprite("TheOtherRoles.Resources.PlaceCameraButton.png", 115f);
 
-    public static Sprite getCloseVentButtonSprite()
+    private static float _lastPpu;
+    private static Sprite _animatedVentSealedSprite;
+    public static Sprite AnimatedVentSealedSprite
     {
-        if (closeVentButtonSprite) return closeVentButtonSprite;
-        closeVentButtonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.CloseVentButton.png", 115f);
-        return closeVentButtonSprite;
-    }
-
-    private static Sprite placeCameraButtonSprite;
-
-    public static Sprite getPlaceCameraButtonSprite()
-    {
-        if (placeCameraButtonSprite) return placeCameraButtonSprite;
-        placeCameraButtonSprite =
-            Helpers.loadSpriteFromResources("TheOtherRoles.Resources.PlaceCameraButton.png", 115f);
-        return placeCameraButtonSprite;
-    }
-
-    private static Sprite animatedVentSealedSprite;
-    private static float lastPPU;
-
-    public static Sprite getAnimatedVentSealedSprite()
-    {
-        float ppu = 185f;
-        if (SubmergedCompatibility.IsSubmerged) ppu = 120f;
-        if (lastPPU != ppu)
+        get
         {
-            animatedVentSealedSprite = null;
-            lastPPU = ppu;
+            var ppu = 185f;
+            if (SubmergedCompatibility.IsSubmerged) ppu = 120f;
+            if (_lastPpu != ppu)
+            {
+                _animatedVentSealedSprite = null;
+                _lastPpu = ppu;
+            }
+
+            if (_animatedVentSealedSprite != null) return _animatedVentSealedSprite;
+            _animatedVentSealedSprite = GetSprite("TheOtherRoles.Resources.AnimatedVentSealed.png", ppu);
+            return _animatedVentSealedSprite;
         }
-
-        if (animatedVentSealedSprite) return animatedVentSealedSprite;
-        animatedVentSealedSprite =
-            Helpers.loadSpriteFromResources("TheOtherRoles.Resources.AnimatedVentSealed.png", ppu);
-        return animatedVentSealedSprite;
     }
 
-    private static Sprite staticVentSealedSprite;
+    public static Sprite StaticVentSealedSprite => GetSprite("TheOtherRoles.Resources.StaticVentSealed.png", 160f);
 
-    public static Sprite getStaticVentSealedSprite()
+    public static Sprite SubmergedCentralUpperSealedSprite =>
+        GetSprite("TheOtherRoles.Resources.CentralUpperBlocked.png", 145f);
+
+    public static Sprite SubmergedCentralLowerSealedSprite =>
+        GetSprite("TheOtherRoles.Resources.CentralLowerBlocked.png", 145f);
+
+    private static Sprite _cameraButtonSprite;
+    public static Sprite CameraButtonSprite
     {
-        if (staticVentSealedSprite) return staticVentSealedSprite;
-        staticVentSealedSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.StaticVentSealed.png", 160f);
-        return staticVentSealedSprite;
+        get
+        {
+            if (_cameraButtonSprite != null) return _cameraButtonSprite;
+            _cameraButtonSprite = FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[ImageNames.CamsButton].Image;
+            return _cameraButtonSprite;
+        }
     }
 
-    private static Sprite submergedCentralUpperVentSealedSprite;
-
-    public static Sprite getSubmergedCentralUpperSealedSprite()
+    private static Sprite _doorLogButtonSprite;
+    public static Sprite DoorLogButtonSprite
     {
-        if (submergedCentralUpperVentSealedSprite) return submergedCentralUpperVentSealedSprite;
-        submergedCentralUpperVentSealedSprite =
-            Helpers.loadSpriteFromResources("TheOtherRoles.Resources.CentralUpperBlocked.png", 145f);
-        return submergedCentralUpperVentSealedSprite;
+        get
+        {
+            if (_doorLogButtonSprite != null) return _doorLogButtonSprite;
+            _doorLogButtonSprite = FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[ImageNames.DoorLogsButton].Image;
+            return _doorLogButtonSprite;
+        }
     }
 
-    private static Sprite submergedCentralLowerVentSealedSprite;
 
-    public static Sprite getSubmergedCentralLowerSealedSprite()
+    private SecurityGuard() : base(nameof(SecurityGuard), "Security guard")
     {
-        if (submergedCentralLowerVentSealedSprite) return submergedCentralLowerVentSealedSprite;
-        submergedCentralLowerVentSealedSprite =
-            Helpers.loadSpriteFromResources("TheOtherRoles.Resources.CentralLowerBlocked.png", 145f);
-        return submergedCentralLowerVentSealedSprite;
+        Team = Teams.Crewmate;
+        Color = new Color32(195, 178, 95, byte.MaxValue);
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        Cooldown = Tab.CreateFloatList(
+            $"{Name}{nameof(Cooldown)}",
+            Cs("Cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        TotalScrews = Tab.CreateFloatList(
+            $"{Name}{nameof(TotalScrews)}",
+            Cs("Number of screws"),
+            1f,
+            15f,
+            7f,
+            1f,
+            SpawnRate);
+        CamPrice = Tab.CreateFloatList(
+            $"{Name}{nameof(CamPrice)}",
+            Cs("Number of screws per camera"),
+            1f,
+            15f,
+            2f,
+            1f,
+            SpawnRate);
+        VentPrice = Tab.CreateFloatList(
+            $"{Name}{nameof(VentPrice)}",
+            Cs("Number of screws per vent"),
+            1f,
+            15f,
+            2f,
+            1f,
+            SpawnRate);
+        CamDuration = Tab.CreateFloatList(
+            $"{Name}{nameof(CamDuration)}",
+            Cs("Portable camera duration"),
+            2.5f,
+            60f,
+            10f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        CamMaxCharges = Tab.CreateFloatList(
+            $"{Name}{nameof(CamMaxCharges)}",
+            Cs("Portable camera max charges"),
+            1f,
+            30f,
+            5f,
+            1f,
+            SpawnRate);
+        CamRechargeTaskNumber = Tab.CreateFloatList(
+            $"{Name}{nameof(CamRechargeTaskNumber)}",
+            Cs("Number of tasks needed for recharging"),
+            1f,
+            10f,
+            3f,
+            1f,
+            SpawnRate);
+        CanMoveDuringCam = Tab.CreateBool(
+            $"{Name}{nameof(CanMoveDuringCam)}",
+            Cs("Can move during using cameras"),
+            false);
     }
 
-    private static Sprite camSprite;
-
-    public static Sprite getCamSprite()
+    public override void ClearAndReload()
     {
-        if (camSprite) return camSprite;
-        camSprite = FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[ImageNames.CamsButton]
-            .Image;
-        return camSprite;
-    }
-
-    private static Sprite logSprite;
-
-    public static Sprite getLogSprite()
-    {
-        if (logSprite) return logSprite;
-        logSprite = FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[ImageNames.DoorLogsButton]
-            .Image;
-        return logSprite;
-    }
-
-    public static void clearAndReload()
-    {
-        securityGuard = null;
-        ventTarget = null;
-        minigame = null;
-        duration = CustomOptionHolder.securityGuardCamDuration.getFloat();
-        maxCharges = Mathf.RoundToInt(CustomOptionHolder.securityGuardCamMaxCharges.getFloat());
-        rechargeTasksNumber = Mathf.RoundToInt(CustomOptionHolder.securityGuardCamRechargeTasksNumber.getFloat());
-        rechargedTasks = Mathf.RoundToInt(CustomOptionHolder.securityGuardCamRechargeTasksNumber.getFloat());
-        charges = Mathf.RoundToInt(CustomOptionHolder.securityGuardCamMaxCharges.getFloat()) / 2;
-        placedCameras = 0;
-        cooldown = CustomOptionHolder.securityGuardCooldown.getFloat();
-        totalScrews = remainingScrews = Mathf.RoundToInt(CustomOptionHolder.securityGuardTotalScrews.getFloat());
-        camPrice = Mathf.RoundToInt(CustomOptionHolder.securityGuardCamPrice.getFloat());
-        ventPrice = Mathf.RoundToInt(CustomOptionHolder.securityGuardVentPrice.getFloat());
-        cantMove = CustomOptionHolder.securityGuardNoMove.getBool();
+        base.ClearAndReload();
+        VentTarget = null;
+        Minigame = null;
+        UsedCharges = 0;
+        UsedScrews = 0;
+        PlacedCameras = 0;
+        RechargedTasks = 0;
     }
 
     public static void SealVent(int ventId)
@@ -147,14 +187,14 @@ public static class SecurityGuard
         var vent = MapUtilities.CachedShipStatus.AllVents.FirstOrDefault(x => x != null && x.Id == ventId);
         if (vent == null) return;
 
-        remainingScrews -= ventPrice;
-        if (CachedPlayer.LocalPlayer.PlayerControl == securityGuard) {
+        Instance.UsedScrews += Instance.VentPrice;
+        if (CachedPlayer.LocalPlayer.PlayerControl == Instance.Player) {
             var animator = vent.GetComponent<SpriteAnim>(); 
             if (animator != null) animator.Stop();
             vent.EnterVentAnim = vent.ExitVentAnim = null;
-            vent.myRend.sprite = animator == null ? getStaticVentSealedSprite() : getAnimatedVentSealedSprite();
-            if (SubmergedCompatibility.IsSubmerged && vent.Id == 0) vent.myRend.sprite = getSubmergedCentralUpperSealedSprite();
-            if (SubmergedCompatibility.IsSubmerged && vent.Id == 14) vent.myRend.sprite = getSubmergedCentralLowerSealedSprite();
+            vent.myRend.sprite = animator == null ? StaticVentSealedSprite : AnimatedVentSealedSprite;
+            if (SubmergedCompatibility.IsSubmerged && vent.Id == 0) vent.myRend.sprite = SubmergedCentralUpperSealedSprite;
+            if (SubmergedCompatibility.IsSubmerged && vent.Id == 14) vent.myRend.sprite = SubmergedCentralLowerSealedSprite;
             vent.myRend.color = new Color(1f, 1f, 1f, 0.5f);
             vent.name = "FutureSealedVent_" + vent.name;
         }
@@ -175,12 +215,12 @@ public static class SecurityGuard
         if (referenceCamera == null) return; // Mira HQ
         
         var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawDData);
-        remainingScrews -= camPrice;
-        placedCameras++;
+        Instance.UsedScrews += Instance.CamPrice;
+        Instance.PlacedCameras++;
 
         var camera = Object.Instantiate(referenceCamera);
         camera.transform.position = new Vector3(x, y, referenceCamera.transform.position.z - 1f);
-        camera.CamName = $"Security Camera {placedCameras}";
+        camera.CamName = $"Security Camera {Instance.PlacedCameras}";
         camera.Offset = new Vector3(0f, 0f, camera.Offset.z);
 
         if (GameOptionsManager.Instance.currentNormalGameOptions.MapId == 2 ||
@@ -198,7 +238,7 @@ public static class SecurityGuard
             }
         }
         
-        if (CachedPlayer.LocalPlayer.PlayerControl == securityGuard) {
+        if (CachedPlayer.LocalPlayer.PlayerControl == Instance.Player) {
             camera.gameObject.SetActive(true);
             camera.gameObject.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.5f);
         } else {

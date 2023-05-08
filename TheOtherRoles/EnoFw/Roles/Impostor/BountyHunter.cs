@@ -1,47 +1,97 @@
-﻿using TheOtherRoles.Objects;
-using UnityEngine;
+﻿using System.Linq;
+using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.Objects;
+using TMPro;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
 
-public static class BountyHunter
+public class BountyHunter : AbstractRole
 {
-    public static PlayerControl bountyHunter;
-    public static Color color = Palette.ImpostorRed;
+    public static readonly BountyHunter Instance = new();
+    
+    // Fields
+    public Arrow Arrow;
+    public PlayerControl Bounty;
+    public float ArrowUpdateTimer;
+    public float BountyUpdateTimer;
+    public TextMeshPro CooldownText;
+    
+    // Options
+    public readonly Option BountyDuration;
+    public readonly Option BountyKillCooldown;
+    public readonly Option PunishmentTime;
+    public readonly Option ShowArrow;
+    public readonly Option ArrowUpdateInterval;
 
-    public static Arrow arrow;
-    public static float bountyDuration = 30f;
-    public static bool showArrow = true;
-    public static float bountyKillCooldown = 0f;
-    public static float punishmentTime = 15f;
-    public static float arrowUpdateIntervall = 10f;
-
-    public static float arrowUpdateTimer = 0f;
-    public static float bountyUpdateTimer = 0f;
-    public static PlayerControl bounty;
-    public static TMPro.TextMeshPro cooldownText;
-
-    public static void clearAndReload()
+    private BountyHunter() : base(nameof(BountyHunter), "Bounty hunter")
     {
-        arrow = new Arrow(color);
-        bountyHunter = null;
-        bounty = null;
-        arrowUpdateTimer = 0f;
-        bountyUpdateTimer = 0f;
-        if (arrow != null && arrow.arrow != null) UnityEngine.Object.Destroy(arrow.arrow);
-        arrow = null;
-        if (cooldownText != null && cooldownText.gameObject != null)
-            UnityEngine.Object.Destroy(cooldownText.gameObject);
-        cooldownText = null;
-        foreach (PoolablePlayer p in TORMapOptions.playerIcons.Values)
+        Team = Teams.Impostor;
+        Color = Palette.ImpostorRed;
+        CanTarget = true;
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        BountyDuration = Tab.CreateFloatList(
+            $"{Key}{nameof(BountyDuration)}",
+            Cs("Bounty duration"),
+            10f,
+            120f,
+            30f,
+            5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        BountyKillCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(BountyKillCooldown)}",
+            Cs("Cooldown after killing bounty"),
+            2.5f,
+            60f,
+            10f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        PunishmentTime = Tab.CreateFloatList(
+            $"{Key}{nameof(PunishmentTime)}",
+            Cs("Additional cooldown after killing others"),
+            2.5f,
+            60f,
+            10f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        ShowArrow = Tab.CreateBool(
+            $"{Key}{nameof(ShowArrow)}",
+            Cs("Show arrow pointing towards the bounty"),
+            false,
+            SpawnRate);
+        ArrowUpdateInterval = Tab.CreateFloatList(
+            $"{Key}{nameof(ArrowUpdateInterval)}",
+            Cs("Arrow update interval"),
+            2.5f,
+            60f,
+            10f,
+            2.5f,
+            ShowArrow,
+            string.Empty,
+            "s");
+    }
+
+    public override void ClearAndReload()
+    {
+        base.ClearAndReload();
+        if (Arrow != null && Arrow.arrow != null) UnityEngine.Object.Destroy(Arrow.arrow);
+        Arrow = null;
+        if (CooldownText != null && CooldownText.gameObject != null) UnityEngine.Object.Destroy(CooldownText.gameObject);
+        CooldownText = null;
+        Bounty = null;
+        ArrowUpdateTimer = 0f;
+        BountyUpdateTimer = 0f;
+        foreach (var p in TORMapOptions.playerIcons.Values.Where(p => p != null && p.gameObject != null))
         {
-            if (p != null && p.gameObject != null) p.gameObject.SetActive(false);
+            p.gameObject.SetActive(false);
         }
-
-
-        bountyDuration = CustomOptionHolder.bountyHunterBountyDuration.getFloat();
-        bountyKillCooldown = CustomOptionHolder.bountyHunterReducedCooldown.getFloat();
-        punishmentTime = CustomOptionHolder.bountyHunterPunishmentTime.getFloat();
-        showArrow = CustomOptionHolder.bountyHunterShowArrow.getBool();
-        arrowUpdateIntervall = CustomOptionHolder.bountyHunterArrowUpdateIntervall.getFloat();
     }
 }

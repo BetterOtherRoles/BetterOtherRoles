@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using TheOtherRoles.Utilities;
-using static TheOtherRoles.TheOtherRoles;
 using TheOtherRoles.Modules;
 using UnityEngine;
 using TheOtherRoles.CustomGameModes;
 using AmongUs.GameOptions;
+using TheOtherRoles.EnoFw;
 using TheOtherRoles.EnoFw.Roles.Crewmate;
 using TheOtherRoles.EnoFw.Roles.Impostor;
 using TheOtherRoles.EnoFw.Roles.Modifiers;
@@ -107,9 +107,9 @@ namespace TheOtherRoles.Patches
                 }
 
                 // If player is Lighter with ability active
-                if (Lighter.lighter != null && Lighter.lighter.PlayerId == player.PlayerId) {
+                if (Lighter.Instance.Player != null && Lighter.Instance.Player.PlayerId == player.PlayerId) {
                     float unlerped = Mathf.InverseLerp(__instance.MinLightRadius, __instance.MaxLightRadius, GetNeutralLightRadius(__instance, false));
-                    __result = Mathf.Lerp(__instance.MaxLightRadius * Lighter.lighterModeLightsOffVision, __instance.MaxLightRadius * Lighter.lighterModeLightsOnVision, unlerped);
+                    __result = Mathf.Lerp(__instance.MaxLightRadius * Lighter.Instance.LightsOffVision, __instance.MaxLightRadius * Lighter.Instance.LightsOnVision, unlerped);
                 }
 
                 // If Game mode is Hide N Seek and hunter with ability active
@@ -119,21 +119,21 @@ namespace TheOtherRoles.Patches
                 }
 
                 // If there is a Trickster with their ability active
-                else if (Trickster.trickster != null && Trickster.lightsOutTimer > 0f) {
+                else if (Trickster.Instance.Player != null && Trickster.Instance.LightsOutTimer > 0f) {
                     float lerpValue = 1f;
-                    if (Trickster.lightsOutDuration - Trickster.lightsOutTimer < 0.5f) {
-                        lerpValue = Mathf.Clamp01((Trickster.lightsOutDuration - Trickster.lightsOutTimer) * 2);
-                    } else if (Trickster.lightsOutTimer < 0.5) {
-                        lerpValue = Mathf.Clamp01(Trickster.lightsOutTimer * 2);
+                    if (Trickster.Instance.LightsOutDuration - Trickster.Instance.LightsOutTimer < 0.5f) {
+                        lerpValue = Mathf.Clamp01((Trickster.Instance.LightsOutDuration - Trickster.Instance.LightsOutTimer) * 2);
+                    } else if (Trickster.Instance.LightsOutTimer < 0.5) {
+                        lerpValue = Mathf.Clamp01(Trickster.Instance.LightsOutTimer * 2);
                     }
 
                     __result = Mathf.Lerp(__instance.MinLightRadius, __instance.MaxLightRadius, 1 - lerpValue) * GameOptionsManager.Instance.currentNormalGameOptions.CrewLightMod;
                 }
 
                 // If player is Lawyer, apply Lawyer vision modifier
-                else if (Lawyer.lawyer != null && Lawyer.lawyer.PlayerId == player.PlayerId) {
+                else if (Lawyer.Instance.Player != null && Lawyer.Instance.Player.PlayerId == player.PlayerId) {
                     float unlerped = Mathf.InverseLerp(__instance.MinLightRadius, __instance.MaxLightRadius, GetNeutralLightRadius(__instance, false));
-                    __result = Mathf.Lerp(__instance.MinLightRadius, __instance.MaxLightRadius * Lawyer.vision, unlerped);
+                    __result = Mathf.Lerp(__instance.MinLightRadius, __instance.MaxLightRadius * Lawyer.Instance.Vision, unlerped);
                     return false;
                 }
 
@@ -141,8 +141,8 @@ namespace TheOtherRoles.Patches
                 else {
                     __result = GetNeutralLightRadius(__instance, false);
                 }
-                if (Sunglasses.sunglasses.FindAll(x => x.PlayerId == player.PlayerId).Count > 0) // Sunglasses
-                    __result *= 1f - Sunglasses.vision * 0.1f;
+                if (Sunglasses.Instance.Is(player.PlayerId)) // Sunglasses
+                    __result *= 1f + Sunglasses.Instance.Vision / 100f;
 
                 return false;
             }
@@ -173,10 +173,10 @@ namespace TheOtherRoles.Patches
                 IsRoomsFetched = false;
                 IsVentsFetched = false;
 
-                if(CustomOptionHolder.enableBetterPolus.getBool())
+                if(CustomOptions.EnableBetterPolus)
                     ApplyChanges(__instance);
 
-                if(CustomOptionHolder.enableBetterSkeld.getBool())
+                if(CustomOptions.EnableBetterSkeld)
                 {
                     ClassInjector.RegisterTypeInIl2Cpp<SkeldPatcher>();
                     
@@ -199,7 +199,7 @@ namespace TheOtherRoles.Patches
             [HarmonyPatch]
             public static void Prefix(ShipStatus __instance)
             {
-                if ((!IsObjectsFetched || !IsAdjustmentsDone) && CustomOptionHolder.enableBetterPolus.getBool())
+                if ((!IsObjectsFetched || !IsAdjustmentsDone) && CustomOptions.EnableBetterPolus)
                 {
                     ApplyChanges(__instance);
                 }
@@ -213,7 +213,7 @@ namespace TheOtherRoles.Patches
             [HarmonyPatch]
             public static bool Prefix(ShipStatus __instance)
             {
-                if(CustomOptionHolder.enableBetterPolus.getBool())
+                if(CustomOptions.EnableBetterPolus)
                     ApplyChanges(__instance);
 
                 originalNumCommonTasksOption = GameOptionsManager.Instance.currentNormalGameOptions.NumCommonTasks;
@@ -229,9 +229,9 @@ namespace TheOtherRoles.Patches
                     if (GameOptionsManager.Instance.currentNormalGameOptions.NumShortTasks > normalTaskCount) GameOptionsManager.Instance.currentNormalGameOptions.NumShortTasks = normalTaskCount;
                     if (GameOptionsManager.Instance.currentNormalGameOptions.NumLongTasks > longTaskCount) GameOptionsManager.Instance.currentNormalGameOptions.NumLongTasks = longTaskCount;
                 } else {
-                    GameOptionsManager.Instance.currentNormalGameOptions.NumCommonTasks = Mathf.RoundToInt(CustomOptionHolder.hideNSeekCommonTasks.getFloat());
-                    GameOptionsManager.Instance.currentNormalGameOptions.NumShortTasks = Mathf.RoundToInt(CustomOptionHolder.hideNSeekShortTasks.getFloat());
-                    GameOptionsManager.Instance.currentNormalGameOptions.NumLongTasks = Mathf.RoundToInt(CustomOptionHolder.hideNSeekLongTasks.getFloat());
+                    GameOptionsManager.Instance.currentNormalGameOptions.NumCommonTasks = Mathf.RoundToInt(CustomOptions.HideNSeekCommonTasks);
+                    GameOptionsManager.Instance.currentNormalGameOptions.NumShortTasks = Mathf.RoundToInt(CustomOptions.HideNSeekShortTasks);
+                    GameOptionsManager.Instance.currentNormalGameOptions.NumLongTasks = Mathf.RoundToInt(CustomOptions.HideNSeekLongTasks);
                 }
 
                 return true;
@@ -277,12 +277,12 @@ namespace TheOtherRoles.Patches
                 MoveVitals();
                 SwitchNavWifi();
                 MoveTempCold();
-                if (CustomOptionHolder.randomizeWirePositions.getBool())
+                if (CustomOptions.RandomizeWirePositions)
                 {
                     MoveWires();
                 }
 
-                if (CustomOptionHolder.randomizeUploadPosition.getBool())
+                if (CustomOptions.RandomizeUploadPositions)
                 {
                     MoveUpload();
                 }

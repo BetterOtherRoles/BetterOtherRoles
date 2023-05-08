@@ -1,55 +1,72 @@
 ﻿using System;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Objects;
 using TheOtherRoles.Players;
 using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Impostor;
 
-public static class Trickster
+public class Trickster : AbstractRole
 {
-    public static PlayerControl trickster;
-    public static Color color = Palette.ImpostorRed;
-    public static float placeBoxCooldown = 30f;
-    public static float lightsOutCooldown = 30f;
-    public static float lightsOutDuration = 10f;
-    public static float lightsOutTimer = 0f;
+    public static readonly Trickster Instance = new();
+    
+    // Fields
+    public float LightsOutTimer;
+    
+    // Options
+    public readonly Option PlaceBoxCooldown;
+    public readonly Option LightsOutCooldown;
+    public readonly Option LightsOutDuration;
 
-    private static Sprite placeBoxButtonSprite;
-    private static Sprite lightOutButtonSprite;
-    private static Sprite tricksterVentButtonSprite;
+    public static Sprite PlaceBoxButtonSprite => GetSprite("TheOtherRoles.Resources.PlaceJackInTheBoxButton.png", 115f);
+    public static Sprite LightsOutButtonSprite => GetSprite("TheOtherRoles.Resources.LightsOutButton.png", 115f);
+    public static Sprite TricksterVentButtonSprite => GetSprite("TheOtherRoles.Resources.TricksterVentButton.png", 115f);
 
-    public static Sprite getPlaceBoxButtonSprite()
+    private Trickster() : base(nameof(Trickster), "Trickster")
     {
-        if (placeBoxButtonSprite) return placeBoxButtonSprite;
-        placeBoxButtonSprite =
-            Helpers.loadSpriteFromResources("TheOtherRoles.Resources.PlaceJackInTheBoxButton.png", 115f);
-        return placeBoxButtonSprite;
+        Team = Teams.Impostor;
+        Color = Palette.ImpostorRed;
+        
+        SpawnRate = GetDefaultSpawnRateOption();
+        
+        PlaceBoxCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(PlaceBoxCooldown)}",
+            Cs("Place box cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        LightsOutCooldown = Tab.CreateFloatList(
+            $"{Key}{nameof(LightsOutCooldown)}",
+            Cs("Lights out cooldown"),
+            10f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
+        LightsOutDuration = Tab.CreateFloatList(
+            $"{Key}{nameof(LightsOutDuration)}",
+            Cs("Lights out duration"),
+            5f,
+            60f,
+            30f,
+            2.5f,
+            SpawnRate,
+            string.Empty,
+            "s");
     }
 
-    public static Sprite getLightsOutButtonSprite()
+    public override void ClearAndReload()
     {
-        if (lightOutButtonSprite) return lightOutButtonSprite;
-        lightOutButtonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.LightsOutButton.png", 115f);
-        return lightOutButtonSprite;
-    }
-
-    public static Sprite getTricksterVentButtonSprite()
-    {
-        if (tricksterVentButtonSprite) return tricksterVentButtonSprite;
-        tricksterVentButtonSprite =
-            Helpers.loadSpriteFromResources("TheOtherRoles.Resources.TricksterVentButton.png", 115f);
-        return tricksterVentButtonSprite;
-    }
-
-    public static void clearAndReload()
-    {
-        trickster = null;
-        lightsOutTimer = 0f;
-        placeBoxCooldown = CustomOptionHolder.tricksterPlaceBoxCooldown.getFloat();
-        lightsOutCooldown = CustomOptionHolder.tricksterLightsOutCooldown.getFloat();
-        lightsOutDuration = CustomOptionHolder.tricksterLightsOutDuration.getFloat();
-        JackInTheBox.UpdateStates(); // if the role is erased, we might have to update the state of the created objects
+        base.ClearAndReload();
+        LightsOutTimer = 0f;
     }
 
     public static void LightsOut()
@@ -60,10 +77,10 @@ public static class Trickster
     [MethodRpc((uint)Rpc.Role.LightsOut)]
     private static void Rpc_LightsOut(PlayerControl sender)
     {
-        lightsOutTimer = lightsOutDuration;
+        Instance.LightsOutTimer = Instance.LightsOutDuration;
         // If the local player is impostor indicate lights out
         if (!Helpers.hasImpVision(GameData.Instance.GetPlayerById(CachedPlayer.LocalPlayer.PlayerId))) return;
-        var _ = new CustomMessage("Lights are out", lightsOutDuration);
+        var _ = new CustomMessage("Lights are out", Instance.LightsOutDuration);
     }
 
     public static void PlaceJackInTheBox(float x, float y)

@@ -1,15 +1,32 @@
-﻿using System.Collections.Generic;
+﻿using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.EnoFw.Utils;
+using UnityEngine;
+using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
 namespace TheOtherRoles.EnoFw.Roles.Modifiers;
 
-public static class Invert
+public class Invert : AbstractMultipleModifier
 {
-    public static List<PlayerControl> invert = new List<PlayerControl>();
-    public static int meetings = 3;
+    public static readonly Invert Instance = new();
 
-    public static void clearAndReload()
+    public readonly Option MeetingsOption;
+    public int Meetings = 3;
+
+    private Invert() : base(nameof(Invert), "Invert", Color.yellow)
     {
-        invert = new List<PlayerControl>();
-        meetings = (int)CustomOptionHolder.modifierInvertDuration.getFloat();
+        MeetingsOption = CustomOptions.ModifierSettings.CreateFloatList(
+            $"{Key}{nameof(MeetingsOption)}",
+            Colors.Cs(Color, "Number of meetings inverted"),
+            1f,
+            15f,
+            3f,
+            1f,
+            SpawnRate);
+    }
+
+    public override void ClearAndReload()
+    {
+        base.ClearAndReload();
+        Meetings = MeetingsOption;
     }
 }

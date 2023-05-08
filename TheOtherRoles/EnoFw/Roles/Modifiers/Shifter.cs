@@ -1,6 +1,6 @@
 ﻿using System;
-using Hazel;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.EnoFw.Roles.Crewmate;
 using TheOtherRoles.EnoFw.Roles.Neutral;
 using TheOtherRoles.Objects;
@@ -9,133 +9,132 @@ using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Roles.Modifiers;
 
-public static class Shifter
+public class Shifter : AbstractSimpleModifier
 {
-    public static PlayerControl shifter;
+    public static readonly Shifter Instance = new();
 
-    public static PlayerControl futureShift;
-    public static PlayerControl currentTarget;
+    public PlayerControl FutureShift;
+    public PlayerControl CurrentTarget;
 
-    private static Sprite buttonSprite;
+    public static Sprite ShiftButtonSprite =>
+        Helpers.loadSpriteFromResources("TheOtherRoles.Resources.ShiftButton.png", 115f);
 
-    public static Sprite getButtonSprite()
+    private Shifter() : base(nameof(Shifter), "Shifter", Color.yellow)
     {
-        if (buttonSprite) return buttonSprite;
-        buttonSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.ShiftButton.png", 115f);
-        return buttonSprite;
+        AllowedTeams.Add(AbstractRole.Teams.Crewmate);
     }
 
-    public static void shiftRole(PlayerControl player1, PlayerControl player2, bool repeat = true)
+    private static void ShiftRole(PlayerControl player1, PlayerControl player2, bool repeat = true)
     {
-        if (Mayor.mayor != null && Mayor.mayor == player2)
+        if (Mayor.Instance.HasPlayer && Mayor.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            Mayor.mayor = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            Mayor.Instance.Player = player1;
         }
-        else if (Portalmaker.portalmaker != null && Portalmaker.portalmaker == player2)
+        else if (Portalmaker.Instance.Player != null && Portalmaker.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            Portalmaker.portalmaker = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            Portalmaker.Instance.Player = player1;
         }
-        else if (Engineer.engineer != null && Engineer.engineer == player2)
+        else if (Engineer.Instance.HasPlayer && Engineer.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            Engineer.engineer = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            Engineer.Instance.Player = player1;
         }
-        else if (Sheriff.sheriff != null && Sheriff.sheriff == player2)
+        else if (Sheriff.Instance.Player != null && Sheriff.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            if (Sheriff.formerDeputy != null && Sheriff.formerDeputy == Sheriff.sheriff)
-                Sheriff.formerDeputy = player1; // Shifter also shifts info on promoted deputy (to get handcuffs)
-            Sheriff.sheriff = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            if (Sheriff.Instance.FormerDeputy != null && Sheriff.Instance.FormerDeputy == Sheriff.Instance.Player)
+                Sheriff.Instance.FormerDeputy = player1; // Shifter also shifts info on promoted deputy (to get handcuffs)
+            Sheriff.Instance.Player = player1;
         }
-        else if (Deputy.Player != null && Deputy.Player == player2)
+        else if (Deputy.Instance.Player != null && Deputy.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            Deputy.Player = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            Deputy.Instance.Player = player1;
         }
-        else if (Lighter.lighter != null && Lighter.lighter == player2)
+        else if (Lighter.Instance.HasPlayer && Lighter.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            Lighter.lighter = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            Lighter.Instance.Player = player1;
         }
-        else if (Detective.detective != null && Detective.detective == player2)
+        else if (Detective.Instance.HasPlayer && Detective.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            Detective.detective = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            Detective.Instance.Player = player1;
         }
-        else if (TimeMaster.timeMaster != null && TimeMaster.timeMaster == player2)
+        else if (TimeMaster.Instance.Player != null && TimeMaster.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            TimeMaster.timeMaster = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            TimeMaster.Instance.Player = player1;
         }
-        else if (Medic.medic != null && Medic.medic == player2)
+        else if (Medic.Instance.Player != null && Medic.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            Medic.medic = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            Medic.Instance.Player = player1;
         }
-        else if (Swapper.swapper != null && Swapper.swapper == player2)
+        else if (Swapper.Instance.Player != null && Swapper.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            Swapper.swapper = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            Swapper.Instance.Player = player1;
         }
-        else if (Seer.seer != null && Seer.seer == player2)
+        else if (Seer.Instance.Player != null && Seer.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            Seer.seer = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            Seer.Instance.Player = player1;
         }
-        else if (Hacker.hacker != null && Hacker.hacker == player2)
+        else if (Hacker.Instance.HasPlayer && Hacker.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            Hacker.hacker = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            Hacker.Instance.Player = player1;
         }
-        else if (Tracker.tracker != null && Tracker.tracker == player2)
+        else if (Tracker.Instance.Player != null && Tracker.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            Tracker.tracker = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            Tracker.Instance.Player = player1;
         }
-        else if (Snitch.snitch != null && Snitch.snitch == player2)
+        else if (Snitch.Instance.Player != null && Snitch.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            Snitch.snitch = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            Snitch.Instance.Player = player1;
         }
-        else if (Spy.spy != null && Spy.spy == player2)
+        else if (Spy.Instance.Player != null && Spy.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            Spy.spy = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            Spy.Instance.Player = player1;
         }
-        else if (SecurityGuard.securityGuard != null && SecurityGuard.securityGuard == player2)
+        else if (SecurityGuard.Instance.HasPlayer && SecurityGuard.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            SecurityGuard.securityGuard = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            SecurityGuard.Instance.Player = player1;
         }
-        else if (Guesser.niceGuesser != null && Guesser.niceGuesser == player2)
+        else if (Guesser.Instance.NiceGuesser != null && Guesser.Instance.NiceGuesser == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            Guesser.niceGuesser = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            Guesser.Instance.NiceGuesser = player1;
         }
-        else if (Medium.medium != null && Medium.medium == player2)
+        else if (Medium.Instance.HasPlayer && Medium.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            Medium.medium = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            Medium.Instance.Player = player1;
         }
-        else if (Pursuer.pursuer != null && Pursuer.pursuer == player2)
+        else if (Pursuer.Instance.Player != null && Pursuer.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            Pursuer.pursuer = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            Pursuer.Instance.Player = player1;
         }
-        else if (Trapper.trapper != null && Trapper.trapper == player2)
+        else if (Trapper.Instance.Player != null && Trapper.Instance.Player == player2)
         {
-            if (repeat) shiftRole(player2, player1, false);
-            Trapper.trapper = player1;
+            if (repeat) ShiftRole(player2, player1, false);
+            Trapper.Instance.Player = player1;
         }
     }
 
-    public static void clearAndReload()
+    public override void ClearAndReload()
     {
-        shifter = null;
-        currentTarget = null;
-        futureShift = null;
+        base.ClearAndReload();
+        CurrentTarget = null;
+        FutureShift = null;
     }
 
     public static void SetFutureShifted(byte playerId)
@@ -148,7 +147,7 @@ public static class Shifter
     private static void Rpc_SetFutureShifted(PlayerControl sender, string rawData)
     {
         var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
-        futureShift = Helpers.playerById(playerId);
+        Instance.FutureShift = Helpers.playerById(playerId);
     }
 
     public static void ShifterShift(byte targetId)
@@ -161,22 +160,22 @@ public static class Shifter
     private static void Rpc_ShifterShift(PlayerControl sender, string rawData)
     {
         var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
-        var oldShifter = shifter;
+        var oldShifter = Instance.Player;
         var player = Helpers.playerById(targetId);
         if (player == null || oldShifter == null) return;
 
-        futureShift = null;
-        clearAndReload();
+        Instance.FutureShift = null;
+        Instance.ClearAndReload();
 
         // Suicide (exile) when impostor or impostor variants
         if (player.Data.Role.IsImpostor || Helpers.isNeutral(player)) {
             oldShifter.Exiled();
-            if (oldShifter != Lawyer.target || !AmongUsClient.Instance.AmHost || Lawyer.lawyer == null) return;
+            if (oldShifter != Lawyer.Instance.Target || !AmongUsClient.Instance.AmHost || Lawyer.Instance.Player == null) return;
             Lawyer.LawyerPromotesToPursuer();
             return;
         }
             
-        shiftRole(oldShifter, player);
+        ShiftRole(oldShifter, player);
 
         // Set cooldowns to max for both players
         if (CachedPlayer.LocalPlayer.PlayerControl == oldShifter || CachedPlayer.LocalPlayer.PlayerControl == player)

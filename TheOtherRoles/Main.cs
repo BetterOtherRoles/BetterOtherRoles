@@ -19,6 +19,7 @@ using Il2CppSystem.Security.Cryptography;
 using Il2CppSystem.Text;
 using Reactor.Networking.Attributes;
 using AmongUs.Data;
+using TheOtherRoles.EnoFw;
 using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Patches;
 
@@ -31,7 +32,7 @@ namespace TheOtherRoles
     public class TheOtherRolesPlugin : BasePlugin
     {
         public const string Id = "me.eisbison.theotherroles";
-        public const string VersionString = "1.1.11";
+        public const string VersionString = "1.2.0";
 
         public static Version Version = Version.Parse(VersionString);
         internal static BepInEx.Logging.ManualLogSource Logger;
@@ -114,8 +115,8 @@ namespace TheOtherRoles
             DevGuid = Config.Bind("Custom", "Dev Guid", "");
             FeaturesCodes = Config.Bind("Custom", "Feature codes", "");
             Harmony.PatchAll();
-
-            CustomOptionHolder.Load();
+            
+            Customs.Load();
             CustomColors.Load();
 
             if (BepInExUpdater.UpdateRequired)
