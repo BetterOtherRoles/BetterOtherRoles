@@ -454,6 +454,15 @@ namespace TheOtherRoles.Patches {
         [HarmonyPatch(typeof(VitalsMinigame), nameof(VitalsMinigame.Begin))]
         class VitalsMinigameStartPatch {
             static void Postfix(VitalsMinigame __instance) {
+                if (__instance.gameObject.name == "hudroleinfo")
+                {
+                    foreach (var vitalsPanel in __instance.vitals)
+                    {
+                        vitalsPanel.gameObject.SetActive(false);
+                    }
+                    return;
+                }
+                
                 if (Hacker.Instance.IsLocalPlayer) {
                     hackerTexts = new List<TMPro.TextMeshPro>();
                     foreach (VitalsPanel panel in __instance.vitals) {
