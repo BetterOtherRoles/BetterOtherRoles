@@ -114,7 +114,7 @@ public static class CustomOptions
 
     static CustomOptions()
     {
-        MainSettings = new Tab(nameof(MainSettings), "The Other Roles Settings",
+        MainSettings = new Tab(nameof(MainSettings), "Better Other Roles Settings",
             "TheOtherRoles.Resources.TabIcon.png");
         ImpostorsSettings = new Tab(nameof(ImpostorsSettings), "Impostor Roles Settings",
             "TheOtherRoles.Resources.TabIconImpostor.png");

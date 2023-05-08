@@ -322,7 +322,8 @@ public class CustomOption
             return Add(customOption);
         }
 
-        public static List<CustomOption> Options => Tabs.SelectMany(tab => tab.Settings).Where(o => o.AllowedGameModes.Contains(CurrentGameMode)).ToList();
+        public static List<CustomOption> Options => Tabs.SelectMany(tab => tab.Settings)
+            .Where(o => o.AllowedGameModes.Contains(CurrentGameMode)).ToList();
 
         public static void ShareCustomOptions()
         {
@@ -334,15 +335,14 @@ public class CustomOption
         public static void SwitchPreset(int newPreset)
         {
             SaveVanillaOptions();
-            Preset = newPreset + 1;
+            Preset = newPreset;
             VanillaSettings = TheOtherRolesPlugin.Instance.Config.Bind($"Preset{Preset}", "GameOptions", string.Empty);
             LoadVanillaOptions();
-            foreach (var setting in Tabs.SelectMany(settingsTab => settingsTab.Settings))
+            foreach (var setting in Options)
             {
                 if (setting.Key == nameof(CustomOptions.Preset)) continue;
                 setting.Entry =
-                    TheOtherRolesPlugin.Instance.Config.Bind($"Preset{Preset}", $"{setting.Key}",
-                        setting.SelectionIndex);
+                    TheOtherRolesPlugin.Instance.Config.Bind($"Preset{Preset}", $"{setting.Key}", setting.SelectionIndex);
                 setting.SelectionIndex = Mathf.Clamp(setting.Entry.Value, 0, setting.StringSelections.Count - 1);
                 if (setting.OptionBehaviour == null ||
                     setting.OptionBehaviour is not StringOption stringOption) continue;
