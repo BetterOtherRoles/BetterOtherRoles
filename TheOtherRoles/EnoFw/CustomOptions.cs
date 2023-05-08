@@ -319,7 +319,9 @@ public static class CustomOptions
             100f,
             0f,
             1f,
-            DynamicMap);
+            DynamicMap,
+            string.Empty,
+            "%");
         DynamicMapEnableMira = MainSettings.CreateFloatList(
             nameof(DynamicMapEnableMira),
             "Mira HQ",
@@ -327,7 +329,9 @@ public static class CustomOptions
             100f,
             0f,
             1f,
-            DynamicMap);
+            DynamicMap,
+            string.Empty,
+            "%");
         DynamicMapEnablePolus = MainSettings.CreateFloatList(
             nameof(DynamicMapEnablePolus),
             "Polus",
@@ -335,7 +339,9 @@ public static class CustomOptions
             100f,
             0f,
             1f,
-            DynamicMap);
+            DynamicMap,
+            string.Empty,
+            "%");
         DynamicMapEnableAirShip = MainSettings.CreateFloatList(
             nameof(DynamicMapEnableAirShip),
             "Airship",
@@ -343,15 +349,19 @@ public static class CustomOptions
             100f,
             0f,
             1f,
-            DynamicMap);
+            DynamicMap,
+            string.Empty,
+            "%");
         DynamicMapEnableSubmerged = MainSettings.CreateFloatList(
             nameof(DynamicMapEnableSubmerged),
-            "Airship",
+            "Submerged",
             0f,
             100f,
             0f,
             1f,
-            DynamicMap);
+            DynamicMap,
+            string.Empty,
+            "%");
         DynamicMapSeparateSettings = MainSettings.CreateBool(
             nameof(DynamicMapSeparateSettings),
             "Use random map setting presets",

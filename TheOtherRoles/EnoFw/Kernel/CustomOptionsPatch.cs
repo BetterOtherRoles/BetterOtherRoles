@@ -201,7 +201,7 @@ public static class CustomOptionsPatch
 
         foreach (var cst in CustomOption.Tab.Tabs)
         {
-            foreach (var setting in cst.Settings)
+            foreach (var setting in cst.Settings.Where(o => o.AllowedGameModes.Contains(CustomOption.CurrentGameMode)))
             {
                 if (setting.OptionBehaviour == null)
                 {

@@ -17,7 +17,7 @@ public class CustomOption
         StringList,
         FloatList,
     }
-    
+
     public enum Maps
     {
         Skeld,
@@ -26,12 +26,29 @@ public class CustomOption
         Airship,
         Submerged
     }
-    
+
     public enum GameMode
     {
         Classic,
         HideNSeek,
         Guesser
+    }
+
+    public static GameMode CurrentGameMode
+    {
+        get
+        {
+            switch (TORMapOptions.gameMode)
+            {
+                case CustomGamemodes.Guesser:
+                    return GameMode.Guesser;
+                case CustomGamemodes.HideNSeek:
+                    return GameMode.HideNSeek;
+                case CustomGamemodes.Classic:
+                default:
+                    return GameMode.Classic;
+            }
+        }
     }
 
     private static readonly Regex StringToFloatRegex = new("[^0-9 -]");
@@ -56,7 +73,8 @@ public class CustomOption
         {
             System.Console.WriteLine($"[STRING]{option.Key} => {option.SelectionIndex} ### {e}");
             return "";
-;        }
+            ;
+        }
     }
 
     public static implicit operator float(CustomOption option)
@@ -97,7 +115,6 @@ public class CustomOption
             System.Console.WriteLine($"[INT]{option.Key} => {option.SelectionIndex} ### {e}");
             return 0;
         }
-        
     }
 
     public static implicit operator bool(CustomOption option)
@@ -130,7 +147,10 @@ public class CustomOption
     public readonly CustomOption Parent;
     public readonly bool IsHeader;
     public readonly OptionType Type;
-    public readonly List<Maps> AllowedMaps = new() { Maps.Skeld, Maps.MiraHq, Maps.Polus, Maps.Airship, Maps.Submerged };
+
+    public readonly List<Maps> AllowedMaps = new()
+        { Maps.Skeld, Maps.MiraHq, Maps.Polus, Maps.Airship, Maps.Submerged };
+
     public readonly List<GameMode> AllowedGameModes = new() { GameMode.Classic, GameMode.Guesser };
 
     public ConfigEntry<int> Entry;
@@ -163,7 +183,7 @@ public class CustomOption
     {
         AllowedMaps.Clear();
         AllowedMaps.AddRange(maps);
-        
+
         return this;
     }
 
@@ -302,7 +322,7 @@ public class CustomOption
             return Add(customOption);
         }
 
-        public static List<CustomOption> Options => Tabs.SelectMany(tab => tab.Settings).ToList();
+        public static List<CustomOption> Options => Tabs.SelectMany(tab => tab.Settings).Where(o => o.AllowedGameModes.Contains(CurrentGameMode)).ToList();
 
         public static void ShareCustomOptions()
         {
@@ -367,7 +387,7 @@ public class CustomOption
             Key = key;
             Title = title;
             IconPath = iconPath;
-            
+
             Tabs.Add(this);
         }
 
