@@ -9,6 +9,7 @@ namespace TheOtherRoles.EnoFw.Kernel;
 public static class CustomOptionsPatch
 {
     private static float timer = 1f;
+
     private static bool SetNames(Dictionary<string, string> gameObjectNameDisplayNameMap)
     {
         foreach (var entry in gameObjectNameDisplayNameMap.Where(entry => GameObject.Find(entry.Key) != null))
@@ -21,7 +22,7 @@ public static class CustomOptionsPatch
 
         return false;
     }
-    
+
     private static GameOptionsMenu GetMenu(GameObject setting, string settingName)
     {
         var menu = setting.transform.FindChild("GameGroup").FindChild("SliderInner").GetComponent<GameOptionsMenu>();
@@ -29,7 +30,7 @@ public static class CustomOptionsPatch
 
         return menu;
     }
-    
+
     private static SpriteRenderer GetTabHighlight(GameObject tab, string tabName, string tabSpritePath)
     {
         var tabHighlight = tab.transform.FindChild("Hat Button").FindChild("Tab Background")
@@ -40,7 +41,7 @@ public static class CustomOptionsPatch
 
         return tabHighlight;
     }
-    
+
     private static void SetListener(Dictionary<GameObject, SpriteRenderer> settingsHighlightMap, int index)
     {
         foreach (var entry in settingsHighlightMap)
@@ -52,7 +53,7 @@ public static class CustomOptionsPatch
         settingsHighlightMap.ElementAt(index).Key.SetActive(true);
         settingsHighlightMap.ElementAt(index).Value.enabled = true;
     }
-    
+
     private static void DestroyOptions(List<List<OptionBehaviour>> optionBehavioursList)
     {
         foreach (var option in optionBehavioursList.SelectMany(optionBehaviours => optionBehaviours))
@@ -60,7 +61,7 @@ public static class CustomOptionsPatch
             UnityEngine.Object.Destroy(option.gameObject);
         }
     }
-    
+
     private static void SetOptions(
         IReadOnlyList<GameOptionsMenu> menus,
         IReadOnlyList<List<OptionBehaviour>> options,
@@ -78,7 +79,7 @@ public static class CustomOptionsPatch
             settings[i].gameObject.SetActive(false);
         }
     }
-    
+
     private static void CreateCustomTabs(GameOptionsMenu gameOptionsMenu)
     {
         var tabKeys = CustomOption.Tab.Tabs.ToDictionary(
@@ -88,7 +89,8 @@ public static class CustomOptionsPatch
         if (isReturn) return;
 
         var template = UnityEngine.Object.FindObjectsOfType<StringOption>().FirstOrDefault();
-        if (template == null) return;
+        var boolTemplate = UnityEngine.Object.FindObjectsOfType<ToggleOption>().FirstOrDefault();
+        if (template == null || boolTemplate == null) return;
 
         var gameSettings = GameObject.Find("Game Settings");
         var gameSettingMenu = UnityEngine.Object.FindObjectsOfType<GameSettingMenu>().FirstOrDefault();
@@ -176,10 +178,7 @@ public static class CustomOptionsPatch
             if (button == null) continue;
             var copiedIndex = i;
             button.OnClick = new UnityEngine.UI.Button.ButtonClickedEvent();
-            button.OnClick.AddListener((Action) (() =>
-            {
-                SetListener(settingsHighlightMap, copiedIndex);
-            }));
+            button.OnClick.AddListener((Action)(() => { SetListener(settingsHighlightMap, copiedIndex); }));
         }
 
         DestroyOptions(
@@ -205,14 +204,27 @@ public static class CustomOptionsPatch
             {
                 if (setting.OptionBehaviour == null)
                 {
-                    var stringOption = UnityEngine.Object.Instantiate(template, menus[cst.Key]);
-                    optionBehaviours[cst.Key].Add(stringOption);
-                    stringOption.OnValueChanged = new Action<OptionBehaviour>((_) => { });
-                    stringOption.TitleText.text = setting.Name;
-                    stringOption.Value = stringOption.oldValue = setting.SelectionIndex;
-                    stringOption.ValueText.text = setting.StringSelections[setting.SelectionIndex];
+                    if (setting.Type == CustomOption.OptionType.Boolean)
+                    {
+                        var boolOption = UnityEngine.Object.Instantiate(boolTemplate, menus[cst.Key]);
+                        optionBehaviours[cst.Key].Add(boolOption);
+                        boolOption.OnValueChanged = new Action<OptionBehaviour>((_) => { });
+                        boolOption.TitleText.text = setting.Name;
+                        boolOption.CheckMark.enabled = boolOption.oldValue = setting;
+                        
+                        setting.OptionBehaviour = boolOption;
+                    }
+                    else
+                    {
+                        var stringOption = UnityEngine.Object.Instantiate(template, menus[cst.Key]);
+                        optionBehaviours[cst.Key].Add(stringOption);
+                        stringOption.OnValueChanged = new Action<OptionBehaviour>((_) => { });
+                        stringOption.TitleText.text = setting.Name;
+                        stringOption.Value = stringOption.oldValue = setting.SelectionIndex;
+                        stringOption.ValueText.text = setting.StringSelections[setting.SelectionIndex];
 
-                    setting.OptionBehaviour = stringOption;
+                        setting.OptionBehaviour = stringOption;
+                    }
                 }
 
                 setting.OptionBehaviour.gameObject.SetActive(true);
@@ -220,9 +232,8 @@ public static class CustomOptionsPatch
         }
 
         SetOptions(customMenus.Values.ToList(), optionBehaviours.Values.ToList(), customSettings.Values.ToList());
-
     }
-    
+
     private static bool CustomOptionEnable(StringOption stringOption)
     {
         var option = CustomOption.Tab.Options.FirstOrDefault(option => option.OptionBehaviour == stringOption);
@@ -234,7 +245,18 @@ public static class CustomOptionsPatch
 
         return false;
     }
-    
+
+    private static bool CustomOptionEnable(ToggleOption boolOption)
+    {
+        var option = CustomOption.Tab.Options.FirstOrDefault(option => option.OptionBehaviour == boolOption);
+        if (option == null) return true;
+        boolOption.OnValueChanged = new Action<OptionBehaviour>(_ => { });
+        boolOption.TitleText.text = option.Name;
+        boolOption.CheckMark.enabled = boolOption.oldValue = option;
+
+        return false;
+    }
+
     private static bool CustomOptionIncrease(StringOption stringOption)
     {
         var option = CustomOption.Tab.Options.FirstOrDefault(option => option.OptionBehaviour == stringOption);
@@ -242,7 +264,15 @@ public static class CustomOptionsPatch
         option.UpdateSelection(option.SelectionIndex + 1);
         return false;
     }
-    
+
+    private static bool CustomOptionToggle(ToggleOption boolOption)
+    {
+        var option = CustomOption.Tab.Options.FirstOrDefault(option => option.OptionBehaviour == boolOption);
+        if (option == null) return true;
+        option.UpdateSelection(option.SelectionIndex + 1);
+        return false;
+    }
+
     private static bool CustomOptionDecrease(StringOption stringOption)
     {
         var option = CustomOption.Tab.Options.FirstOrDefault(option => option.OptionBehaviour == stringOption);
@@ -255,7 +285,7 @@ public static class CustomOptionsPatch
     {
         CustomOption.Tab.ShareCustomOptions();
     }
-    
+
     private static void CustomOptionMenuUpdate(GameOptionsMenu optionsMenu)
     {
         var gameSettingMenu = UnityEngine.Object.FindObjectsOfType<GameSettingMenu>().FirstOrDefault();
@@ -289,7 +319,7 @@ public static class CustomOptionsPatch
             }
         }
     }
-    
+
     [HarmonyPatch(typeof(GameOptionsMenu), nameof(GameOptionsMenu.Start))]
     public static class GameOptionsMenuStartPatch
     {
@@ -299,6 +329,15 @@ public static class CustomOptionsPatch
         }
     }
     
+    [HarmonyPatch(typeof(ToggleOption), nameof(ToggleOption.OnEnable))]
+    public static class ToggleOptionOnEnablePatch
+    {
+        public static bool Prefix(ToggleOption __instance)
+        {
+            return CustomOptionEnable(__instance);
+        }
+    }
+
     [HarmonyPatch(typeof(StringOption), nameof(StringOption.OnEnable))]
     public static class StringOptionOnEnablePatch
     {
@@ -308,6 +347,15 @@ public static class CustomOptionsPatch
         }
     }
     
+    [HarmonyPatch(typeof(ToggleOption), nameof(ToggleOption.Toggle))]
+    public static class ToggleOptionTogglePatch
+    {
+        public static bool Prefix(ToggleOption __instance)
+        {
+            return CustomOptionToggle(__instance);
+        }
+    }
+
     [HarmonyPatch(typeof(StringOption), nameof(StringOption.Increase))]
     public static class StringOptionIncreasePatch
     {
@@ -316,7 +364,7 @@ public static class CustomOptionsPatch
             return CustomOptionIncrease(__instance);
         }
     }
-    
+
     [HarmonyPatch(typeof(StringOption), nameof(StringOption.Decrease))]
     public static class StringOptionDecreasePatch
     {
@@ -325,7 +373,7 @@ public static class CustomOptionsPatch
             return CustomOptionDecrease(__instance);
         }
     }
-    
+
     [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.RpcSyncSettings))]
     public static class RpcSyncSettingsPatch
     {
@@ -334,7 +382,7 @@ public static class CustomOptionsPatch
             ShareCustomOptions();
         }
     }
-    
+
     [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.CoSpawnPlayer))]
     public static class AmongUsClientOnPlayerJoinedPatch
     {
@@ -343,7 +391,7 @@ public static class CustomOptionsPatch
             ShareCustomOptions();
         }
     }
-    
+
     [HarmonyPatch(typeof(GameOptionsMenu), nameof(GameOptionsMenu.Update))]
     public class GameOptionsMenuUpdatePatch
     {

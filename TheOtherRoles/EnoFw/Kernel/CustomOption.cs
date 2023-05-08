@@ -201,25 +201,36 @@ public class CustomOption
             (selection + StringSelections.Count) % StringSelections.Count,
             0,
             StringSelections.Count - 1);
-        if (StringSelections.Count > 0 && OptionBehaviour != null && OptionBehaviour is StringOption stringOption)
+        if (StringSelections.Count > 0 && OptionBehaviour != null)
         {
-            stringOption.oldValue = stringOption.Value = SelectionIndex;
-            stringOption.ValueText.text = StringSelections[SelectionIndex];
-
-            if (!AmongUsClient.Instance.AmHost || !CachedPlayer.LocalPlayer.PlayerControl) return;
-            if (Key == nameof(CustomOptions.Preset) && SelectionIndex != Tab.Preset)
+            if (Type == OptionType.Boolean && OptionBehaviour is ToggleOption boolOption)
             {
-                Tab.SwitchPreset(SelectionIndex);
-                ShareOptionChange();
+                boolOption.oldValue = boolOption.CheckMark.enabled = this;
+                if (Entry != null)
+                {
+                    Entry.Value = SelectionIndex;
+                    ShareOptionChange();
+                }
             }
-            else if (Entry != null)
+            else if (OptionBehaviour is StringOption stringOption)
             {
-                Entry.Value = SelectionIndex;
-                ShareOptionChange();
+                stringOption.oldValue = stringOption.Value = SelectionIndex;
+                stringOption.ValueText.text = StringSelections[SelectionIndex];
+
+                if (!AmongUsClient.Instance.AmHost || !CachedPlayer.LocalPlayer.PlayerControl) return;
+                if (Key == nameof(CustomOptions.Preset) && SelectionIndex != Tab.Preset)
+                {
+                    Tab.SwitchPreset(SelectionIndex);
+                    ShareOptionChange();
+                }
+                else if (Entry != null)
+                {
+                    Entry.Value = SelectionIndex;
+                    ShareOptionChange();
+                }
             }
         }
-        else if (Key == nameof(CustomOptions.Preset) && AmongUsClient.Instance.AmHost &&
-                 PlayerControl.LocalPlayer)
+        else if (Key == nameof(CustomOptions.Preset) && AmongUsClient.Instance.AmHost && PlayerControl.LocalPlayer != null)
         {
             // Share the preset switch for random maps, even if the menu isnt open!
             Tab.SwitchPreset(SelectionIndex);
@@ -342,12 +353,18 @@ public class CustomOption
             {
                 if (setting.Key == nameof(CustomOptions.Preset)) continue;
                 setting.Entry =
-                    TheOtherRolesPlugin.Instance.Config.Bind($"Preset{Preset}", $"{setting.Key}", setting.SelectionIndex);
+                    TheOtherRolesPlugin.Instance.Config.Bind($"Preset{Preset}", $"{setting.Key}",
+                        setting.SelectionIndex);
                 setting.SelectionIndex = Mathf.Clamp(setting.Entry.Value, 0, setting.StringSelections.Count - 1);
-                if (setting.OptionBehaviour == null ||
-                    setting.OptionBehaviour is not StringOption stringOption) continue;
-                stringOption.oldValue = stringOption.Value = setting.SelectionIndex;
-                stringOption.ValueText.text = setting.StringSelections[setting.SelectionIndex];
+                if (setting.OptionBehaviour == null) continue;
+                if (setting.OptionBehaviour is StringOption stringOption)
+                {
+                    stringOption.oldValue = stringOption.Value = setting.SelectionIndex;
+                    stringOption.ValueText.text = setting.StringSelections[setting.SelectionIndex];
+                } else if (setting.OptionBehaviour is ToggleOption boolOption)
+                {
+                    boolOption.oldValue = boolOption.CheckMark.enabled = setting;
+                }
             }
         }
 

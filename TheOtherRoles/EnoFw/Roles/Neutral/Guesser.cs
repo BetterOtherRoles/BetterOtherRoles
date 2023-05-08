@@ -45,7 +45,7 @@ public class Guesser : AbstractRole
             100f,
             50f,
             10f,
-            null,
+            SpawnRate,
             string.Empty,
             "%");
         NumberOfShots = Tab.CreateFloatList(
@@ -78,7 +78,7 @@ public class Guesser : AbstractRole
             100f,
             50f,
             10f,
-            null,
+            IsImpostorRate,
             string.Empty,
             "%");
         CantGuessSnitchIfTasksDone = Tab.CreateBool(
