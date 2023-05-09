@@ -28,11 +28,10 @@ namespace TheOtherRoles.Objects {
             return trapSprite;
         }
 
-        public Trap(Vector2 p) {
+        public Trap(Vector3 p) {
             trap = new GameObject("Trap") { layer = 11 };
             trap.AddSubmergedComponent(SubmergedCompatibility.Classes.ElevatorMover);
-            Vector3 position = new Vector3(p.x, p.y, p.y / 1000 + 0.001f); // just behind player
-            position.z = CachedPlayer.LocalPlayer.PlayerControl.transform.position.z - 0.01f;
+            Vector3 position = new Vector3(p.x, p.y, p.z + 0.005f); // just behind player
             trap.transform.position = position;
             neededCount = Trapper.Instance.TrapNeededTriggerToReveal;
 

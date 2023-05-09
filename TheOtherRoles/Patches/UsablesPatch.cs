@@ -364,7 +364,7 @@ namespace TheOtherRoles.Patches {
             }
             
             return true;
-        }
+        } 
     }
 
     [HarmonyPatch(typeof(EmergencyMinigame), nameof(EmergencyMinigame.Update))]

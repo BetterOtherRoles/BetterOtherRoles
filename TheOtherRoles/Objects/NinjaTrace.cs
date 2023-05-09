@@ -18,11 +18,11 @@ namespace TheOtherRoles.Objects {
             return TraceSprite;
         }
 
-        public NinjaTrace(Vector2 p, float duration=1f) {
+        public NinjaTrace(Vector3 p, float duration=1f) {
             trace = new GameObject("NinjaTrace");
             trace.AddSubmergedComponent(SubmergedCompatibility.Classes.ElevatorMover);
             //Vector3 position = new Vector3(p.x, p.y, CachedPlayer.LocalPlayer.transform.localPosition.z + 0.001f); // just behind player
-            Vector3 position = new Vector3(p.x, p.y, p.y / 1000f + 0.01f);
+            Vector3 position = new Vector3(p.x, p.y, p.z + 0.005f);
             trace.transform.position = position;
             trace.transform.localPosition = position;
             

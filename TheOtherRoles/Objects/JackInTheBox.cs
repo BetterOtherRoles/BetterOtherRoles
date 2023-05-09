@@ -38,13 +38,13 @@ namespace TheOtherRoles.Objects {
         public Vent vent;
         private SpriteRenderer boxRenderer;
 
-        public JackInTheBox(Vector2 p) {
+        public JackInTheBox(Vector3 p) {
             gameObject = new GameObject("JackInTheBox"){layer = 11};
             gameObject.AddSubmergedComponent(SubmergedCompatibility.Classes.ElevatorMover);
-            Vector3 position = new Vector3(p.x, p.y,  p.y/1000f + 0.01f);
+            Vector3 position = new Vector3(p.x, p.y,  p.z + 0.005f);
             position += (Vector3)CachedPlayer.LocalPlayer.PlayerControl.Collider.offset; // Add collider offset that DoMove moves the player up at a valid position
             // Create the marker
-            position.z = CachedPlayer.LocalPlayer.PlayerControl.transform.position.z - 0.01f;
+
             gameObject.transform.position = position;
             boxRenderer = gameObject.AddComponent<SpriteRenderer>();
             boxRenderer.sprite = getBoxAnimationSprite(0);

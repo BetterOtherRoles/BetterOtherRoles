@@ -85,19 +85,17 @@ public class Portalmaker : AbstractRole
         Portal.startTeleport(playerId, exit);
     }
 
-    public static void PlacePortal(float x, float y)
+    public static void PlacePortal(float x, float y, float z)
     {
-        var data = new Tuple<float, float>(x, y);
+        var data = new Tuple<float, float, float>(x, y, z);
         Rpc_PlacePortal(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
 
     [MethodRpc((uint)Rpc.Role.PlacePortal)]
     private static void Rpc_PlacePortal(PlayerControl sender, string rawData)
     {
-        var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawData);
-        var position = Vector3.zero;
-        position.x = x;
-        position.y = y;
+        var (x, y, z) = Rpc.Deserialize<Tuple<float, float, float>>(rawData);
+        var position = new Vector3(x, y, z);
         var _ = new Portal(position);
     }
 }

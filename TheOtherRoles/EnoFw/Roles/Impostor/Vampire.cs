@@ -90,17 +90,17 @@ public class Vampire : AbstractRole
         Instance.Bitten = player;
     }
 
-    public static void PlaceGarlic(float x, float y)
+    public static void PlaceGarlic(float x, float y, float z)
     {
-        var data = new Tuple<float, float>(x, y);
+        var data = new Tuple<float, float, float>(x, y, z);
         Rpc_PlaceGarlic(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
 
     [MethodRpc((uint)Rpc.Role.PlaceGarlic)]
     private static void Rpc_PlaceGarlic(PlayerControl sender, string rawData)
     {
-        var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawData);
-        var position = Vector3.zero;
+        var (x, y, z) = Rpc.Deserialize<Tuple<float, float, float>>(rawData);
+        var position = new Vector3(x, y, z);
         position.x = x;
         position.y = y;
         var _ = new Garlic(position);

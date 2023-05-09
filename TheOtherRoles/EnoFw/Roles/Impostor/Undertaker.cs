@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Reactor.Networking.Attributes;
 using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.Players;
 using UnityEngine;
 using Option = TheOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -15,6 +16,7 @@ public class Undertaker : AbstractRole
     // Fields
     public DeadBody CurrentDeadTarget;
     public DeadBody DraggedBody;
+    public bool CanDropBody;
     public DateTime LastDraggedAt;
 
     public float RealDragDistance
@@ -97,12 +99,13 @@ public class Undertaker : AbstractRole
         base.ClearAndReload();
         CurrentDeadTarget = null;
         DraggedBody = null;
+        CanDropBody = false;
         LastDraggedAt = DateTime.UtcNow;
     }
 
-    public static void DropBody(float x, float y)
+    public static void DropBody(float x, float y, float z)
     {
-        var data = new Tuple<float, float>(x, y);
+        var data = new Tuple<float, float, float>(x, y, z);
         Rpc_DropBody(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
 
@@ -110,11 +113,13 @@ public class Undertaker : AbstractRole
     private static void Rpc_DropBody(PlayerControl sender, string rawData)
     {
         if (Instance.Player == null || Instance.DraggedBody == null) return;
-        var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawData);
+        
+        var (x, y, z) = Rpc.Deserialize<Tuple<float, float, float>>(rawData);
         var transform = Instance.DraggedBody.transform;
-        var position = new Vector3(x, y, transform.position.z);
+        var position = new Vector3(x, y, z);
         transform.position = position;
         Instance.DraggedBody = null;
+        Instance.CurrentDeadTarget = null;
         Instance.LastDraggedAt = DateTime.UtcNow;
     }
 

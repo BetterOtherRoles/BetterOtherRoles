@@ -128,20 +128,18 @@ public class Bomber : AbstractRole
         HudManagerStartPatch.bomberButton.actionButton.cooldownTimerText.color = Palette.EnabledColor;
     }
 
-    public static void PlaceBomb(float x, float y)
+    public static void PlaceBomb(float x, float y, float z)
     {
-        var data = new Tuple<float, float>(x, y);
+        var data = new Tuple<float, float, float>(x, y, z);
         Rpc_PlaceBomb(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
 
     [MethodRpc((uint)Rpc.Role.PlaceBomb)]
     private static void Rpc_PlaceBomb(PlayerControl sender, string rawData)
     {
-        var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawData);
+        var (x, y, z) = Rpc.Deserialize<Tuple<float, float, float>>(rawData);
         if (Instance.Player == null) return;
-        var position = Vector3.zero;
-        position.x = x;
-        position.y = y;
+        var position = new Vector3(x, y, z);
         var _ = new Bomb(position);
     }
 }

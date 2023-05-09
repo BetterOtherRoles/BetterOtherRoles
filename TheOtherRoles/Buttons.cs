@@ -1073,7 +1073,7 @@ namespace TheOtherRoles
                     else if (Undertaker.Instance.DraggedBody != null)
                     {
                         var position = Undertaker.Instance.DraggedBody.transform.position;
-                        Undertaker.DropBody(position.x, position.y);
+                        Undertaker.DropBody(position.x, position.y, position.z);
                     }
                 }, // Action OnClick
                 () =>
@@ -1093,8 +1093,8 @@ namespace TheOtherRoles
                         undertakerDragButton.Sprite = Undertaker.DragButtonSprite;
                     }
 
-                    return (Undertaker.Instance.CurrentDeadTarget != null
-                            || Undertaker.Instance.DraggedBody != null)
+                    return ((Undertaker.Instance.CurrentDeadTarget != null && Undertaker.Instance.DraggedBody == null) 
+                            || (Undertaker.Instance.DraggedBody != null && Undertaker.Instance.CanDropBody)) 
                            && CachedPlayer.LocalPlayer.PlayerControl.CanMove;
                 }, // Bool CouldUse
                 () => { }, // Action OnMeetingEnds
@@ -1209,7 +1209,7 @@ namespace TheOtherRoles
                 {
                     Vampire.Instance.LocalPlacedGarlic = true;
                     var pos = CachedPlayer.LocalPlayer.transform.position;
-                    Vampire.PlaceGarlic(pos.x, pos.y);
+                    Vampire.PlaceGarlic(pos.x, pos.y, pos.z);
                     SoundEffectsManager.play("garlic");
                 },
                 () =>
@@ -1231,7 +1231,7 @@ namespace TheOtherRoles
                 {
                     portalmakerPlacePortalButton.Timer = portalmakerPlacePortalButton.MaxTimer;
                     var pos = CachedPlayer.LocalPlayer.transform.position;
-                    Portalmaker.PlacePortal(pos.x, pos.y);
+                    Portalmaker.PlacePortal(pos.x, pos.y, pos.z);
                     SoundEffectsManager.play("tricksterPlaceBox");
                 },
                 () =>
@@ -1695,7 +1695,7 @@ namespace TheOtherRoles
                     {
                         // Place camera if there's no vent and it's not MiraHQ or Submerged
                         var pos = CachedPlayer.LocalPlayer.transform.position;
-                        SecurityGuard.PlaceCamera(pos.x, pos.y);
+                        SecurityGuard.PlaceCamera(pos.x, pos.y, pos.z);
                     }
 
                     SoundEffectsManager.play("securityGuardPlaceCam"); // Same sound used for both types (cam or vent)!
@@ -2186,7 +2186,7 @@ namespace TheOtherRoles
                         {
                             // Create first trace before killing
                             var pos = CachedPlayer.LocalPlayer.transform.position;
-                            Ninja.PlaceNinjaTrace(pos.x, pos.y);
+                            Ninja.PlaceNinjaTrace(pos.x, pos.y, pos.z);
                             Ninja.SetInvisible(Ninja.Instance.Player.PlayerId, false);
 
                             // Perform Kill
@@ -2199,7 +2199,7 @@ namespace TheOtherRoles
                                 Ninja.Instance.MarkedTarget.PlayerId, true);
                             // Create Second trace after killing
                             pos = Ninja.Instance.MarkedTarget.transform.position;
-                            Ninja.PlaceNinjaTrace(pos.x, pos.y);
+                            Ninja.PlaceNinjaTrace(pos.x, pos.y, pos.z);
                         }
 
                         if (attempt == MurderAttemptResult.BlankKill || attempt == MurderAttemptResult.PerformKill)
@@ -2302,7 +2302,7 @@ namespace TheOtherRoles
                 () =>
                 {
                     var pos = CachedPlayer.LocalPlayer.transform.position;
-                    Trapper.SetTrap(pos.x, pos.y);
+                    Trapper.SetTrap(pos.x, pos.y, pos.z);
 
                     SoundEffectsManager.play("trapperTrap");
                     trapperButton.Timer = trapperButton.MaxTimer;
@@ -2332,7 +2332,7 @@ namespace TheOtherRoles
                     if (Helpers.checkMurderAttempt(Bomber.Instance.Player, Bomber.Instance.Player) != MurderAttemptResult.BlankKill)
                     {
                         var pos = CachedPlayer.LocalPlayer.transform.position;
-                        Bomber.PlaceBomb(pos.x, pos.y);
+                        Bomber.PlaceBomb(pos.x, pos.y, pos.y);
                         SoundEffectsManager.play("trapperTrap");
                     }
 

@@ -128,19 +128,17 @@ public class Ninja : AbstractRole
         Instance.IsInvisible = true;
     }
 
-    public static void PlaceNinjaTrace(float x, float y)
+    public static void PlaceNinjaTrace(float x, float y, float z)
     {
-        var data = new Tuple<float, float>(x, y);
+        var data = new Tuple<float, float, float>(x, y, z);
         Rpc_PlaceNinjaTrace(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
 
     [MethodRpc((uint)Rpc.Role.PlaceNinjaTrace)]
     private static void Rpc_PlaceNinjaTrace(PlayerControl sender, string rawData)
     {
-        var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawData);
-        var position = Vector3.zero;
-        position.x = x;
-        position.y = y;
+        var (x, y, z) = Rpc.Deserialize<Tuple<float, float, float>>(rawData);
+        var position = new Vector3(x, y, z);
         var _ = new NinjaTrace(position, Instance.TraceDuration);
         if (CachedPlayer.LocalPlayer.PlayerControl == Instance.Player) return;
         Instance.MarkedTarget = null;
