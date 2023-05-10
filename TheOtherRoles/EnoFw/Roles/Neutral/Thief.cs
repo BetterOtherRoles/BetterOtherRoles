@@ -135,34 +135,19 @@ public class Thief : AbstractRole
             Lawyer.Instance.FormerLawyer = target;
         }
 
-        if (Instance.BecomePartner)
+        if (Instance.StealRole)
         {
             Fallen.Instance.ClearAndReload();
             Fallen.Instance.Player = target; // Change target to Fallen ???
             RoleManager.Instance.SetRole(target, RoleTypes.Crewmate);
-
-            foreach (var task in target.myTasks.GetFastEnumerator())
-            {
-                // if (task.TaskType == TaskTypes.FixLights) continue;
-                // if (task.TaskType == TaskTypes.RestoreOxy) continue;
-                // if (task.TaskType == TaskTypes.ResetReactor) continue;
-                // if (task.TaskType == TaskTypes.ResetSeismic) continue;
-                // if (task.TaskType == TaskTypes.FixComms) continue;
-                // if (task.TaskType == TaskTypes.StopCharles) continue;
-                // if (SubmergedCompatibility.IsSubmerged && task.TaskType == SubmergedCompatibility.RetrieveOxygenMask) continue;
-
-                // task.Complete();
-                // task.IsComplete = true;
-
-                task.OnRemove();
-                target.myTasks.Remove(task);
-                UnityEngine.Object.Destroy(task.gameObject);
-            }
+            Fallen.Instance.Player.clearAllTasks();
         }
 
         if (Instance.Player == PlayerControl.LocalPlayer) CustomButton.ResetAllCooldowns();
         Instance.ClearAndReload();
         Instance.FormerThief = Instance.Player; // After clearAndReload, else it would get reset...
         Instance.PlayerStolen = target;
+        
+        thiefPlayer.MurderPlayer(target);
     }
 }
