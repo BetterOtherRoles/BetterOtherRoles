@@ -30,6 +30,11 @@ public abstract class AbstractRole
 
     public bool HasPlayer => Player != null;
     public bool IsLocalPlayer => HasPlayer && Player.PlayerId == CachedPlayer.LocalPlayer.PlayerId;
+
+    public bool IsAliveLocalPlayer => IsLocalPlayer && !Player.Data.IsDead;
+
+    public bool ShouldShowRoleInfos => HasPlayer && (IsAliveLocalPlayer || Helpers.shouldShowGhostInfo());
+    
     public bool IsDeadOrDisconnected => !HasPlayer || Player.Data.IsDead || Player.Data.Disconnected;
 
     protected CustomOption.Tab Tab => Team switch

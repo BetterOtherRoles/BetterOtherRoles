@@ -1,17 +1,13 @@
 using HarmonyLib;
 using System;
-using System.Collections;
-using Hazel;
 using UnityEngine;
 using PowerTools;
 using System.Linq;
-using static TheOtherRoles.TheOtherRoles;
 using static TheOtherRoles.GameHistory;
 using static TheOtherRoles.TORMapOptions;
 using System.Collections.Generic;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
-using TheOtherRoles.Objects;
 using TheOtherRoles.CustomGameModes;
 using Reactor.Utilities.Extensions;
 using AmongUs.GameOptions;

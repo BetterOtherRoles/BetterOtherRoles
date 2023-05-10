@@ -10,6 +10,7 @@ using TheOtherRoles.Utilities;
 using UnityEngine;
 using TheOtherRoles.CustomGameModes;
 using AmongUs.GameOptions;
+using InnerNet;
 using TheOtherRoles.EnoFw;
 using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.EnoFw.Modules;
@@ -1333,14 +1334,12 @@ namespace TheOtherRoles.Patches
 
         public static void Postfix(PlayerControl __instance)
         {
-            if (AmongUsClient.Instance.GameState != InnerNet.InnerNetClient.GameStates.Started ||
-                GameOptionsManager.Instance.currentGameOptions.GameMode == GameModes.HideNSeek)
+            if (AmongUsClient.Instance.GameState != InnerNetClient.GameStates.Started)
             {
-                if (!CustomGuid.IsAdmin(__instance)) return;
-                __instance.cosmetics.nameText.color = CustomGuid.GetAdminColor(__instance);
-                Helpers.setPlayerOutline(__instance, CustomGuid.GetAdminColor(__instance));
+                CustomGuid.UpdateAdminsColor(__instance);
                 return;
             }
+            if (GameOptionsManager.Instance.currentGameOptions.GameMode == GameModes.HideNSeek) return;
 
             // Mini and Morphling shrink
             playerSizeUpdate(__instance);

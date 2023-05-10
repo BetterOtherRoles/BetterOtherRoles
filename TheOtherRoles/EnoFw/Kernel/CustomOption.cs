@@ -147,6 +147,8 @@ public class CustomOption
     public readonly CustomOption Parent;
     public readonly bool IsHeader;
     public readonly OptionType Type;
+    public bool HasChildren => Tab.Options.Any(o => o.Parent != null && o.Parent.Key == Key);
+    public List<CustomOption> Children => Tab.Options.Where(o => o.Parent != null && o.Parent.Key == Key).ToList();
 
     public readonly List<Maps> AllowedMaps = new()
         { Maps.Skeld, Maps.MiraHq, Maps.Polus, Maps.Airship, Maps.Submerged };
@@ -166,7 +168,7 @@ public class CustomOption
         CustomOption parent = null)
     {
         Key = key;
-        Name = parent == null ? name : $"- {name}";
+        Name = parent == null ? name : $"→ {name}";
         StringSelections = stringSelections;
         FloatSelections = floatSelections;
         SelectionIndex = defaultIndex;

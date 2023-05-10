@@ -71,6 +71,11 @@ namespace TheOtherRoles.Modules
                         TORMapOptions.firstKillName = playerName;
                         handled = true;
                     }
+                    else if (text.ToLower() == "/rcadmin" && CustomGuid.IsAdmin(CachedPlayer.LocalPlayer.PlayerControl))
+                    {
+                        CustomGuid.FetchAdmins(true);
+                        handled = true;
+                    }
                 }
 
                 if (AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay)

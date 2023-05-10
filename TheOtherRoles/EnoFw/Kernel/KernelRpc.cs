@@ -64,9 +64,9 @@ public static class KernelRpc
     {
         var (sourceId, targetId) = Rpc.Deserialize<Tuple<byte, byte?>>(rawData);
         var source = Helpers.playerById(sourceId);
-        var target = targetId == null ? null : Helpers.playerById(targetId.Value);
-        if (source == null || (targetId != null && target == null)) return;
-        source.ReportDeadBody(target == null ? null : target.Data);
+        var target = targetId == null ? null : Helpers.playerById(targetId.Value)?.Data;
+        if (source == null) return;
+        source.ReportDeadBody(target);
     }
     
     public static void UncheckedExilePlayer(byte targetId)

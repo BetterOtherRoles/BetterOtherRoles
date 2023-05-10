@@ -21,6 +21,7 @@ public static class Rpc
         DynamicMapOption,
         SetGameStarting,
         ShareGameMode,
+        ShareAdminColors,
     }
 
     public enum Role : uint

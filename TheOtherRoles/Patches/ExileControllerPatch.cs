@@ -1,8 +1,6 @@
 using HarmonyLib;
-using Hazel;
 using System.Collections.Generic;
 using System.Linq;
-using static TheOtherRoles.TheOtherRoles;
 using TheOtherRoles.Objects;
 using System;
 using TheOtherRoles.EnoFw.Kernel;

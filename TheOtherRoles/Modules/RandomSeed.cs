@@ -6,6 +6,7 @@ using BepInEx.Unity.IL2CPP.Utils;
 using HarmonyLib;
 using Reactor.Networking.Attributes;
 using TheOtherRoles.EnoFw;
+using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.Players;
 using UnityEngine;
 using Random = System.Random;
@@ -55,20 +56,50 @@ public static class RandomSeed
 
     public static void RandomizeUploadLocation(List<GameObject> downloads, GameObject upload)
     {
-        var randomizedDownloads = downloads
-            .OrderBy(_ => TheOtherRoles.Rnd.Next())
-            .ToList();
-        if (TheOtherRoles.Rnd.Next(randomizedDownloads.Count + 1) == 1) return;
-        var randomDownload = randomizedDownloads[0];
-        var randomUpload = upload;
-        var downloadSprite = randomDownload.GetComponent<SpriteRenderer>().sprite;
-        var uploadSprite = randomUpload.GetComponent<SpriteRenderer>().sprite;
-        var downloadPosition = randomDownload.transform.position;
-        var uploadPosition = randomUpload.transform.position;
-        randomDownload.transform.position = uploadPosition;
-        randomUpload.transform.position = downloadPosition;
-        randomDownload.GetComponent<SpriteRenderer>().sprite = uploadSprite;
-        randomUpload.GetComponent<SpriteRenderer>().sprite = downloadSprite;
+        if (TheOtherRoles.Rnd.Next(downloads.Count + 1) == 1) return;
+        // var download = downloads.Find(d => d.GetComponent<Console>().Room == SystemTypes.Specimens);
+        var download = downloads[TheOtherRoles.Rnd.Next(downloads.Count)];
+        ExchangeTaskPositions(upload, download);
+    }
+
+    private static void ExchangeTaskPositions(GameObject task1, GameObject task2)
+    {
+        var position1 = task1.transform.position;
+        var position2 = task2.transform.position;
+
+        var sprite1 = task1.GetComponent<SpriteRenderer>().sprite;
+        var sprite2 = task2.GetComponent<SpriteRenderer>().sprite;
+
+        var size1 = task1.GetComponent<BoxCollider2D>().size;
+        var size2 = task2.GetComponent<BoxCollider2D>().size;
+
+        var console1 = task1.GetComponent<Console>();
+        var console2 = task2.GetComponent<Console>();
+
+        var usableDistance1 = console1.UsableDistance;
+        var usableDistance2 = console2.UsableDistance;
+
+        task1.transform.position = position2;
+        task2.transform.position = position1;
+
+        task1.GetComponent<SpriteRenderer>().sprite = sprite2;
+        task2.GetComponent<SpriteRenderer>().sprite = sprite1;
+
+        task1.GetComponent<BoxCollider2D>().size = size2;
+        task2.GetComponent<BoxCollider2D>().size = size1;
+
+        if (console2.onlySameRoom)
+        {
+            console1.checkWalls = true;
+        }
+
+        console1.onlySameRoom = false;
+        console2.onlySameRoom = false;
+
+        console1.usableDistance = usableDistance2;
+        console2.usableDistance = usableDistance1;
+        
+        System.Console.WriteLine($"Upload task moved to {console2.Room}");
     }
 
     public static void RandomizePositions(List<GameObject> gameObjects)

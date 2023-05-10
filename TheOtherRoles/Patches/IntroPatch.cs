@@ -4,7 +4,6 @@ using static TheOtherRoles.TheOtherRoles;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
-using Hazel;
 using TheOtherRoles.Players;
 using TheOtherRoles.Utilities;
 using TheOtherRoles.CustomGameModes;
