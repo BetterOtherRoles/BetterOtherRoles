@@ -63,9 +63,9 @@ namespace TheOtherRoles.Objects
             }
 
             print.Lifetime = FootprintDuration;
-            
-            var pos = player.transform.position;
-            pos.z = pos.y / 1000f + 0.001f;
+
+            var p = player.transform.position;
+            var pos = new Vector3(p.x, p.y, p.z + 0.005f);
             print.Transform.SetPositionAndRotation(pos, Quaternion.EulerRotation(0, 0, UnityEngine.Random.Range(0.0f, 360.0f)));
             print.GameObject.SetActive(true);
             print.Owner = player;

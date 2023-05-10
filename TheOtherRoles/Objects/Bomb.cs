@@ -31,10 +31,10 @@ namespace TheOtherRoles.Objects {
             return defuseSprite;
         }
 
-        public Bomb(Vector2 p) {
+        public Bomb(Vector3 p) {
             bomb = new GameObject("Bomb") { layer = 11 };
             bomb.AddSubmergedComponent(SubmergedCompatibility.Classes.ElevatorMover);
-            Vector3 position = new Vector3(p.x, p.y, p.y / 1000 + 0.001f); // just behind player
+            Vector3 position = new Vector3(p.x, p.y, p.z + 0.005f); // just behind player
             bomb.transform.position = position;
 
             background = new GameObject("Background") { layer = 11 };

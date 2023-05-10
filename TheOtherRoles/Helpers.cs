@@ -282,8 +282,8 @@ namespace TheOtherRoles
         public static void handleUndertakerDropOnBodyReport()
         {
             if (Undertaker.Instance.Player == null) return;
-            var position = Undertaker.Instance.Player.transform.position;
-            Undertaker.DropBody(position.x, position.y);
+            var position = Undertaker.Instance.DraggedBody != null ? Undertaker.Instance.DraggedBody.transform.position : Vector3.zero;
+            Undertaker.DropBody(position.x, position.y, position.z);
         }
 
         public static void handleWhispererKillOnBodyReport()

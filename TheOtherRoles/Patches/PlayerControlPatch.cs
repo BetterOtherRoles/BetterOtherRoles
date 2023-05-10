@@ -265,6 +265,7 @@ namespace TheOtherRoles.Patches
         static void undertakerSetTarget()
         {
             if (Undertaker.Instance.Player == null || Undertaker.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl) return;
+            
             if (Undertaker.Instance.CurrentDeadTarget != null)
             {
                 Helpers.setDeadPlayerOutline(Undertaker.Instance.CurrentDeadTarget, null);
@@ -274,6 +275,20 @@ namespace TheOtherRoles.Patches
             {
                 Undertaker.Instance.CurrentDeadTarget = Helpers.setDeadTarget(Undertaker.Instance.RealDragDistance);
                 Helpers.setDeadPlayerOutline(Undertaker.Instance.CurrentDeadTarget, Undertaker.Instance.Color);
+            }
+        }
+
+        static void undertakerCanDropTarget()
+        {
+            var component = Undertaker.Instance.DraggedBody;
+            
+            Undertaker.Instance.CanDropBody = false;
+            
+            if (component == null) return;
+            
+            if (component.enabled && Vector2.Distance(Undertaker.Instance.Player.GetTruePosition(), component.TruePosition) <= Undertaker.Instance.Player.MaxReportDistance && !PhysicsHelpers.AnythingBetween(CachedPlayer.LocalPlayer.PlayerControl.GetTruePosition(), component.TruePosition, Constants.ShipAndObjectsMask, false))
+            {
+                Undertaker.Instance.CanDropBody = true;
             }
         }
 
@@ -293,7 +308,8 @@ namespace TheOtherRoles.Patches
             var newBodyPos = direction == Vector2.zero
                 ? bodyLastPos
                 : undertakerPos - (Vector3)(direction * (2f / 3f)) + (Vector3)bodyComponent.myCollider.offset;
-            newBodyPos.z = undertakerPos.z - 0.01f;
+            newBodyPos.z = undertakerPos.z + 0.005f;
+            
             bodyComponent.transform.position.Set(newBodyPos.x, newBodyPos.y, newBodyPos.z);
 
             if (direction == Direction.right) newBodyPos += new Vector3(0.3f, 0, 0);
@@ -318,7 +334,7 @@ namespace TheOtherRoles.Patches
             {
                 if (undertakerPlayer.AmOwner)
                 {
-                    Undertaker.DropBody(newBodyPos.x, newBodyPos.y);
+                    Undertaker.DropBody(newBodyPos.x, newBodyPos.y, newBodyPos.z);
                 }
 
                 return;
@@ -1373,6 +1389,7 @@ namespace TheOtherRoles.Patches
                 whispererSetTarget();
                 // Undertaker
                 undertakerSetTarget();
+                undertakerCanDropTarget();
                 undertakerUpdate();
                 Trap.Update();
                 // Eraser

@@ -117,9 +117,9 @@ public class Trapper : AbstractRole
         Trap.triggerTrap(playerId, trapId);
     }
 
-    public static void SetTrap(float x, float y)
+    public static void SetTrap(float x, float y, float z)
     {
-        var data = new Tuple<float, float>(x, y);
+        var data = new Tuple<float, float, float>(x, y, z);
         Rpc_SetTrap(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
 
@@ -127,11 +127,9 @@ public class Trapper : AbstractRole
     private static void Rpc_SetTrap(PlayerControl sender, string rawData)
     {
         if (Instance.Player == null) return;
-        var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawData);
+        var (x, y, z) = Rpc.Deserialize<Tuple<float, float, float>>(rawData);
         Instance.Charges--;
-        var position = Vector3.zero;
-        position.x = x;
-        position.y = y;
+        var position = new Vector3(x, y, z);
         var _ = new Trap(position);
     }
 }

@@ -203,9 +203,9 @@ public class SecurityGuard : AbstractRole
         TORMapOptions.ventsToSeal.Add(vent);
     }
 
-    public static void PlaceCamera(float x, float y)
+    public static void PlaceCamera(float x, float y, float z)
     {
-        var data = new Tuple<float, float>(x, y);
+        var data = new Tuple<float, float, float>(x, y, z);
         Rpc_PlaceCamera(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
 
@@ -215,12 +215,12 @@ public class SecurityGuard : AbstractRole
         var referenceCamera = Object.FindObjectOfType<SurvCamera>(); 
         if (referenceCamera == null) return; // Mira HQ
         
-        var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawDData);
+        var (x, y, z) = Rpc.Deserialize<Tuple<float, float, float>>(rawDData);
         Instance.UsedScrews += Instance.CamPrice;
         Instance.PlacedCameras++;
 
         var camera = Object.Instantiate(referenceCamera);
-        camera.transform.position = new Vector3(x, y, referenceCamera.transform.position.z - 1f);
+        camera.transform.position = new Vector3(x, y, z + 0.005f);
         camera.CamName = $"Security Camera {Instance.PlacedCameras}";
         camera.Offset = new Vector3(0f, 0f, camera.Offset.z);
 

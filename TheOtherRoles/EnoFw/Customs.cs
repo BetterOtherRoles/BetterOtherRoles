@@ -116,9 +116,9 @@ public static class Customs
         Roles.Fallen = Fallen.Instance;
         Roles.Guesser = Guesser.Instance;
         Roles.Jackal = Jackal.Instance;
+        Roles.Sidekick = Sidekick.Instance;
         Roles.Jester = Jester.Instance;
         Roles.Lawyer = Lawyer.Instance;
-        Roles.Sidekick = Sidekick.Instance;
         Roles.Thief = Thief.Instance;
         Roles.Vulture = Vulture.Instance;
         Modifiers.AntiTeleport = AntiTeleport.Instance;

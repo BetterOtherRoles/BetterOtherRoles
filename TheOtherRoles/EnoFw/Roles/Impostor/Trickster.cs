@@ -96,6 +96,7 @@ public class Trickster : AbstractRole
         var position = Vector3.zero;
         position.x = x;
         position.y = y;
+        position.z = sender.transform.position.z;
         var _ = new JackInTheBox(position);
     }
 }
