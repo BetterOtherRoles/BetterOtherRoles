@@ -179,7 +179,7 @@ namespace TheOtherRoles.Patches
 
         static void detectiveUpdateFootPrints()
         {
-            if (Detective.Instance.IsLocalPlayer) return;
+            if (!Detective.Instance.IsLocalPlayer) return;
 
             Detective.Instance.Timer -= Time.fixedDeltaTime;
             if (Detective.Instance.Timer <= 0f)

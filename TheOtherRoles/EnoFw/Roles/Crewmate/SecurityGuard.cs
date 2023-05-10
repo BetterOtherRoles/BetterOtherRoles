@@ -159,8 +159,9 @@ public class SecurityGuard : AbstractRole
             SpawnRate);
         CanMoveDuringCam = Tab.CreateBool(
             $"{Name}{nameof(CanMoveDuringCam)}",
-            Cs("Can move during using cameras"),
-            false);
+            Cs("Can move while using cameras"),
+            false,
+            SpawnRate);
     }
 
     public override void ClearAndReload()

@@ -2420,16 +2420,10 @@ namespace TheOtherRoles
                         Thief.Instance.Player.clearAllTasks();
                     }
 
-                    // Steal role if survived.
-                    if (!Thief.Instance.Player.Data.IsDead && result == MurderAttemptResult.PerformKill)
-                    {
-                        Thief.ThiefStealsRole(target.PlayerId);
-                    }
-
                     // Kill the victim (after becoming their role - so that no win is triggered for other teams)
                     if (result == MurderAttemptResult.PerformKill)
                     {
-                        KernelRpc.UncheckedMurderPlayer(Thief.Instance.Player.PlayerId, target.PlayerId, true);
+                        Thief.ThiefStealsRole(target.PlayerId);
                     }
                 },
                 () =>
