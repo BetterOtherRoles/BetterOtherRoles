@@ -911,8 +911,7 @@ namespace TheOtherRoles
                 },
                 () =>
                 {
-                    return Tracker.Instance.Player != null && Tracker.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl &&
-                           !CachedPlayer.LocalPlayer.Data.IsDead;
+                    return Tracker.Instance.IsAliveLocalPlayer;
                 },
                 () =>
                 {

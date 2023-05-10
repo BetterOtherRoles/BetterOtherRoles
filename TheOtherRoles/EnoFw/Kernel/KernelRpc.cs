@@ -395,9 +395,11 @@ public static class KernelRpc
     private static void Rpc_ShareOptions(PlayerControl sender, string rawData)
     {
         if (sender.AmOwner) return;
+        CustomOption.Tab.SetPreset(0);
         var options = Rpc.Deserialize<Dictionary<string, int>>(rawData);
         foreach (var o in options)
         {
+            if (o.Key == CustomOptions.Preset.Key) continue;
             var option = CustomOption.Tab.Options.Find(option => option.Key == o.Key);
             option?.UpdateSelection(o.Value);
         }
@@ -423,7 +425,7 @@ public static class KernelRpc
         Bloodytrail.resetSprites();
         Trap.clearTraps();
         TORMapOptions.clearAndReloadMapOptions();
-        TheOtherRoles.clearAndReloadRoles();
+        TheOtherRoles.ClearAndReloadRoles();
         GameHistory.clearGameHistory();
         HudManagerStartPatch.setCustomButtonCooldowns();
         TORMapOptions.reloadPluginOptions();

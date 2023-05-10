@@ -1875,22 +1875,13 @@ namespace TheOtherRoles.Patches
     {
         public static void Postfix(PlayerPhysics __instance)
         {
-            bool shouldInvert =
-                (Invert.Instance.Is(CachedPlayer.LocalPlayer.PlayerId) &&
-                 Invert.Instance.Meetings > 0) ^
-                EventUtility.eventInvert; // xor. if already invert, eventInvert will turn it off for 10s
+            var shouldInvert = (Invert.Instance.Is(CachedPlayer.LocalPlayer) && Invert.Instance.Meetings > 0); // xor. if already invert, eventInvert will turn it off for 10s
 
-            if (__instance.AmOwner &&
-                CachedPlayer.LocalPlayer.PlayerControl == Undertaker.Instance.Player &&
-                AmongUsClient.Instance &&
-                AmongUsClient.Instance.GameState == InnerNet.InnerNetClient.GameStates.Started &&
-                !CachedPlayer.LocalPlayer.Data.IsDead &&
-                GameData.Instance &&
-                __instance.myPlayer.CanMove)
+            if (__instance.AmOwner && AmongUsClient.Instance && AmongUsClient.Instance.GameState == InnerNetClient.GameStates.Started && !CachedPlayer.LocalPlayer.Data.IsDead && GameData.Instance && __instance.myPlayer.CanMove)
             {
                 if (shouldInvert) __instance.body.velocity *= -1;
 
-                if (Undertaker.Instance.Player != null && Undertaker.Instance.DraggedBody != null)
+                if (Undertaker.Instance.HasPlayer && Undertaker.Instance.DraggedBody != null)
                 {
                     __instance.body.velocity *= 1f + (float)Undertaker.Instance.SpeedModifierWhenDragging / 100f;
                 }

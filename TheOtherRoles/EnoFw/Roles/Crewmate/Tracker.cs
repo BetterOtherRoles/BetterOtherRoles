@@ -36,6 +36,7 @@ public class Tracker : AbstractRole
     {
         Team = Teams.Crewmate;
         Color = new Color32(100, 58, 220, byte.MaxValue);
+        CanTarget = true;
         
         SpawnRate = GetDefaultSpawnRateOption();
         

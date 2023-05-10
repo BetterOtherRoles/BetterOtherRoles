@@ -37,6 +37,7 @@ public class Guesser : AbstractRole
         Color = new Color32(255, 255, 0, byte.MaxValue);
         
         SpawnRate = GetDefaultSpawnRateOption();
+        SpawnRate.OnlyForGameModes(CustomOption.GameMode.Classic);
         
         IsImpostorRate = Tab.CreateFloatList(
             $"{Key}{nameof(IsImpostorRate)}",

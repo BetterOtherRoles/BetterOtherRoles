@@ -59,6 +59,7 @@ public static class CustomOptions
 
     public static readonly CustomOption DynamicMap;
     public static readonly CustomOption DynamicMapEnableSkeld;
+    public static readonly CustomOption DynamicMapEnableDleks;
     public static readonly CustomOption DynamicMapEnableMira;
     public static readonly CustomOption DynamicMapEnablePolus;
     public static readonly CustomOption DynamicMapEnableAirShip;
@@ -125,15 +126,11 @@ public static class CustomOptions
         ModifierSettings = new Tab(nameof(ModifierSettings), "Modifier Settings",
             "TheOtherRoles.Resources.TabIconModifier.png");
 
-        Preset = MainSettings.CreateFloatList(
+        Preset = MainSettings.CreateStringList(
             nameof(Preset),
             Colors.Cs("#504885", "Current preset"),
-            1f,
-            5f,
-            1f,
-            1f,
-            null,
-            "Preset ");
+            new List<string> { "Online", "Preset 1", "Preset 2", "Preset 3", "Preset 4", "Preset 5", "Skeld", "Dleks", "Mira HQ", "Polus", "Airship", "Submerged" },
+            "Online");
         EnableRoles = MainSettings.CreateBool(
             nameof(EnableRoles),
             Colors.Cs("#ff1010", "Enable roles"),
@@ -315,6 +312,16 @@ public static class CustomOptions
         DynamicMapEnableSkeld = MainSettings.CreateFloatList(
             nameof(DynamicMapEnableSkeld),
             "Skeld",
+            0f,
+            100f,
+            0f,
+            1f,
+            DynamicMap,
+            string.Empty,
+            "%");
+        DynamicMapEnableDleks = MainSettings.CreateFloatList(
+            nameof(DynamicMapEnableDleks),
+            "Dleks",
             0f,
             100f,
             0f,
@@ -707,5 +714,10 @@ public static class CustomOptions
             nameof(HideModifiers),
             Colors.Cs(Color.yellow, "Hide after death modifiers"),
             false);
+    }
+
+    public static void Load()
+    {
+        System.Console.WriteLine("Custom options loaded");
     }
 }

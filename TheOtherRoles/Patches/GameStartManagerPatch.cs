@@ -230,7 +230,7 @@ namespace TheOtherRoles.Patches {
 
                         // Translate chosen map to presets page and use that maps random map preset page
                         if (CustomOptions.DynamicMapSeparateSettings) {
-                            CustomOptions.Preset.UpdateSelection(chosenMapId + 2);
+                            CustomOptions.Preset.UpdateSelection(chosenMapId + 5);
                         }
                         if (chosenMapId >= 3) chosenMapId++;  // Skip dlekS
                         KernelRpc.DynamicMapOption(chosenMapId);

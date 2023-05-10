@@ -21,7 +21,7 @@ namespace TheOtherRoles.Objects {
         }
         public static Sprite getBackgroundSprite() {
             if (backgroundSprite) return backgroundSprite;
-            backgroundSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.BombBackground.png", 110f / Bomber.Instance.BombHearRange);
+            backgroundSprite = Helpers.loadSpriteFromResources("TheOtherRoles.Resources.BombBackground.png", 110f / (Bomber.Instance.BombHearRange / 10f));
             return backgroundSprite;
         }
 
@@ -62,7 +62,7 @@ namespace TheOtherRoles.Objects {
                 if (x == 1f && this != null) {
                     bomb.SetActive(true);
                     background.SetActive(true);
-                    SoundEffectsManager.playAtPosition("bombFuseBurning", p, Bomber.Instance.BombDestructionTime, Bomber.Instance.BombHearRange, true);
+                    SoundEffectsManager.playAtPosition("bombFuseBurning", p, Bomber.Instance.BombDestructionTime, Bomber.Instance.BombHearRange / 10f, true);
                     Bomber.Instance.IsActive = true;
 
                     FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Bomber.Instance.BombDestructionTime, new Action<float>((x) => { // can you feel the pain?
@@ -81,10 +81,10 @@ namespace TheOtherRoles.Objects {
             if (Bomber.Instance.Player != null) {
                 var position = b.bomb.transform.position;
                 var distance = Vector2.Distance(position, CachedPlayer.LocalPlayer.transform.position);  // every player only checks that for their own client (desynct with positions sucks)
-                if (distance < Bomber.Instance.BombDestructionRange && !CachedPlayer.LocalPlayer.Data.IsDead) {
+                if (distance < Bomber.Instance.BombDestructionRange / 10f && !CachedPlayer.LocalPlayer.Data.IsDead) {
                     Helpers.checkMurderAttemptAndKill(Bomber.Instance.Player, CachedPlayer.LocalPlayer.PlayerControl, false, false, true, true);
                 }
-                SoundEffectsManager.playAtPosition("bombExplosion", position, range: Bomber.Instance.BombHearRange) ;
+                SoundEffectsManager.playAtPosition("bombExplosion", position, range: Bomber.Instance.BombHearRange / 10f) ;
             }
             Bomber.Instance.ClearBomb();
             canDefuse = false;

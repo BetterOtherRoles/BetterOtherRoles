@@ -13,7 +13,7 @@ public static class BetterOtherRolesPanel
 
     private const bool LobbyTextScroller = true;
 
-    private const float LobbyTextRowHeight = 0.081F;
+    private const float LobbyTextRowHeight = 0.101f;
 
     [HarmonyPatch(typeof(IGameOptionsExtensions), nameof(IGameOptionsExtensions.ToHudString))]
     internal static class GameOptionsDataPatch
@@ -167,7 +167,7 @@ public static class BetterOtherRolesPanel
         {
             for (var i = 0; i < deep; i++)
             {
-                prefix += "   ";
+                prefix += "  ";
             }
         }
 

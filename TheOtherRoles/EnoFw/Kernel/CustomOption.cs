@@ -168,18 +168,25 @@ public class CustomOption
         CustomOption parent = null)
     {
         Key = key;
-        Name = parent == null ? name : $"→ {name}";
+        Name = name;
         StringSelections = stringSelections;
         FloatSelections = floatSelections;
         SelectionIndex = defaultIndex;
         Parent = parent;
         IsHeader = isHeader;
         Type = type;
-        Entry = TheOtherRolesPlugin.Instance.Config.Bind(
-            Key == nameof(CustomOptions.Preset) ? "MainConfig" : $"Preset{Tab.Preset}", Key,
-            SelectionIndex);
+        if (Key == nameof(CustomOptions.Preset))
+        {
+            Entry = TheOtherRolesPlugin.Preset;
+        }
+        else
+        {
+            Entry = TheOtherRolesPlugin.Instance.Config.Bind(((string)CustomOptions.Preset).Trim(' '), Key, SelectionIndex);
+        }
         SelectionIndex = Mathf.Clamp(Entry.Value, 0, StringSelections.Count - 1);
     }
+
+    public string DisplayName => IsHeader ? $"→ {Name}" : Name;
 
     public CustomOption OnlyForMaps(params Maps[] maps)
     {
@@ -260,9 +267,18 @@ public class CustomOption
 
     public class Tab
     {
-        public readonly static List<Tab> Tabs = new();
+        public static readonly List<Tab> Tabs = new();
 
-        public static int Preset { get; private set; } = 1;
+        public static int Preset
+        {
+            get => TheOtherRolesPlugin.Preset.Value;
+            private set => TheOtherRolesPlugin.Preset.Value = value;
+        }
+
+        public static void SetPreset(int preset)
+        {
+            CustomOptions.Preset.UpdateSelection(0);
+        }
 
         public CustomOption CreateBool(
             string key,
@@ -302,7 +318,7 @@ public class CustomOption
             }
 
             var customOption = new CustomOption(
-                CustomOption.OptionType.FloatList,
+                OptionType.FloatList,
                 key,
                 name,
                 selections,
@@ -323,7 +339,7 @@ public class CustomOption
             var selection = defaultValue == null ? 0 : selections.IndexOf(defaultValue);
             if (selection < 0) selection = 0;
             var customOption = new CustomOption(
-                CustomOption.OptionType.StringList,
+                OptionType.StringList,
                 key,
                 name,
                 selections,
@@ -349,14 +365,14 @@ public class CustomOption
         {
             SaveVanillaOptions();
             Preset = newPreset;
-            VanillaSettings = TheOtherRolesPlugin.Instance.Config.Bind($"Preset{Preset}", "GameOptions", string.Empty);
+            var presetKey = ((string)CustomOptions.Preset).Trim(' ');
+            VanillaSettings = TheOtherRolesPlugin.Instance.Config.Bind(presetKey, "GameOptions", string.Empty);
             LoadVanillaOptions();
             foreach (var setting in Options)
             {
                 if (setting.Key == nameof(CustomOptions.Preset)) continue;
                 setting.Entry =
-                    TheOtherRolesPlugin.Instance.Config.Bind($"Preset{Preset}", $"{setting.Key}",
-                        setting.SelectionIndex);
+                    TheOtherRolesPlugin.Instance.Config.Bind(presetKey, setting.Key, setting.SelectionIndex);
                 setting.SelectionIndex = Mathf.Clamp(setting.Entry.Value, 0, setting.StringSelections.Count - 1);
                 if (setting.OptionBehaviour == null) continue;
                 if (setting.OptionBehaviour is StringOption stringOption)

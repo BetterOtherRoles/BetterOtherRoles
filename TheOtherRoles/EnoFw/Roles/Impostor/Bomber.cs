@@ -103,13 +103,16 @@ public class Bomber : AbstractRole
 
         IsPlanted = false;
         IsActive = false;
-        if (stopSound) SoundEffectsManager.stop("bombFuseBurning");
+        if (stopSound)
+        {
+            SoundEffectsManager.stop("bombFuseBurning");
+        }
     }
 
     public override void ClearAndReload()
     {
         base.ClearAndReload();
-        ClearBomb(false);
+        if (Bomb != null) ClearBomb(false);
         Bomb.clearBackgroundSprite();
     }
 

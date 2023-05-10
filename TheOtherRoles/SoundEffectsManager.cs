@@ -69,7 +69,15 @@ namespace TheOtherRoles
         }
 
         public static void stop(string path) {
-            if (Constants.ShouldPlaySfx()) SoundManager.Instance.StopSound(get(path));
+            try
+            { 
+                if (Constants.ShouldPlaySfx()) SoundManager.Instance.StopSound(get(path));
+            }
+            catch (Exception e)
+            {
+                System.Console.WriteLine(e);
+            }
+            
         }
 
         public static void stopAll() {
