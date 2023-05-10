@@ -48,7 +48,7 @@ namespace TheOtherRoles.Modules {
                                         isLighterColor = true });
             colors.Add(new CustomColor { longname = "Lavender",
                                         color = new Color32(173, 126, 201, byte.MaxValue), 
-                                        shadow = new Color32(131, 58, 203, byte.MaxValue),
+                                        shadow = new Color32(173, 126, 201, byte.MaxValue),
                                         isLighterColor = true });
             colors.Add(new CustomColor { longname = "Nougat",
                                         color = new Color32(160, 101, 56, byte.MaxValue), 
@@ -71,32 +71,32 @@ namespace TheOtherRoles.Modules {
                                         shadow = new Color32(0, 61, 54, byte.MaxValue),
                                         isLighterColor = false });
             colors.Add(new CustomColor { longname = "Lemon",
-                                        color = new Color32(0xDB, 0xFD, 0x2F, byte.MaxValue), 
-                                        shadow = new Color32(0x74, 0xE5, 0x10, byte.MaxValue), 
+                                        color = new Color32(219, 253, 47, byte.MaxValue), 
+                                        shadow = new Color32(116, 229, 16, byte.MaxValue), 
                                         isLighterColor = true });
             colors.Add(new CustomColor { longname = "Signal\nOrange",
-                                        color = new Color32(0xF7, 0x44, 0x17, byte.MaxValue), 
-                                        shadow = new Color32(0x9B, 0x2E, 0x0F, byte.MaxValue),
+                                        color = new Color32(247, 68, 23, byte.MaxValue), 
+                                        shadow = new Color32(155, 46, 15, byte.MaxValue),
                                         isLighterColor = true });   
 
             colors.Add(new CustomColor { longname = "Teal",
-                                        color = new Color32(0x25, 0xB8, 0xBF, byte.MaxValue), 
-                                        shadow = new Color32(0x12, 0x89, 0x86, byte.MaxValue),
+                                        color = new Color32(37, 184, 191, byte.MaxValue), 
+                                        shadow = new Color32(18, 137, 134, byte.MaxValue),
                                         isLighterColor = false });   
 
             colors.Add(new CustomColor { longname = "Blurple",
-                                        color = new Color32(0x59, 0x3C, 0xD6, byte.MaxValue), 
-                                        shadow = new Color32(0x29, 0x17, 0x96, byte.MaxValue),
+                                        color = new Color32(89, 60, 214, byte.MaxValue), 
+                                        shadow = new Color32(41, 23, 150, byte.MaxValue),
                                         isLighterColor = false });   
 
             colors.Add(new CustomColor { longname = "Sunrise", 
-                                        color = new Color32(0xFF, 0xCA, 0x19, byte.MaxValue), 
-                                        shadow = new Color32(0xDB, 0x44, 0x42, byte.MaxValue),
+                                        color = new Color32(255, 202, 25, byte.MaxValue), 
+                                        shadow = new Color32(219, 68, 66, byte.MaxValue),
                                         isLighterColor = true });
 
             colors.Add(new CustomColor { longname = "Ice",
-                                        color = new Color32(0xA8, 0xDF, 0xFF, byte.MaxValue), 
-                                        shadow = new Color32(0x59, 0x9F, 0xC8, byte.MaxValue),
+                                        color = new Color32(168, 223, 255, byte.MaxValue), 
+                                        shadow = new Color32(89, 159, 200, byte.MaxValue),
                                         isLighterColor = true });     
 
             pickableColors += (uint)colors.Count; // Colors to show in Tab

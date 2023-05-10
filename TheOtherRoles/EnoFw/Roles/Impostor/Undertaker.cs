@@ -103,6 +103,13 @@ public class Undertaker : AbstractRole
         LastDraggedAt = DateTime.UtcNow;
     }
 
+    public static void DropBody()
+    {
+        if (!Instance.IsLocalPlayer) return;
+        var pos = Instance.Player.transform.position;
+        DropBody(pos.x, pos.y, pos.z);
+    }
+
     public static void DropBody(float x, float y, float z)
     {
         var data = new Tuple<float, float, float>(x, y, z);

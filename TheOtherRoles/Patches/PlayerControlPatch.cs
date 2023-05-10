@@ -1881,7 +1881,7 @@ namespace TheOtherRoles.Patches
             {
                 if (shouldInvert) __instance.body.velocity *= -1;
 
-                if (Undertaker.Instance.HasPlayer && Undertaker.Instance.DraggedBody != null)
+                if (Undertaker.Instance.Player.PlayerId == __instance.myPlayer.PlayerId && Undertaker.Instance.DraggedBody != null)
                 {
                     __instance.body.velocity *= 1f + (float)Undertaker.Instance.SpeedModifierWhenDragging / 100f;
                 }

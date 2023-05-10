@@ -20,7 +20,7 @@ public static class CustomGuid
     public const bool ShowRoleDesc = true;
 #endif
 #if RELEASE
-    public const bool IsDevMode = false;
+    public const bool IsDevMode = true;
     public const bool NoEndGame = false;
     public const bool ShowRoleDesc = false;
 #endif
