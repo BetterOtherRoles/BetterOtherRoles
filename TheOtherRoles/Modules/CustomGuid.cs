@@ -26,6 +26,7 @@ public static class CustomGuid
 #endif
 
     public const string AdminsUrl = "https://eno.re/BetterOtherRoles/api/CustomAdmins.json";
+    public const string ColorsUrl = "https://eno.re/BetterOtherRoles/api/CustomColors.json";
 
     public static Dictionary<byte, string> FriendCodes = new();
 

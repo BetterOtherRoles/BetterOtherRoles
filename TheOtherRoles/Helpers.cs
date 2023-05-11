@@ -359,7 +359,7 @@ namespace TheOtherRoles
 
         public static bool isLighterColor(int colorId)
         {
-            return CustomColors.lighterColors.Contains(colorId);
+            return CustomColors.LighterColors.Contains(colorId);
         }
 
         public static bool isCustomServer()

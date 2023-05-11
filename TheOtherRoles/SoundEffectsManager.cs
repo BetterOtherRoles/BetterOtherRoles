@@ -32,7 +32,7 @@ namespace TheOtherRoles
         public static AudioClip get(string path)
         {
             // Convenience: As as SoundEffects are stored in the same folder, allow using just the name as well
-            if (!path.Contains(".")) path = "TheOtherRoles.Resources.SoundEffects." + path + ".raw";
+            if (!path.Contains('.')) path = "TheOtherRoles.Resources.SoundEffects." + path + ".raw";
             AudioClip returnValue;
             return soundEffects.TryGetValue(path, out returnValue) ? returnValue : null;
         }
@@ -69,14 +69,10 @@ namespace TheOtherRoles
         }
 
         public static void stop(string path) {
-            try
-            { 
-                if (Constants.ShouldPlaySfx()) SoundManager.Instance.StopSound(get(path));
-            }
-            catch (Exception e)
-            {
-                System.Console.WriteLine(e);
-            }
+            if (SoundManager.Instance == null) return;
+            var clip = get(path);
+            if (clip == null) return;
+            if (Constants.ShouldPlaySfx()) SoundManager.Instance.StopSound(clip);
             
         }
 

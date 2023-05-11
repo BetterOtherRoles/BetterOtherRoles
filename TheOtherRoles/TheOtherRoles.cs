@@ -36,7 +36,7 @@ public static class TheOtherRoles
         TimeMaster.Instance.ClearAndReload();
         Tracker.Instance.ClearAndReload();
         Trapper.Instance.ClearAndReload();
-        Bomber.Instance.ClearBomb();
+        Bomber.Instance.ClearAndReload();
         BountyHunter.Instance.ClearAndReload();
         Camouflager.Instance.ClearAndReload();
         Cleaner.Instance.ClearAndReload();

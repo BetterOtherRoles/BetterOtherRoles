@@ -2071,9 +2071,7 @@ namespace TheOtherRoles
                 },
                 () =>
                 {
-                    return Pursuer.Instance.Player != null &&
-                           Pursuer.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl &&
-                           !CachedPlayer.LocalPlayer.Data.IsDead &&
+                    return Pursuer.Instance.IsAliveLocalPlayer &&
                            Pursuer.Instance.UsedBlanks < Pursuer.Instance.BlankNumber;
                 },
                 () =>

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using BepInEx.Configuration;
@@ -86,9 +85,7 @@ public class CustomOption
                 case OptionType.Boolean:
                     return option ? 1f : 0f;
                 case OptionType.StringList:
-                    return (float)Convert.ToDouble(
-                        StringToFloatRegex.Replace(option, string.Empty),
-                        CultureInfo.InvariantCulture.NumberFormat);
+                    return option.SelectionIndex;
                 case OptionType.FloatList:
                     if (option.FloatSelections == null)
                         throw new Exception($"Error: FloatSelections is null in customSetting {option.Key}");

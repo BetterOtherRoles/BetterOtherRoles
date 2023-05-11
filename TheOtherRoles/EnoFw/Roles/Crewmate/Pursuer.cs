@@ -27,6 +27,7 @@ public class Pursuer : AbstractRole
     {
         Team = Teams.Crewmate;
         Color = new Color32(134, 153, 25, byte.MaxValue);
+        CanTarget = true;
 
         BlankCooldown = CustomOptions.NeutralSettings.CreateFloatList(
             $"{Name}{nameof(BlankCooldown)}",

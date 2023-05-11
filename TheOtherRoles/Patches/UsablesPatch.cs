@@ -120,7 +120,7 @@ namespace TheOtherRoles.Patches {
     class VentButtonDoClickPatch {
         static  bool Prefix(VentButton __instance) {
             // Manually modifying the VentButton to use Vent.Use again in order to trigger the Vent.Use prefix patch
-		    if (__instance.currentTarget != null && !Deputy.Instance.HandcuffedKnows.ContainsKey(CachedPlayer.LocalPlayer.PlayerId)) __instance.currentTarget.Use();
+            if (__instance.currentTarget != null && !Deputy.Instance.HandcuffedKnows.ContainsKey(CachedPlayer.LocalPlayer.PlayerId)) __instance.currentTarget.Use();
             return false;
         }
     }
@@ -132,6 +132,11 @@ namespace TheOtherRoles.Patches {
             // Deputy handcuff disables the vents
             if (Deputy.Instance.HandcuffedPlayers.Contains(CachedPlayer.LocalPlayer.PlayerId)) {
                 Deputy.Instance.SetHandcuffedKnows();
+                return false;
+            }
+            // Undertaker cannot vent while dragging corpse
+            if (Undertaker.Instance.IsLocalPlayer && Undertaker.Instance.DraggedBody != null && Undertaker.Instance.DisableVentWhileDragging)
+            {
                 return false;
             }
             if (Trapper.Instance.PlayersOnMap.Contains(CachedPlayer.LocalPlayer.PlayerControl)) return false;
@@ -181,11 +186,9 @@ namespace TheOtherRoles.Patches {
                 
                 var truePosition = PlayerControl.LocalPlayer.GetTruePosition();
                 
-                Vector2 vector = pc.GetTruePosition() - truePosition;
+                var vector = pc.GetTruePosition() - truePosition;
                 var magnitude = vector.magnitude;
-                if (pc.AmOwner || magnitude < CachedPlayer.LocalPlayer.PlayerControl.lightSource.viewDistance &&
-                    !PhysicsHelpers.AnyNonTriggersBetween(truePosition, vector.normalized, magnitude,
-                        ShipAndObjectsMask))
+                if (pc.AmOwner || magnitude < CachedPlayer.LocalPlayer.PlayerControl.lightSource.viewDistance && !PhysicsHelpers.AnyNonTriggersBetween(truePosition, vector.normalized, magnitude, ShipAndObjectsMask))
                 {
                     __instance.GetComponent<SpriteAnim>().Play(__instance.EnterVentAnim, 1f);
                 }

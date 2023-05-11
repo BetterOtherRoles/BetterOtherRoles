@@ -1875,17 +1875,24 @@ namespace TheOtherRoles.Patches
     {
         public static void Postfix(PlayerPhysics __instance)
         {
-            var shouldInvert = (Invert.Instance.Is(CachedPlayer.LocalPlayer) && Invert.Instance.Meetings > 0); // xor. if already invert, eventInvert will turn it off for 10s
+            if (!__instance.AmOwner || !AmongUsClient.Instance || AmongUsClient.Instance.GameState != InnerNetClient.GameStates.Started || CachedPlayer.LocalPlayer.Data.IsDead || !GameData.Instance || !__instance.myPlayer.CanMove) return;
+            
+            UpdateInvert(__instance);
+            UpdateUndertaker(__instance);
+        }
 
-            if (__instance.AmOwner && AmongUsClient.Instance && AmongUsClient.Instance.GameState == InnerNetClient.GameStates.Started && !CachedPlayer.LocalPlayer.Data.IsDead && GameData.Instance && __instance.myPlayer.CanMove)
+        private static void UpdateUndertaker(PlayerPhysics playerPhysics)
+        {
+            if (!Undertaker.Instance.IsLocalPlayer || Undertaker.Instance.DraggedBody == null) return;
+            playerPhysics.body.velocity *= 1f + (float)Undertaker.Instance.SpeedModifierWhenDragging / 100f;
+        }
+
+        private static void UpdateInvert(PlayerPhysics playerPhysics)
+        {
+            var shouldInvert = Invert.Instance.Is(CachedPlayer.LocalPlayer) && Invert.Instance.Meetings > 0; // xor. if already invert, eventInvert will turn it off for 10s
+            if (shouldInvert)
             {
-                if (shouldInvert) __instance.body.velocity *= -1;
-
-                if (Undertaker.Instance.Player.PlayerId == __instance.myPlayer.PlayerId && Undertaker.Instance.DraggedBody != null)
-                {
-                    __instance.body.velocity *= 1f + (float)Undertaker.Instance.SpeedModifierWhenDragging / 100f;
-                }
-                    
+                playerPhysics.body.velocity *= -1f;
             }
         }
     }

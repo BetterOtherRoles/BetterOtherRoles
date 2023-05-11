@@ -1,205 +1,197 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using UnityEngine;
 using HarmonyLib;
 using AmongUs.Data.Legacy;
+using TheOtherRoles.EnoFw;
 using TheOtherRoles.Utilities;
+using Color = System.Drawing.Color;
 
-namespace TheOtherRoles.Modules {
-    public class CustomColors {
-        protected static Dictionary<int, string> ColorStrings = new Dictionary<int, string>();
-        public static List<int> lighterColors = new List<int>(){ 3, 4, 5, 7, 10, 11, 13, 14, 17 };
-        public static uint pickableColors = (uint)Palette.ColorNames.Length;
+namespace TheOtherRoles.Modules;
 
-        private static readonly List<int> ORDER = new List<int>() { 7, 14, 5, 33, 4, 
-                                                                    30, 0, 19, 27, 3,
-                                                                    17, 25, 18, 13, 23,
-                                                                    8, 32, 1, 21, 31,
-                                                                    10, 34, 15, 28, 22,
-                                                                    29, 11, 2, 26, 16,
-                                                                    20, 24, 9, 12, 6 };
-        public static void Load() {
-            List<StringNames> longlist = Enumerable.ToList<StringNames>(Palette.ColorNames);
-            List<Color32> colorlist = Enumerable.ToList<Color32>(Palette.PlayerColors);
-            List<Color32> shadowlist = Enumerable.ToList<Color32>(Palette.ShadowColors);
+public class CustomColors
+{
+    private static readonly Dictionary<int, string> ColorStrings = new Dictionary<int, string>();
+    public static readonly List<int> LighterColors = new() { 3, 4, 5, 7, 10, 11, 13, 14, 17 };
+    private static uint _pickableColors = (uint)Palette.ColorNames.Length;
 
-            List<CustomColor> colors = new List<CustomColor>();
+    private static readonly List<int> ORDER = new List<int>
+    {
+        0, 1, 2, 3, 4,
+        5, 6, 7, 8, 9,
+        10, 11, 12, 13, 14,
+        15, 16, 17, 18, 19,
+        20, 21, 22, 23, 24,
+        25, 26, 27, 28, 29,
+        30, 31, 32, 33, 34
+    };
 
-            /* Custom Colors */
-            colors.Add(new CustomColor { longname = "Salmon",
-                                        color = new Color32(239, 191, 192, byte.MaxValue), // color = new Color32(0xD8, 0x82, 0x83, byte.MaxValue),
-                                        shadow = new Color32(182, 119, 114, byte.MaxValue), // shadow = new Color32(0xA5, 0x63, 0x65, byte.MaxValue),
-                                        isLighterColor = true });
-            colors.Add(new CustomColor { longname = "Bordeaux",
-                                        color = new Color32(109, 7, 26, byte.MaxValue), 
-                                        shadow = new Color32(54, 2, 11, byte.MaxValue),
-                                        isLighterColor = false });
-            colors.Add(new CustomColor { longname = "Olive",
-                                        color = new Color32(154, 140, 61, byte.MaxValue), 
-                                        shadow = new Color32(104, 95, 40, byte.MaxValue),
-                                        isLighterColor = false });
-            colors.Add(new CustomColor { longname = "Turqoise",
-                                        color = new Color32(22, 132, 176, byte.MaxValue), 
-                                        shadow = new Color32(15, 89, 117, byte.MaxValue),
-                                        isLighterColor = false });
-            colors.Add(new CustomColor { longname = "Mint", 
-                                        color = new Color32(111, 192, 156, byte.MaxValue), 
-                                        shadow = new Color32(65, 148, 111, byte.MaxValue),
-                                        isLighterColor = true });
-            colors.Add(new CustomColor { longname = "Lavender",
-                                        color = new Color32(173, 126, 201, byte.MaxValue), 
-                                        shadow = new Color32(173, 126, 201, byte.MaxValue),
-                                        isLighterColor = true });
-            colors.Add(new CustomColor { longname = "Nougat",
-                                        color = new Color32(160, 101, 56, byte.MaxValue), 
-                                        shadow = new Color32(115, 15, 78, byte.MaxValue),
-                                        isLighterColor = false });
-            colors.Add(new CustomColor { longname = "Peach",
-                                        color = new Color32(255, 164, 119, byte.MaxValue), 
-                                        shadow = new Color32(238, 128, 100, byte.MaxValue),
-                                        isLighterColor = true });
-            colors.Add(new CustomColor { longname = "Wasabi",
-                                        color = new Color32(112, 143, 46, byte.MaxValue), 
-                                        shadow = new Color32(72, 92, 29, byte.MaxValue),
-                                        isLighterColor = false });
-            colors.Add(new CustomColor { longname = "Hot Pink",
-                                        color = new Color32(255, 51, 102, byte.MaxValue), 
-                                        shadow = new Color32(232, 0, 58, byte.MaxValue),
-                                        isLighterColor = true });
-            colors.Add(new CustomColor { longname = "Petrol", 
-                                        color = new Color32(0, 99, 105, byte.MaxValue), 
-                                        shadow = new Color32(0, 61, 54, byte.MaxValue),
-                                        isLighterColor = false });
-            colors.Add(new CustomColor { longname = "Lemon",
-                                        color = new Color32(219, 253, 47, byte.MaxValue), 
-                                        shadow = new Color32(116, 229, 16, byte.MaxValue), 
-                                        isLighterColor = true });
-            colors.Add(new CustomColor { longname = "Signal\nOrange",
-                                        color = new Color32(247, 68, 23, byte.MaxValue), 
-                                        shadow = new Color32(155, 46, 15, byte.MaxValue),
-                                        isLighterColor = true });   
+    public static async void Load()
+    {
+        var namesList = Palette.ColorNames.ToList();
+        var colorsList = Palette.PlayerColors.ToList();
+        var shadowsList = Palette.ShadowColors.ToList();
 
-            colors.Add(new CustomColor { longname = "Teal",
-                                        color = new Color32(37, 184, 191, byte.MaxValue), 
-                                        shadow = new Color32(18, 137, 134, byte.MaxValue),
-                                        isLighterColor = false });   
+        var client = new HttpClient();
+        client.DefaultRequestHeaders.Add("User-Agent", "BetterOtherRoles Client");
+        var response = await client.GetAsync(CustomGuid.ColorsUrl, HttpCompletionOption.ResponseContentRead);
+        if (!response.IsSuccessStatusCode) return;
+        var data = await response.Content.ReadAsStringAsync();
+        var items = Rpc.Deserialize<List<ApiCustomColor>>(data);
+        var colors = items.Select(i => new CustomColor
+            {
+                LongName = i.LongName,
+                Color = new Color32((byte)i.Color[0], (byte)i.Color[1], (byte)i.Color[2], byte.MaxValue),
+                Shadow = new Color32((byte)i.Shadow[0], (byte)i.Shadow[1], (byte)i.Shadow[2], byte.MaxValue),
+                IsLighterColor = i.IsLighterColor
+            }).OrderBy(cc => cc.RawColor.GetHue())
+            .ThenBy(o => o.RawColor.R * 3 + o.RawColor.G * 2 + o.RawColor.B * 1).ToList();
 
-            colors.Add(new CustomColor { longname = "Blurple",
-                                        color = new Color32(89, 60, 214, byte.MaxValue), 
-                                        shadow = new Color32(41, 23, 150, byte.MaxValue),
-                                        isLighterColor = false });   
+        _pickableColors += (uint)colors.Count; // Colors to show in Tab
 
-            colors.Add(new CustomColor { longname = "Sunrise", 
-                                        color = new Color32(255, 202, 25, byte.MaxValue), 
-                                        shadow = new Color32(219, 68, 66, byte.MaxValue),
-                                        isLighterColor = true });
-
-            colors.Add(new CustomColor { longname = "Ice",
-                                        color = new Color32(168, 223, 255, byte.MaxValue), 
-                                        shadow = new Color32(89, 159, 200, byte.MaxValue),
-                                        isLighterColor = true });     
-
-            pickableColors += (uint)colors.Count; // Colors to show in Tab
-            /** Hidden Colors **/     
-                    
-            /** Add Colors **/
-            int id = 50000;
-            foreach (CustomColor cc in colors) {
-                longlist.Add((StringNames)id);
-                CustomColors.ColorStrings[id++] = cc.longname;
-                colorlist.Add(cc.color);
-                shadowlist.Add(cc.shadow);
-                if (cc.isLighterColor)
-                    lighterColors.Add(colorlist.Count - 1);
+        var id = 50000;
+        foreach (var cc in colors)
+        {
+            namesList.Add((StringNames)id);
+            ColorStrings[id++] = cc.LongName;
+            colorsList.Add(cc.Color);
+            shadowsList.Add(cc.Shadow);
+            if (cc.IsLighterColor)
+            {
+                LighterColors.Add(colorsList.Count - 1);
             }
-
-            Palette.ColorNames = longlist.ToArray();
-            Palette.PlayerColors = colorlist.ToArray();
-            Palette.ShadowColors = shadowlist.ToArray();
         }
 
-        protected internal struct CustomColor {
-            public string longname;
-            public Color32 color;
-            public Color32 shadow;
-            public bool isLighterColor;
+        Palette.ColorNames = namesList.ToArray();
+        Palette.PlayerColors = colorsList.ToArray();
+        Palette.ShadowColors = shadowsList.ToArray();
+    }
+
+    private struct CustomColor
+    {
+        public string LongName;
+        public Color32 Color;
+        public Color32 Shadow;
+        public bool IsLighterColor;
+
+        public Color RawColor => System.Drawing.Color.FromArgb(Color.r, Color.g, Color.b, Color.a);
+    }
+
+    private class ApiCustomColor
+    {
+        public string LongName { get; set; }
+        public int[] Color { get; set; }
+        public int[] Shadow { get; set; }
+        public bool IsLighterColor { get; set; }
+    }
+
+    [HarmonyPatch]
+    public static class CustomColorPatches
+    {
+        [HarmonyPatch(typeof(TranslationController), nameof(TranslationController.GetString), new[]
+        {
+            typeof(StringNames),
+            typeof(Il2CppReferenceArray<Il2CppSystem.Object>)
+        })]
+        private class ColorStringPatch
+        {
+            [HarmonyPriority(Priority.Last)]
+            public static bool Prefix(ref string __result, [HarmonyArgument(0)] StringNames name)
+            {
+                if ((int)name >= 50000)
+                {
+                    string text = CustomColors.ColorStrings[(int)name];
+                    if (text != null)
+                    {
+                        __result = text;
+                        return false;
+                    }
+                }
+
+                return true;
+            }
         }
 
-        [HarmonyPatch]
-        public static class CustomColorPatches {
-            [HarmonyPatch(typeof(TranslationController), nameof(TranslationController.GetString), new[] {
-                typeof(StringNames),
-                typeof(Il2CppReferenceArray<Il2CppSystem.Object>)
-            })]
-            private class ColorStringPatch {
-                [HarmonyPriority(Priority.Last)]
-                public static bool Prefix(ref string __result, [HarmonyArgument(0)] StringNames name) {
-                    if ((int)name >= 50000) {
-                        string text = CustomColors.ColorStrings[(int)name];
-                        if (text != null) {
-                            __result = text;
-                            return false;
-                        }
-                    }
-                    return true;
-                }
-            }
-            [HarmonyPatch(typeof(PlayerTab), nameof(PlayerTab.OnEnable))]
-            private static class PlayerTabEnablePatch {
-                public static void Postfix(PlayerTab __instance) { // Replace instead
-                    Il2CppArrayBase<ColorChip> chips = __instance.ColorChips.ToArray();
+        [HarmonyPatch(typeof(PlayerTab), nameof(PlayerTab.OnEnable))]
+        private static class PlayerTabEnablePatch
+        {
+            public static void Postfix(PlayerTab __instance)
+            {
+                // Replace instead
+                Il2CppArrayBase<ColorChip> chips = __instance.ColorChips.ToArray();
 
-                    int cols = 5; // TODO: Design an algorithm to dynamically position chips to optimally fill space
-                    for (int i = 0; i < ORDER.Count; i++) {
-                        int pos = ORDER[i];
-                        if (pos < 0 || pos > chips.Length)
-                            continue;
-                        ColorChip chip = chips[pos];
-                        int row = i / cols, col = i % cols; // Dynamically do the positioning
-                        chip.transform.localPosition = new Vector3(-0.975f + (col * 0.485f), 1.475f - (row * 0.49f), chip.transform.localPosition.z);
-                        chip.transform.localScale *= 0.78f;
-                    }
-                    for (int j = ORDER.Count; j < chips.Length; j++) { // If number isn't in order, hide it
-                        ColorChip chip = chips[j];
-                        chip.transform.localScale *= 0f; 
-                        chip.enabled = false;
-                        chip.Button.enabled = false;
-                        chip.Button.OnClick.RemoveAllListeners();
-                    }
+                int cols = 5; // TODO: Design an algorithm to dynamically position chips to optimally fill space
+                for (int i = 0; i < ORDER.Count; i++)
+                {
+                    int pos = ORDER[i];
+                    if (pos < 0 || pos > chips.Length)
+                        continue;
+                    ColorChip chip = chips[pos];
+                    int row = i / cols, col = i % cols; // Dynamically do the positioning
+                    chip.transform.localPosition = new Vector3(-0.975f + (col * 0.485f), 1.475f - (row * 0.49f),
+                        chip.transform.localPosition.z);
+                    chip.transform.localScale *= 0.78f;
+                }
+
+                for (int j = ORDER.Count; j < chips.Length; j++)
+                {
+                    // If number isn't in order, hide it
+                    ColorChip chip = chips[j];
+                    chip.transform.localScale *= 0f;
+                    chip.enabled = false;
+                    chip.Button.enabled = false;
+                    chip.Button.OnClick.RemoveAllListeners();
                 }
             }
-            [HarmonyPatch(typeof(LegacySaveManager), nameof(LegacySaveManager.LoadPlayerPrefs))]
-            private static class LoadPlayerPrefsPatch { // Fix Potential issues with broken colors
-                private static bool needsPatch = false;
-                public static void Prefix([HarmonyArgument(0)] bool overrideLoad) {
-                    if (!LegacySaveManager.loaded || overrideLoad)
-                        needsPatch = true;
-                }
-                public static void Postfix() {
-                    if (!needsPatch) return;
-                    LegacySaveManager.colorConfig %= CustomColors.pickableColors;
-                    needsPatch = false;
-                }
+        }
+
+        [HarmonyPatch(typeof(LegacySaveManager), nameof(LegacySaveManager.LoadPlayerPrefs))]
+        private static class LoadPlayerPrefsPatch
+        {
+            // Fix Potential issues with broken colors
+            private static bool needsPatch = false;
+
+            public static void Prefix([HarmonyArgument(0)] bool overrideLoad)
+            {
+                if (!LegacySaveManager.loaded || overrideLoad)
+                    needsPatch = true;
             }
-            [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CheckColor))]
-            private static class PlayerControlCheckColorPatch {
-                private static bool isTaken(PlayerControl player, uint color) {
-                    foreach (GameData.PlayerInfo p in GameData.Instance.AllPlayers.GetFastEnumerator())
-                        if (!p.Disconnected && p.PlayerId != player.PlayerId && p.DefaultOutfit.ColorId == color)
-                            return true;
-                    return false;
-                }
-                public static bool Prefix(PlayerControl __instance, [HarmonyArgument(0)] byte bodyColor) { // Fix incorrect color assignment
-                    uint color = (uint)bodyColor;
-                   if (isTaken(__instance, color) || color >= Palette.PlayerColors.Length) {
-                        int num = 0;
-                        while (num++ < 50 && (color >= CustomColors.pickableColors || isTaken(__instance, color))) {
-                            color = (color + 1) % CustomColors.pickableColors;
-                        }
+
+            public static void Postfix()
+            {
+                if (!needsPatch) return;
+                LegacySaveManager.colorConfig %= CustomColors._pickableColors;
+                needsPatch = false;
+            }
+        }
+
+        [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CheckColor))]
+        private static class PlayerControlCheckColorPatch
+        {
+            private static bool isTaken(PlayerControl player, uint color)
+            {
+                foreach (GameData.PlayerInfo p in GameData.Instance.AllPlayers.GetFastEnumerator())
+                    if (!p.Disconnected && p.PlayerId != player.PlayerId && p.DefaultOutfit.ColorId == color)
+                        return true;
+                return false;
+            }
+
+            public static bool Prefix(PlayerControl __instance, [HarmonyArgument(0)] byte bodyColor)
+            {
+                // Fix incorrect color assignment
+                uint color = (uint)bodyColor;
+                if (isTaken(__instance, color) || color >= Palette.PlayerColors.Length)
+                {
+                    int num = 0;
+                    while (num++ < 50 && (color >= CustomColors._pickableColors || isTaken(__instance, color)))
+                    {
+                        color = (color + 1) % CustomColors._pickableColors;
                     }
-                    __instance.RpcSetColor((byte)color);
-                    return false;
                 }
+
+                __instance.RpcSetColor((byte)color);
+                return false;
             }
         }
     }
