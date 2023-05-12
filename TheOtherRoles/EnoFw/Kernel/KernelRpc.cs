@@ -119,8 +119,13 @@ public static class KernelRpc
         player.MyPhysics.StartCoroutine(isEnter ? player.MyPhysics.CoEnterVent(ventId) : player.MyPhysics.CoExitVent(ventId));
     }
     
-    public static void VersionHandshake(int clientId, Version version, Guid guid, float timer)
+    public static void VersionHandshake(int clientId, Version version, Guid guid, float timer, bool fromDefer = false)
     {
+        if (fromDefer && PlayerControl.LocalPlayer == null)
+        {
+            Modules.VersionHandshake.DeferHandshake();
+            return;
+        }
         var data = new Tuple<int, string, string, float>(clientId, version.ToString(), guid.ToString(), timer);
         Rpc_VersionHandshake(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }

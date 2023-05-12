@@ -349,6 +349,7 @@ namespace TheOtherRoles.Patches {
 
         static void Postfix(HudManager __instance)
         {
+            if (AmongUsClient.Instance == null) return;
             if (AmongUsClient.Instance.GameState != InnerNet.InnerNetClient.GameStates.Started)
             {
                 __instance.ReportButton.gameObject.SetActive(false);
