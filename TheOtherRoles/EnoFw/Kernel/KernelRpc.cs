@@ -121,7 +121,7 @@ public static class KernelRpc
     
     public static void VersionHandshake(int clientId, Version version, Guid guid, float timer, bool fromDefer = false)
     {
-        if (fromDefer && PlayerControl.LocalPlayer == null)
+        if (!fromDefer && PlayerControl.LocalPlayer == null)
         {
             Modules.VersionHandshake.DeferHandshake();
             return;
