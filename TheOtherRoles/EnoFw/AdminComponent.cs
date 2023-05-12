@@ -338,6 +338,7 @@ public class AdminComponent : MonoBehaviour
         
         private static void Postfix(HudManager __instance)
         {
+            if (__instance == null || __instance.MapButton == null || AmongUsClient.Instance == null) return;
             if (!_toggleSettingsButton || !_toggleSettingsButtonObject) {
                 _toggleSettingsButtonObject = Instantiate(__instance.MapButton.gameObject, __instance.MapButton.transform.parent);
                 _toggleSettingsButtonObject.transform.localPosition = __instance.MapButton.transform.localPosition + new Vector3(0, -0.66f, -500f);
