@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using BepInEx.Configuration;
+using TheOtherRoles.EnoFw.Utils;
 using TheOtherRoles.Players;
 using UnityEngine;
 
@@ -184,6 +185,7 @@ public class CustomOption
     }
 
     public string DisplayName => IsHeader ? $"→ {Name}" : Name;
+    public string DisplayValue => Type == OptionType.Boolean ? (bool)this ? Colors.Cs(Color.green, "✔") : Colors.Cs(Color.red, "✖") : this;
 
     public CustomOption OnlyForMaps(params Maps[] maps)
     {

@@ -12,8 +12,8 @@ namespace TheOtherRoles.Patches
     [HarmonyPatch]
     public static class CredentialsPatch
     {
-        private const string FullCredentialsText = "<color=#cc9e41>Better</color><color=#ff351f>OtherRoles</color>";
-        private static readonly string FullVersionText = $"<color=#cc9e41>v{TheOtherRolesPlugin.Version}</color>";
+        public const string FullCredentialsText = "<color=#cc9e41>Better</color><color=#ff351f>OtherRoles</color>";
+        public static readonly string FullVersionText = $"<color=#cc9e41>v{TheOtherRolesPlugin.Version}</color>";
 
         private static readonly string FullCredentialsVersion =
             $"<size=130%>{FullCredentialsText}</size> {FullVersionText}\n<size=60%>Based on <color=#ff351f>TheOtherRoles</color></size>";

@@ -971,12 +971,13 @@ namespace TheOtherRoles.Patches
                     if (BountyHunter.Instance.Player.GetPartner() == p) continue;
                     if (p == Mini.Instance.Player && !Mini.Instance.IsGrownUp) continue;
                     if (p == BountyHunter.Instance.Bounty) continue;
+                    if (p.Data.PlayerName == TORMapOptions.firstKillName) continue;
 
                     possibleTargets.Add(p);
                 }
                 BountyHunter.Instance.Bounty = null;
 
-                BountyHunter.Instance.Bounty = possibleTargets[TheOtherRoles.Rnd.Next(0, possibleTargets.Count)];
+                BountyHunter.Instance.Bounty = possibleTargets[Rnd.Next(0, possibleTargets.Count)];
                 if (BountyHunter.Instance.Bounty == null) return;
 
                 // Ghost Info

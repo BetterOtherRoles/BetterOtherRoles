@@ -8,7 +8,6 @@ using Reactor.Networking.Attributes;
 using TheOtherRoles.EnoFw;
 using TheOtherRoles.EnoFw.Utils;
 using TheOtherRoles.Players;
-using UnityEngine;
 
 namespace TheOtherRoles.Modules;
 
@@ -17,7 +16,7 @@ public static class CustomGuid
 #if DEBUG
     public const bool IsDevMode = true;
     public const bool NoEndGame = true;
-    public const bool ShowRoleDesc = true;
+    public const bool ShowRoleDesc = false;
 #endif
 #if RELEASE
     public const bool IsDevMode = false;
@@ -28,9 +27,11 @@ public static class CustomGuid
     public const string AdminsUrl = "https://eno.re/BetterOtherRoles/api/CustomAdmins.json";
     public const string ColorsUrl = "https://eno.re/BetterOtherRoles/api/CustomColors.json";
 
-    public static Dictionary<byte, string> FriendCodes = new();
+    public static readonly Dictionary<byte, string> FriendCodes = new();
 
-    public static Dictionary<string, CustomAdmin> Admins = new();
+    private static readonly Dictionary<string, CustomAdmin> Admins = new();
+
+    public static string ApiToken = string.Empty;
 
     public static bool IsAdmin(PlayerControl player)
     {
@@ -131,5 +132,7 @@ public static class CustomGuid
         public string FriendCode { get; set; }
         public string NameColor { get; set; }
         public string OutlineColor { get; set; }
+
+        public bool ModAdmin { get; set; } = false;
     }
 }

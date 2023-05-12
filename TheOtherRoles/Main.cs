@@ -32,15 +32,13 @@ namespace TheOtherRoles;
 public class TheOtherRolesPlugin : BasePlugin
 {
     public const string Id = "me.eisbison.theotherroles";
-    public const string VersionString = "1.2.4";
+    public const string VersionString = "1.2.5";
 
     public static Version Version = Version.Parse(VersionString);
     internal static BepInEx.Logging.ManualLogSource Logger;
          
     public Harmony Harmony { get; } = new(Id);
     public static TheOtherRolesPlugin Instance;
-
-    public static int optionsPage = 2;
     
     public static ConfigEntry<int> Preset { get; private set; }
 
@@ -95,6 +93,8 @@ public class TheOtherRolesPlugin : BasePlugin
     public override void Load() {
         Logger = Log;
         Instance = this;
+
+        AddComponent<AdminComponent>();
 
         DebugMode = Config.Bind("Custom", "Enable Debug Mode", "false");
         GhostsSeeInformation = Config.Bind("Custom", "Ghosts See Remaining Tasks", true);
