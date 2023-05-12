@@ -113,7 +113,7 @@ namespace TheOtherRoles.Patches {
                 else {
                     if (!playerVersions.ContainsKey(AmongUsClient.Instance.HostId) || TheOtherRolesPlugin.Version.CompareTo(playerVersions[AmongUsClient.Instance.HostId].version) != 0) {
                         kickingTimer += Time.deltaTime;
-                        if (kickingTimer > 10) {
+                        if (kickingTimer > 20) {
                             kickingTimer = 0;
 			                AmongUsClient.Instance.ExitGame(DisconnectReasons.ExitGame);
                             SceneChanger.ChangeScene("MainMenu");
