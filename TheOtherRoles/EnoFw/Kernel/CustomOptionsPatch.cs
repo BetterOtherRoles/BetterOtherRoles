@@ -326,7 +326,20 @@ public static class CustomOptionsPatch
         public static void Postfix(GameOptionsMenu __instance)
         {
             CreateCustomTabs(__instance);
+            AdaptTasksCount(__instance);
         }
+    }
+    
+    private static void AdaptTasksCount(GameOptionsMenu gameOptionsMenu)
+    {
+        var commonTasksOption = gameOptionsMenu.Children.FirstOrDefault(x => x.name == "NumCommonTasks")?.TryCast<NumberOption>();
+        if (commonTasksOption != null) commonTasksOption.ValidRange = new FloatRange(0f, 4f);
+
+        var shortTasksOption = gameOptionsMenu.Children.FirstOrDefault(x => x.name == "NumShortTasks")?.TryCast<NumberOption>();
+        if (shortTasksOption != null) shortTasksOption.ValidRange = new FloatRange(0f, 23f);
+
+        var longTasksOption = gameOptionsMenu.Children.FirstOrDefault(x => x.name == "NumLongTasks")?.TryCast<NumberOption>();
+        if (longTasksOption != null) longTasksOption.ValidRange = new FloatRange(0f, 15f);
     }
     
     [HarmonyPatch(typeof(ToggleOption), nameof(ToggleOption.OnEnable))]
