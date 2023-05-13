@@ -32,7 +32,7 @@ namespace TheOtherRoles;
 public class TheOtherRolesPlugin : BasePlugin
 {
     public const string Id = "me.eisbison.theotherroles";
-    public const string VersionString = "1.2.7";
+    public const string VersionString = "1.2.8";
 
     public static Version Version = Version.Parse(VersionString);
     internal static BepInEx.Logging.ManualLogSource Logger;
@@ -67,13 +67,14 @@ public class TheOtherRolesPlugin : BasePlugin
     // file="RegionInstallPlugin.cs" company="miniduikboot">
     public static void UpdateRegions() {
         ServerManager serverManager = FastDestroyableSingleton<ServerManager>.Instance;
-        var regions = new IRegionInfo[] {
-            new StaticHttpRegionInfo("Custom", StringNames.NoTranslation, Ip.Value, new Il2CppReferenceArray<ServerInfo>(new ServerInfo[1] { new ServerInfo("Custom", Ip.Value, Port.Value, false) })).CastFast<IRegionInfo>()
+        var regions = new[] {
+            new StaticHttpRegionInfo("Custom", StringNames.NoTranslation, Ip.Value, new Il2CppReferenceArray<ServerInfo>(new[] { new ServerInfo("Custom", Ip.Value, Port.Value, false) })).CastFast<IRegionInfo>(),
+            new StaticHttpRegionInfo("BOR", StringNames.NoTranslation, "http://87.98.131.98", new Il2CppReferenceArray<ServerInfo>(new[] { new ServerInfo("BOR", "http://87.98.131.98", 22023, false) })).CastFast<IRegionInfo>()
         };
             
-        IRegionInfo currentRegion = serverManager.CurrentRegion;
+        var currentRegion = serverManager.CurrentRegion;
         Logger.LogInfo($"Adding {regions.Length} regions");
-        foreach (IRegionInfo region in regions) {
+        foreach (var region in regions) {
             if (region == null) 
                 Logger.LogError("Could not add region");
             else {
