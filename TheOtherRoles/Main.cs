@@ -32,7 +32,7 @@ namespace TheOtherRoles;
 public class TheOtherRolesPlugin : BasePlugin
 {
     public const string Id = "me.eisbison.theotherroles";
-    public const string VersionString = "1.2.5";
+    public const string VersionString = "1.2.6";
 
     public static Version Version = Version.Parse(VersionString);
     internal static BepInEx.Logging.ManualLogSource Logger;
@@ -134,7 +134,7 @@ public class TheOtherRolesPlugin : BasePlugin
         AddComponent<ModUpdateBehaviour>();
         MainMenuPatch.addSceneChangeCallbacks();
             
-        System.Console.WriteLine($"Current GUID: {CustomGuid.CurrentGuid.ToString()}");
+        TheOtherRolesPlugin.Logger.LogDebug($"Current GUID: {CustomGuid.CurrentGuid.ToString()}");
         TheOtherRoles.LoadRoles();
         CustomGuid.FetchAdmins();
     }

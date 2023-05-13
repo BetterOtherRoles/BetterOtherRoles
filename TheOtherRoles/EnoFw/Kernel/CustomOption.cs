@@ -71,7 +71,7 @@ public class CustomOption
         }
         catch (Exception e)
         {
-            System.Console.WriteLine($"[STRING]{option.Key} => {option.SelectionIndex} ### {e}");
+            TheOtherRolesPlugin.Logger.LogDebug($"[STRING]{option.Key} => {option.SelectionIndex} ### {e}");
             return "";
             ;
         }
@@ -97,7 +97,7 @@ public class CustomOption
         }
         catch (Exception e)
         {
-            System.Console.WriteLine($"[FLOAT]{option.Key} => {option.SelectionIndex} ### {e}");
+            TheOtherRolesPlugin.Logger.LogDebug($"[FLOAT]{option.Key} => {option.SelectionIndex} ### {e}");
             return 0f;
         }
     }
@@ -110,7 +110,7 @@ public class CustomOption
         }
         catch (Exception e)
         {
-            System.Console.WriteLine($"[INT]{option.Key} => {option.SelectionIndex} ### {e}");
+            TheOtherRolesPlugin.Logger.LogDebug($"[INT]{option.Key} => {option.SelectionIndex} ### {e}");
             return 0;
         }
     }
@@ -131,7 +131,7 @@ public class CustomOption
         }
         catch (Exception e)
         {
-            System.Console.WriteLine($"[BOOL]{option.Key} => {option.SelectionIndex} ### {e}");
+            TheOtherRolesPlugin.Logger.LogDebug($"[BOOL]{option.Key} => {option.SelectionIndex} ### {e}");
             return false;
         }
     }

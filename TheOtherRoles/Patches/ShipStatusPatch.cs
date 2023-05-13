@@ -375,7 +375,7 @@ namespace TheOtherRoles.Patches
             /*
             foreach (var go in gameObjects)
             {
-                System.Console.WriteLine($"GameObject name: {go.name}");
+                TheOtherRolesPlugin.Logger.LogDebug($"GameObject name: {go.name}");
             }
             */
 

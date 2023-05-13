@@ -59,7 +59,7 @@ namespace TheOtherRoles.Modules
                     {
                         foreach (var client in AmongUsClient.Instance.allClients.ToArray())
                         {
-                            System.Console.WriteLine(
+                            TheOtherRolesPlugin.Logger.LogDebug(
                                 $"&&&&& {client.Character.Data.PlayerName}: {client.Id} {client.FriendCode}");
                         }
 

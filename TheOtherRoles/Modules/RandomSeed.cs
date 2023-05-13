@@ -99,7 +99,7 @@ public static class RandomSeed
         console1.usableDistance = usableDistance2;
         console2.usableDistance = usableDistance1;
         
-        System.Console.WriteLine($"Upload task moved to {console2.Room}");
+        TheOtherRolesPlugin.Logger.LogDebug($"Upload task moved to {console2.Room}");
     }
 
     public static void RandomizePositions(List<GameObject> gameObjects)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
 using Reactor.Networking.Attributes;
+using TheOtherRoles.EnoFw.Modules;
 using TheOtherRoles.EnoFw.Roles.Crewmate;
 using TheOtherRoles.EnoFw.Roles.Impostor;
 using TheOtherRoles.EnoFw.Roles.Modifiers;
@@ -117,27 +118,6 @@ public static class KernelRpc
         JackInTheBox.startAnimation(ventId);
         player.MyPhysics.StopAllCoroutines();
         player.MyPhysics.StartCoroutine(isEnter ? player.MyPhysics.CoEnterVent(ventId) : player.MyPhysics.CoExitVent(ventId));
-    }
-    
-    public static void VersionHandshake(int clientId, Version version, Guid guid, float timer, bool fromDefer = false)
-    {
-        if (!fromDefer && PlayerControl.LocalPlayer == null)
-        {
-            Modules.VersionHandshake.DeferHandshake();
-            return;
-        }
-        var data = new Tuple<int, string, string, float>(clientId, version.ToString(), guid.ToString(), timer);
-        Rpc_VersionHandshake(PlayerControl.LocalPlayer, Rpc.Serialize(data));
-    }
-    
-    [MethodRpc((uint)Rpc.Kernel.VersionHandshake)]
-    private static void Rpc_VersionHandshake(PlayerControl sender, string rawData)
-    {
-        var (clientId, versionString, guidString, timer) = Rpc.Deserialize<Tuple<int, string, string, float>>(rawData);
-        var version = Version.Parse(versionString);
-        var guid = Guid.Parse(guidString);
-        GameStartManagerPatch.playerVersions[clientId] = new GameStartManagerPatch.PlayerVersion(version, guid);
-        if (!AmongUsClient.Instance.AmHost && timer >= 0f) GameStartManagerPatch.timer = timer;
     }
     
     public static void SetModifier(byte modifierId, byte playerId, byte flag)

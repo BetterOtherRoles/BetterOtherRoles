@@ -262,7 +262,7 @@ public static class PositionTester
     {
         if (Transform == null) return;
         Transform.localPosition = pos;
-        System.Console.WriteLine($"{pos.x} {pos.y} {pos.z}");
+        TheOtherRolesPlugin.Logger.LogDebug($"{pos.x} {pos.y} {pos.z}");
     }
 }
 */

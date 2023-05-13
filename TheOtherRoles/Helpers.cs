@@ -164,7 +164,7 @@ namespace TheOtherRoles
             }
             catch
             {
-                System.Console.WriteLine("Error loading sprite from path: " + path);
+                TheOtherRolesPlugin.Logger.LogDebug("Error loading sprite from path: " + path);
             }
 
             return null;
@@ -190,7 +190,7 @@ namespace TheOtherRoles
             }
             catch
             {
-                System.Console.WriteLine("Error loading texture from resources: " + path);
+                TheOtherRolesPlugin.Logger.LogDebug("Error loading texture from resources: " + path);
             }
 
             return null;
@@ -241,7 +241,7 @@ namespace TheOtherRoles
             }
             catch
             {
-                System.Console.WriteLine("Error loading AudioClip from resources: " + path);
+                TheOtherRolesPlugin.Logger.LogDebug("Error loading AudioClip from resources: " + path);
             }
 
             return null;
@@ -683,15 +683,6 @@ namespace TheOtherRoles
             }
 
             return murder;
-        }
-
-        public static void shareGameVersion()
-        {
-            KernelRpc.VersionHandshake(
-                AmongUsClient.Instance.ClientId,
-                TheOtherRolesPlugin.Version,
-                CustomGuid.Guid,
-                AmongUsClient.Instance.AmHost ? Patches.GameStartManagerPatch.timer : -1);
         }
 
         public static List<PlayerControl> getKillerTeamMembers(PlayerControl player)

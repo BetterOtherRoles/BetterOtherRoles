@@ -782,7 +782,7 @@ namespace TheOtherRoles.Patches
         {
             static void Postfix(MeetingHud __instance)
             {
-                System.Console.WriteLine("MeetingServerStartPatch postfix");
+                TheOtherRolesPlugin.Logger.LogDebug("MeetingServerStartPatch postfix");
                 populateButtonsPostfix(__instance);
             }
         }

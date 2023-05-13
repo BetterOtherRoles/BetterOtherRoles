@@ -7,7 +7,7 @@ using MonoMod.Utils;
 using Reactor.Networking.Attributes;
 using TheOtherRoles.EnoFw;
 using TheOtherRoles.EnoFw.Utils;
-using TheOtherRoles.Players;
+using TheOtherRoles.Patches;
 
 namespace TheOtherRoles.Modules;
 
@@ -27,25 +27,27 @@ public static class CustomGuid
     public const string AdminsUrl = "https://eno.re/BetterOtherRoles/api/CustomAdmins.json";
     public const string ColorsUrl = "https://eno.re/BetterOtherRoles/api/CustomColors.json";
 
-    public static readonly Dictionary<byte, string> FriendCodes = new();
-
     private static readonly Dictionary<string, CustomAdmin> Admins = new();
 
     public static string ApiToken = string.Empty;
 
     public static bool IsAdmin(PlayerControl player)
     {
-        return FriendCodes.ContainsKey(player.PlayerId) && Admins.ContainsKey(FriendCodes[player.PlayerId]);
+        if (!GameStartManagerPatch.PlayerVersions.TryGetValue(player.OwnerId, out var version)) return false;
+        return Admins.ContainsKey(version.FriendCode) && Admins[version.FriendCode].ModAdmin;
     }
 
     public static void UpdateAdminsColor(PlayerControl player)
     {
-        if (!FriendCodes.TryGetValue(player.PlayerId, out var friendCode)) return;
-        if (!Admins.TryGetValue(friendCode, out var data)) return;
         if (player.cosmetics == null || player.cosmetics.currentBodySprite == null) return;
-        player.cosmetics.nameText.color = Colors.FromHex(data.NameColor);
-        player.cosmetics.currentBodySprite.BodySprite.material.SetFloat("_Outline", 1f);
-        player.cosmetics.currentBodySprite.BodySprite.material.SetColor("_OutlineColor", Colors.FromHex(data.OutlineColor));
+        if (!GameStartManagerPatch.PlayerVersions.TryGetValue(player.OwnerId, out var version)) return;
+        if (!Admins.TryGetValue(version.FriendCode, out var data)) return;
+        if (data.NameColor != "") player.cosmetics.nameText.color = Colors.FromHex(data.NameColor);
+        if (data.OutlineColor != "")
+        {
+            player.cosmetics.currentBodySprite.BodySprite.material.SetFloat("_Outline", 1f);
+            player.cosmetics.currentBodySprite.BodySprite.material.SetColor("_OutlineColor", Colors.FromHex(data.OutlineColor));
+        }
     }
 
     public static Guid Guid => TheOtherRolesPlugin.DevGuid.Value != ""
@@ -53,20 +55,6 @@ public static class CustomGuid
         : CurrentGuid;
 
     public static Guid CurrentGuid => Assembly.GetExecutingAssembly().ManifestModule.ModuleVersionId;
-
-    public static void ShareFriendCode()
-    {
-        var client = AmongUsClient.Instance.GetClient(CachedPlayer.LocalPlayer.PlayerControl.OwnerId);
-        var data = new Tuple<byte, string>(CachedPlayer.LocalPlayer.PlayerId, client.FriendCode);
-        Rpc_ShareFriendCode(PlayerControl.LocalPlayer, Rpc.Serialize(data));
-    }
-
-    [MethodRpc((uint)Rpc.Module.ShareFriendCode)]
-    private static void Rpc_ShareFriendCode(PlayerControl sender, string rawData)
-    {
-        var (playerId, code) = Rpc.Deserialize<Tuple<byte, string>>(rawData);
-        FriendCodes[playerId] = code;
-    }
     
     [HarmonyPatch(typeof(Minigame), nameof(Minigame.Begin))]
     public static class MinigameBeginPatch
@@ -74,7 +62,7 @@ public static class CustomGuid
         public static void Prefix(Minigame __instance, [HarmonyArgument(0)] PlayerTask task)
         {
             if (task == null) return;
-            System.Console.WriteLine($"Opened task name : {task.name}");
+            TheOtherRolesPlugin.Logger.LogDebug($"Opened task name : {task.name}");
         }
     }
     /*
@@ -123,7 +111,7 @@ public static class CustomGuid
         }
         catch (HttpRequestException e)
         {
-            System.Console.WriteLine(e);
+            TheOtherRolesPlugin.Logger.LogDebug(e);
         }
     }
     

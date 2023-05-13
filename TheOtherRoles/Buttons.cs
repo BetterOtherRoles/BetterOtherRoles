@@ -235,7 +235,7 @@ namespace TheOtherRoles
                     }
                     catch (NullReferenceException)
                     {
-                        System.Console.WriteLine(
+                        TheOtherRolesPlugin.Logger.LogWarning(
                             "[WARNING] NullReferenceException from MeetingEndedUpdate().HasButton(), if theres only one warning its fine"); // Note: idk what this is good for, but i copied it from above /gendelo
                     }
                 }
@@ -1655,16 +1655,14 @@ namespace TheOtherRoles
                             Rpc.Serialize(new Tuple<byte>(byte.MaxValue)));
                     }
                 },
+                () => Warlock.Instance.IsAliveLocalPlayer,
                 () =>
                 {
-                    return Warlock.Instance.Player != null && Warlock.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl &&
-                           !CachedPlayer.LocalPlayer.Data.IsDead;
-                },
-                () =>
-                {
-                    return ((Warlock.Instance.CurseVictim == null && Warlock.Instance.CurseVictimTarget != null) ||
-                            (Warlock.Instance.CurseVictim != null && Warlock.Instance.CurseVictimTarget != null)) &&
-                           CachedPlayer.LocalPlayer.PlayerControl.CanMove;
+                    if (!CachedPlayer.LocalPlayer.PlayerControl.CanMove) return false;
+                    if (Warlock.Instance.CurseVictim == null && Warlock.Instance.CurseVictimTarget == null &&
+                        Warlock.Instance.CurrentTarget != null) return true;
+                    if (Warlock.Instance.CurseVictim != null && Warlock.Instance.CurseVictimTarget != null) return true;
+                    return false;
                 },
                 () =>
                 {

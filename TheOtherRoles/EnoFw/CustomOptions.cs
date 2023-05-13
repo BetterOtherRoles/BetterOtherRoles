@@ -718,6 +718,6 @@ public static class CustomOptions
 
     public static void Load()
     {
-        System.Console.WriteLine("Custom options loaded");
+        TheOtherRolesPlugin.Logger.LogDebug("Custom options loaded");
     }
 }

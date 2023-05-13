@@ -204,7 +204,7 @@ namespace TheOtherRoles.Modules {
                     __instance.allHats = allHatsList.ToArray();
                 } catch (System.Exception e) {
                     if (!LOADED)
-                        System.Console.WriteLine("Unable to add Custom Hats\n" + e);
+                        TheOtherRolesPlugin.Logger.LogDebug("Unable to add Custom Hats\n" + e);
                 }
                 LOADED = true;
             }
@@ -256,7 +256,7 @@ namespace TheOtherRoles.Modules {
                                 __instance.Hat = CreateHatBehaviour(hats[0], true, true);
                             }
                         } catch (System.Exception e) {
-                            System.Console.WriteLine("Unable to create test hat\n" + e);
+                            TheOtherRolesPlugin.Logger.LogDebug("Unable to create test hat\n" + e);
                         }
                     }
                 }     
@@ -287,7 +287,7 @@ namespace TheOtherRoles.Modules {
                     } 
                     catch (System.Exception e) 
                     {
-                        System.Console.WriteLine("Unable to create test hat\n" + e);
+                        TheOtherRolesPlugin.Logger.LogDebug("Unable to create test hat\n" + e);
                         return true;
                     }
                     
@@ -425,9 +425,9 @@ namespace TheOtherRoles.Modules {
             try {
                 HttpStatusCode status = await FetchHats();
                 if (status != HttpStatusCode.OK)
-                    System.Console.WriteLine("Custom Hats could not be loaded\n");
+                    TheOtherRolesPlugin.Logger.LogDebug("Custom Hats could not be loaded\n");
             } catch (System.Exception e) {
-                System.Console.WriteLine("Unable to fetch hats\n" + e.Message);
+                TheOtherRolesPlugin.Logger.LogDebug("Unable to fetch hats\n" + e.Message);
             }
             running = false;
         }
@@ -450,7 +450,7 @@ namespace TheOtherRoles.Modules {
             try {
                 if (response.StatusCode != HttpStatusCode.OK) return response.StatusCode;
                 if (response.Content == null) {
-                    System.Console.WriteLine("Server returned no data: " + response.StatusCode.ToString());
+                    TheOtherRolesPlugin.Logger.LogDebug("Server returned no data: " + response.StatusCode.ToString());
                     return HttpStatusCode.ExpectationFailed;
                 }
                 string json = await response.Content.ReadAsStringAsync();
@@ -522,7 +522,7 @@ namespace TheOtherRoles.Modules {
                 hatdetails = hatdatas;
             } catch (System.Exception ex) {
                 TheOtherRolesPlugin.Instance.Log.LogError(ex.ToString());
-                System.Console.WriteLine(ex);
+                TheOtherRolesPlugin.Logger.LogDebug(ex);
             }
             return HttpStatusCode.OK;
         }

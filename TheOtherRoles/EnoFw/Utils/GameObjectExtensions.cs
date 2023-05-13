@@ -14,7 +14,7 @@ public static class GameObjectExtensions
             var obj = gameObject.transform.Find(key);
             if (obj == null)
             {
-                System.Console.WriteLine($"Unable to find GameObject named {key} in {obj.name}");
+                TheOtherRolesPlugin.Logger.LogDebug($"Unable to find GameObject named {key} in {obj.name}");
                 return null;
             }
             if (path.Length == 0) return obj.gameObject;
@@ -27,7 +27,7 @@ public static class GameObjectExtensions
         Component[] components = gameObject.GetComponents<Component>();
         foreach (var component in components)
         {
-            System.Console.WriteLine($"{component.name}: {component}");
+            TheOtherRolesPlugin.Logger.LogDebug($"{component.name}: {component}");
         }
     }
 }
