@@ -243,7 +243,7 @@ class RoleManagerSelectRolesPatch
         if (!isGuesserGamemode)
         {
             // Assign Guesser (chance to be impostor based on setting)
-            isEvilGuesser = Rnd.Next(1, 101) <= Guesser.Instance.IsImpostorRate * 10;
+            isEvilGuesser = Rnd.Next(1, 101) <= Guesser.Instance.IsImpostorRate;
             if ((Guesser.Instance.SpawnBothRate > 0 && Guesser.Instance.SpawnRate == 100) || Guesser.Instance.SpawnRate == 0)
             {
                 if (isEvilGuesser)

@@ -121,7 +121,7 @@ public class CustomColors
                 // Replace instead
                 Il2CppArrayBase<ColorChip> chips = __instance.ColorChips.ToArray();
 
-                int cols = 5; // TODO: Design an algorithm to dynamically position chips to optimally fill space
+                int cols = 6; // TODO: Design an algorithm to dynamically position chips to optimally fill space
                 for (int i = 0; i < ORDER.Count; i++)
                 {
                     int pos = ORDER[i];
