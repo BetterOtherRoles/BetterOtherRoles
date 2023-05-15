@@ -303,10 +303,10 @@ public static class KernelRpc
                 Arsonist.Instance.Player = player;
                 break;
             case RoleId.EvilGuesser:
-                Guesser.Instance.EvilGuesser = player;
+                EvilGuesser.Instance.Player = player;
                 break;
             case RoleId.NiceGuesser:
-                Guesser.Instance.NiceGuesser = player;
+                NiceGuesser.Instance.Player = player;
                 break;
             case RoleId.BountyHunter:
                 BountyHunter.Instance.Player = player;

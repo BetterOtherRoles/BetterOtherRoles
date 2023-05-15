@@ -78,7 +78,7 @@ namespace TheOtherRoles
             "Kill the Crewmates by whispering to him", "Order someone to die or kill someone.", RoleId.Whisperer);
 
         public static RoleInfo undertaker = new RoleInfo("Undertaker", Undertaker.Instance.Color,
-            "Hide Dead Bodies by Dragging them to a secret location", "Drag dead bodies away.", RoleId.Whisperer);
+            "Hide Dead Bodies by Dragging them", "Drag dead bodies away.", RoleId.Undertaker);
 
         public static RoleInfo eraser = new RoleInfo("Eraser", Eraser.Instance.Color,
             "Kill the Crewmates and erase their roles", "Erase the roles of your enemies", RoleId.Eraser);
@@ -135,10 +135,10 @@ namespace TheOtherRoles
         public static RoleInfo arsonist = new RoleInfo("Arsonist", Arsonist.Instance.Color, "Let them burn",
             "Let them burn", RoleId.Arsonist, true);
 
-        public static RoleInfo goodGuesser = new RoleInfo("Nice Guesser", Guesser.Instance.Color, "Guess and shoot",
+        public static RoleInfo goodGuesser = new RoleInfo("Nice Guesser", NiceGuesser.Instance.Color, "Guess and shoot",
             "Guess and shoot", RoleId.NiceGuesser);
 
-        public static RoleInfo badGuesser = new RoleInfo("Evil Guesser", Palette.ImpostorRed, "Guess and shoot",
+        public static RoleInfo badGuesser = new RoleInfo("Evil Guesser", EvilGuesser.Instance.Color, "Guess and shoot",
             "Guess and shoot", RoleId.EvilGuesser);
 
         public static RoleInfo vulture = new RoleInfo("Vulture", Vulture.Instance.Color, "Eat corpses to win", "Eat dead bodies",
@@ -352,8 +352,8 @@ namespace TheOtherRoles
             if (p == Spy.Instance.Player) infos.Add(spy);
             if (p == SecurityGuard.Instance.Player) infos.Add(securityGuard);
             if (p == Arsonist.Instance.Player) infos.Add(arsonist);
-            if (p == Guesser.Instance.NiceGuesser) infos.Add(goodGuesser);
-            if (p == Guesser.Instance.EvilGuesser) infos.Add(badGuesser);
+            if (p == NiceGuesser.Instance.Player) infos.Add(goodGuesser);
+            if (p == EvilGuesser.Instance.Player) infos.Add(badGuesser);
             if (p == BountyHunter.Instance.Player) infos.Add(bountyHunter);
             if (p == Vulture.Instance.Player) infos.Add(vulture);
             if (p == Medium.Instance.Player) infos.Add(medium);

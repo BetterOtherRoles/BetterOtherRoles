@@ -469,17 +469,12 @@ namespace TheOtherRoles.Patches
             List<Transform> buttons = new List<Transform>();
             Transform selectedButton = null;
 
-            foreach (RoleInfo roleInfo in RoleInfo.allRoleInfos)
+            foreach (var roleInfo in RoleInfo.allRoleInfos)
             {
-                RoleId guesserRole =
-                    (Guesser.Instance.NiceGuesser != null &&
-                     CachedPlayer.LocalPlayer.PlayerId == Guesser.Instance.NiceGuesser.PlayerId)
-                        ? RoleId.NiceGuesser
-                        : RoleId.EvilGuesser;
-                if (roleInfo.isModifier || roleInfo.roleId == guesserRole || (!HandleGuesser.evilGuesserCanGuessSpy &&
-                                                                              guesserRole == RoleId.EvilGuesser &&
-                                                                              roleInfo.roleId == RoleId.Spy &&
-                                                                              !HandleGuesser.isGuesserGm))
+                var guesserRoleId = NiceGuesser.Instance.IsLocalPlayer ? RoleId.NiceGuesser : RoleId.EvilGuesser;
+                if (roleInfo.isModifier ||
+                    roleInfo.roleId == guesserRoleId ||
+                    (!HandleGuesser.evilGuesserCanGuessSpy && guesserRoleId == RoleId.EvilGuesser && roleInfo.roleId == RoleId.Spy && !HandleGuesser.isGuesserGm))
                     continue; // Not guessable roles & modifier
                 if (HandleGuesser.isGuesserGm &&
                     (roleInfo.roleId == RoleId.NiceGuesser || roleInfo.roleId == RoleId.EvilGuesser))
@@ -487,34 +482,30 @@ namespace TheOtherRoles.Patches
                 if (HandleGuesser.isGuesserGm && CachedPlayer.LocalPlayer.PlayerControl.Data.Role.IsImpostor &&
                     !HandleGuesser.evilGuesserCanGuessSpy && roleInfo.roleId == RoleId.Spy) continue;
                 // remove all roles that cannot spawn due to the settings from the ui.
-                RoleManagerSelectRolesPatch.RoleAssignmentData roleData =
-                    RoleManagerSelectRolesPatch.getRoleAssignmentData();
-                if (roleData.neutralSettings.ContainsKey((byte)roleInfo.roleId) &&
-                    roleData.neutralSettings[(byte)roleInfo.roleId] == 0) continue;
-                else if (roleData.impSettings.ContainsKey((byte)roleInfo.roleId) &&
-                         roleData.impSettings[(byte)roleInfo.roleId] == 0) continue;
-                else if (roleData.crewSettings.ContainsKey((byte)roleInfo.roleId) &&
-                         roleData.crewSettings[(byte)roleInfo.roleId] == 0) continue;
-                else if (new List<RoleId>() { RoleId.Janitor, RoleId.Godfather, RoleId.Mafioso }.Contains(
-                             roleInfo.roleId) && CustomOptions.MafiaSpawnRate.SelectionIndex == 0) continue;
-                else if (roleInfo.roleId == RoleId.Sidekick &&
-                         (!Jackal.Instance.JackalCanCreateSidekick || Jackal.Instance.SpawnRate == 0)) continue;
-                if (roleInfo.roleId == RoleId.Deputy &&
-                    (Sheriff.Instance.DeputySpawnRate == 0 || Sheriff.Instance.SpawnRate == 0)) continue;
+                var roleData = RoleManagerSelectRolesPatch.getRoleAssignmentData();
+                TheOtherRolesPlugin.Instance.Log.LogDebug($"Role: {roleInfo.name} {(byte)roleInfo.roleId}");
+                TheOtherRolesPlugin.Instance.Log.LogDebug(Rpc.Serialize(roleData.neutralSettings));
+                TheOtherRolesPlugin.Instance.Log.LogDebug(Rpc.Serialize(roleData.impSettings));
+                TheOtherRolesPlugin.Instance.Log.LogDebug(Rpc.Serialize(roleData.crewSettings));
+                if (roleData.neutralSettings.ContainsKey((byte)roleInfo.roleId) && roleData.neutralSettings[(byte)roleInfo.roleId] == 0) continue;
+                if (roleData.impSettings.ContainsKey((byte)roleInfo.roleId) && roleData.impSettings[(byte)roleInfo.roleId] == 0) continue;
+                if (roleData.crewSettings.ContainsKey((byte)roleInfo.roleId) && roleData.crewSettings[(byte)roleInfo.roleId] == 0) continue;
+                if (new List<RoleId> { RoleId.Janitor, RoleId.Godfather, RoleId.Mafioso }.Contains(roleInfo.roleId) && CustomOptions.MafiaSpawnRate.SelectionIndex == 0) continue;
+                if (roleInfo.roleId == RoleId.Sidekick && (!Jackal.Instance.JackalCanCreateSidekick || Jackal.Instance.SpawnRate == 0)) continue;
+                if (roleInfo.roleId == RoleId.Deputy && (Sheriff.Instance.DeputySpawnRate == 0 || Sheriff.Instance.SpawnRate == 0)) continue;
                 if (roleInfo.roleId == RoleId.Pursuer && Lawyer.Instance.SpawnRate == 0) continue;
                 if (roleInfo.roleId == RoleId.Spy && roleData.impostors.Count <= 1) continue;
-                if (roleInfo.roleId == RoleId.Prosecutor &&
-                    (Lawyer.Instance.IsProsecutorChance == 0 || Lawyer.Instance.SpawnRate == 0)) continue;
-                if (roleInfo.roleId == RoleId.Lawyer &&
-                    (Lawyer.Instance.IsProsecutorChance == 100 || Lawyer.Instance.SpawnRate == 0)) continue;
-                if (Snitch.Instance.Player != null && HandleGuesser.guesserCantGuessSnitch)
+                if (roleInfo.roleId == RoleId.Prosecutor && (Lawyer.Instance.IsProsecutorChance == 0 || Lawyer.Instance.SpawnRate == 0)) continue;
+                if (roleInfo.roleId == RoleId.Lawyer && (Lawyer.Instance.IsProsecutorChance == 100 || Lawyer.Instance.SpawnRate == 0)) continue;
+                if (roleInfo.roleId == RoleId.Fallen) continue;
+                if (Snitch.Instance.HasPlayer && HandleGuesser.guesserCantGuessSnitch)
                 {
                     var (playerCompleted, playerTotal) = TasksHandler.taskInfo(Snitch.Instance.Player.Data);
                     int numberOfLeftTasks = playerTotal - playerCompleted;
                     if (numberOfLeftTasks <= 0 && roleInfo.roleId == RoleId.Snitch) continue;
                 }
 
-                Transform buttonParent = (new GameObject()).transform;
+                Transform buttonParent = new GameObject().transform;
                 buttonParent.SetParent(container);
                 Transform button = UnityEngine.Object.Instantiate(buttonTemplate, buttonParent);
                 Transform buttonMask = UnityEngine.Object.Instantiate(maskTemplate, buttonParent);
@@ -588,7 +579,7 @@ namespace TheOtherRoles.Patches
                                 });
 
                             // Shoot player and send chat info if activated
-                            Guesser.GuesserShoot(CachedPlayer.LocalPlayer.PlayerId, dyingTarget.PlayerId,
+                            HandleGuesser.GuesserShoot(CachedPlayer.LocalPlayer.PlayerId, dyingTarget.PlayerId,
                                 focusedTarget.PlayerId, (byte)roleInfo.roleId);
                         }
                     }));

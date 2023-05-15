@@ -105,7 +105,7 @@ public class Thief : AbstractRole
             Jackal.Instance.FormerJackals.Add(target);
         }
 
-        if (target == Guesser.Instance.EvilGuesser) Guesser.Instance.EvilGuesser = thiefPlayer;
+        if (target == EvilGuesser.Instance.Player) EvilGuesser.Instance.Player = thiefPlayer;
         if (target == Godfather.Instance.Player) Godfather.Instance.Player = thiefPlayer;
         if (target == Mafioso.Instance.Player) Mafioso.Instance.Player = thiefPlayer;
         if (target == Janitor.Instance.Player) Janitor.Instance.Player = thiefPlayer;

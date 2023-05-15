@@ -2,7 +2,6 @@ using HarmonyLib;
 using System;
 using TheOtherRoles.Utilities;
 using TheOtherRoles.CustomGameModes;
-using TheOtherRoles.EnoFw.Kernel;
 using TheOtherRoles.EnoFw.Roles.Crewmate;
 using TheOtherRoles.EnoFw.Roles.Impostor;
 using TheOtherRoles.EnoFw.Roles.Modifiers;
@@ -54,7 +53,8 @@ public static class TheOtherRoles
         Witch.Instance.ClearAndReload();
         Arsonist.Instance.ClearAndReload();
         Fallen.Instance.ClearAndReload();
-        Guesser.Instance.ClearAndReload();
+        NiceGuesser.Instance.ClearAndReload();
+        EvilGuesser.Instance.ClearAndReload();
         Jackal.Instance.ClearAndReload();
         Sidekick.Instance.ClearAndReload();
         Jester.Instance.ClearAndReload();

@@ -51,6 +51,16 @@ public abstract class AbstractRole
         Neutral
     }
 
+    public virtual bool IsPlayer(byte playerId)
+    {
+        return HasPlayer && Player.PlayerId == playerId;
+    }
+
+    public virtual bool IsPlayer(PlayerControl player)
+    {
+        return IsPlayer(player.PlayerId);
+    }
+
     public virtual void SetTarget(PlayerControl player)
     {
         if (!CanTarget) return;
@@ -73,7 +83,7 @@ public abstract class AbstractRole
             Cs(Name),
             0f,
             100f,
-            50f,
+            0f,
             10f,
             null,
             string.Empty,

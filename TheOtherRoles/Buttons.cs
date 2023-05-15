@@ -2324,7 +2324,7 @@ namespace TheOtherRoles
             bomberButton = new CustomButton(
                 () =>
                 {
-                    if (Helpers.checkMurderAttempt(Bomber.Instance.Player, Bomber.Instance.Player) != MurderAttemptResult.BlankKill)
+                    if (Helpers.checkMurderAttempt(Bomber.Instance.Player, Bomber.Instance.Player, showShieldAnimation: false) != MurderAttemptResult.BlankKill)
                     {
                         var pos = CachedPlayer.LocalPlayer.transform.position;
                         Bomber.PlaceBomb(pos.x, pos.y, pos.y);

@@ -108,10 +108,10 @@ public class Shifter : AbstractSimpleModifier
             if (repeat) ShiftRole(player2, player1, false);
             SecurityGuard.Instance.Player = player1;
         }
-        else if (Guesser.Instance.NiceGuesser != null && Guesser.Instance.NiceGuesser == player2)
+        else if (NiceGuesser.Instance.HasPlayer && NiceGuesser.Instance.Player == player2)
         {
             if (repeat) ShiftRole(player2, player1, false);
-            Guesser.Instance.NiceGuesser = player1;
+            NiceGuesser.Instance.Player = player1;
         }
         else if (Medium.Instance.HasPlayer && Medium.Instance.Player == player2)
         {

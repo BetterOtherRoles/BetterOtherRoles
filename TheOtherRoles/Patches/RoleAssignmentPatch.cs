@@ -90,10 +90,7 @@ class RoleManagerSelectRolesPatch
         }
     };
 
-    public static bool isGuesserGamemode
-    {
-        get { return TORMapOptions.gameMode == CustomGamemodes.Guesser; }
-    }
+    public static bool isGuesserGamemode => TORMapOptions.gameMode == CustomGamemodes.Guesser;
 
     public static void Postfix()
     {
@@ -177,6 +174,10 @@ class RoleManagerSelectRolesPatch
         impSettings.Add((byte)RoleId.Witch, Witch.Instance.SpawnRate / 10);
         impSettings.Add((byte)RoleId.Ninja, Ninja.Instance.SpawnRate / 10);
         impSettings.Add((byte)RoleId.Bomber, Bomber.Instance.SpawnRate / 10);
+        if (!isGuesserGamemode)
+        {
+            impSettings.Add((byte)RoleId.EvilGuesser, EvilGuesser.Instance.SpawnRate / 10);
+        }
 
         neutralSettings.Add((byte)RoleId.Jester, Jester.Instance.SpawnRate / 10);
         neutralSettings.Add((byte)RoleId.Arsonist, Arsonist.Instance.SpawnRate / 10);
@@ -202,8 +203,12 @@ class RoleManagerSelectRolesPatch
         crewSettings.Add((byte)RoleId.Hacker, Hacker.Instance.SpawnRate / 10);
         crewSettings.Add((byte)RoleId.Tracker, Tracker.Instance.SpawnRate / 10);
         crewSettings.Add((byte)RoleId.Snitch, Snitch.Instance.SpawnRate / 10);
-        crewSettings.Add((byte)RoleId.Medium, Medic.Instance.SpawnRate / 10);
+        crewSettings.Add((byte)RoleId.Medium, Medium.Instance.SpawnRate / 10);
         crewSettings.Add((byte)RoleId.Trapper, Trapper.Instance.SpawnRate / 10);
+        if (!isGuesserGamemode)
+        {
+            crewSettings.Add((byte)RoleId.NiceGuesser, NiceGuesser.Instance.SpawnRate / 10);
+        }
         if (impostors.Count > 1)
         {
             // Only add Spy if more than 1 impostor as the spy role is otherwise useless
@@ -240,19 +245,6 @@ class RoleManagerSelectRolesPatch
 
     private static void selectFactionForFactionIndependentRoles(RoleAssignmentData data)
     {
-        if (!isGuesserGamemode)
-        {
-            // Assign Guesser (chance to be impostor based on setting)
-            isEvilGuesser = Rnd.Next(1, 101) <= Guesser.Instance.IsImpostorRate;
-            if ((Guesser.Instance.SpawnBothRate > 0 && Guesser.Instance.SpawnRate == 100) || Guesser.Instance.SpawnRate == 0)
-            {
-                if (isEvilGuesser)
-                    data.impSettings.Add((byte)RoleId.EvilGuesser, Guesser.Instance.SpawnRate / 10);
-                else
-                    data.crewSettings.Add((byte)RoleId.NiceGuesser, Guesser.Instance.SpawnRate / 10);
-            }
-        }
-
         // Assign Sheriff
         if ((Deputy.Instance.SpawnRate > 0 && Sheriff.Instance.SpawnRate == 100) || Deputy.Instance.SpawnRate == 0)
             data.crewSettings.Add((byte)RoleId.Sheriff, Sheriff.Instance.SpawnRate / 10);
@@ -334,13 +326,10 @@ class RoleManagerSelectRolesPatch
     private static void assignDependentRoles(RoleAssignmentData data)
     {
         // Roles that prob have a dependent role
-        bool guesserFlag = Guesser.Instance.SpawnBothRate > 0
-                           && Guesser.Instance.SpawnRate > 0;
         bool sheriffFlag = Sheriff.Instance.DeputySpawnRate > 0
                            && Sheriff.Instance.SpawnRate > 0;
-
-        if (isGuesserGamemode) guesserFlag = false;
-        if (!guesserFlag && !sheriffFlag) return; // assignDependentRoles is not needed
+        
+        if (!sheriffFlag) return; // assignDependentRoles is not needed
 
         int crew = data.crewmates.Count < data.maxCrewmateRoles
             ? data.crewmates.Count
@@ -353,24 +342,14 @@ class RoleManagerSelectRolesPatch
 
         // set to false if needed, otherwise we can skip the loop
         bool isSheriff = !sheriffFlag;
-        bool isGuesser = !guesserFlag;
 
         // --- Simulate Crew & Imp ticket system ---
-        while (crew > 0 && (!isSheriff || (!isEvilGuesser && !isGuesser)))
+        while (crew > 0 && !isSheriff)
         {
             if (!isSheriff && Rnd.Next(crewValues) < Sheriff.Instance.SpawnRate / 10)
                 isSheriff = true;
-            if (!isEvilGuesser && !isGuesser &&
-                Rnd.Next(crewValues) < Guesser.Instance.SpawnRate / 10) isGuesser = true;
             crew--;
             crewValues -= crewSteps;
-        }
-
-        while (imp > 0 && (isEvilGuesser && !isGuesser))
-        {
-            if (Rnd.Next(impValues) < Guesser.Instance.SpawnRate / 10) isGuesser = true;
-            imp--;
-            impValues -= impSteps;
         }
 
         // --- Assign Main Roles if they won the lottery ---
@@ -381,26 +360,6 @@ class RoleManagerSelectRolesPatch
             byte sheriff = setRoleToRandomPlayer((byte)RoleId.Sheriff, data.crewmates);
             data.crewmates.ToList().RemoveAll(x => x.PlayerId == sheriff);
             data.maxCrewmateRoles--;
-        }
-
-        if (!isGuesserGamemode)
-        {
-            if (!isEvilGuesser && isGuesser && Guesser.Instance.NiceGuesser == null && data.crewmates.Count > 0 &&
-                data.maxCrewmateRoles > 0 && guesserFlag)
-            {
-                // Set Nice Guesser cause he won the lottery
-                byte niceGuesser = setRoleToRandomPlayer((byte)RoleId.NiceGuesser, data.crewmates);
-                data.crewmates.ToList().RemoveAll(x => x.PlayerId == niceGuesser);
-                data.maxCrewmateRoles--;
-            }
-            else if (isEvilGuesser && isGuesser && Guesser.Instance.EvilGuesser == null && data.impostors.Count > 0 &&
-                     data.maxImpostorRoles > 0 && guesserFlag)
-            {
-                // Set Evil Guesser cause he won the lottery
-                byte evilGuesser = setRoleToRandomPlayer((byte)RoleId.EvilGuesser, data.impostors);
-                data.impostors.ToList().RemoveAll(x => x.PlayerId == evilGuesser);
-                data.maxImpostorRoles--;
-            }
         }
 
         // --- Assign Dependent Roles if main role exists ---
@@ -419,40 +378,6 @@ class RoleManagerSelectRolesPatch
         }
 
         data.crewSettings.TryAdd((byte)RoleId.Sheriff, 0);
-
-        if (!isGuesserGamemode)
-        {
-            if (!isEvilGuesser && Guesser.Instance.NiceGuesser != null)
-            {
-                // Other Guesser (evil)
-                if (Guesser.Instance.SpawnBothRate == 100 && data.impostors.Count > 0 &&
-                    data.maxImpostorRoles > 0)
-                {
-                    // Force other guesser (evil)
-                    byte bothGuesser = setRoleToRandomPlayer((byte)RoleId.EvilGuesser, data.impostors);
-                    data.impostors.ToList().RemoveAll(x => x.PlayerId == bothGuesser);
-                    data.maxImpostorRoles--;
-                }
-                else if (Guesser.Instance.SpawnBothRate < 100) // Dont force, add Guesser (evil) to the ticket system
-                    data.impSettings.Add((byte)RoleId.EvilGuesser,
-                        Guesser.Instance.SpawnBothRate);
-            }
-            else if (isEvilGuesser && Guesser.Instance.EvilGuesser != null)
-            {
-                // ELSE other Guesser (nice)
-                if (Guesser.Instance.SpawnBothRate == 100 && data.crewmates.Count > 0 &&
-                    data.maxCrewmateRoles > 0)
-                {
-                    // Force other guesser (nice)
-                    byte bothGuesser = setRoleToRandomPlayer((byte)RoleId.NiceGuesser, data.crewmates);
-                    data.crewmates.ToList().RemoveAll(x => x.PlayerId == bothGuesser);
-                    data.maxCrewmateRoles--;
-                }
-                else if (Guesser.Instance.SpawnBothRate < 100) // Dont force, add Guesser (nice) to the ticket system
-                    data.crewSettings.Add((byte)RoleId.NiceGuesser,
-                        Guesser.Instance.SpawnBothRate);
-            }
-        }
     }
 
     private static void assignChanceRoles(RoleAssignmentData data)

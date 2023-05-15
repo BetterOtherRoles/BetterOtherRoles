@@ -163,7 +163,6 @@ public static class CommonRpc
         // Impostor roles
 
         // Other roles
-        if (Guesser.Instance.IsGuesser(player.PlayerId)) Guesser.Instance.Clear(player.PlayerId);
         if (player == Jackal.Instance.Player)
         {
             // Promote Sidekick and hence override the the Jackal or erase Jackal

@@ -1,4 +1,4 @@
-namespace TheOtherRoles;
+﻿namespace TheOtherRoles.EnoFw;
 
 public enum RoleId
 {
