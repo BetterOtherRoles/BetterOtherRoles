@@ -5,6 +5,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AmongUs.Data;
+using Assets.InnerNet;
 using BepInEx;
 using BepInEx.Unity.IL2CPP.Utils;
 using Newtonsoft.Json.Linq;
@@ -13,8 +14,6 @@ using Twitch;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using Action = System.Action;
-using IntPtr = System.IntPtr;
 using Version = SemanticVersioning.Version;
 
 namespace TheOtherRoles.Modules 
@@ -107,7 +106,7 @@ namespace TheOtherRoles.Modules
                     passiveButton.OnClick.RemoveAllListeners();
                     passiveButton.OnClick = new Button.ButtonClickedEvent();
                     passiveButton.OnClick.AddListener((Action)(() => {
-                        mgr.StartCoroutine(CoShowAnnouncement($"<size=150%>A MANUAL UPDATE IS REQUIRED</size>"));
+                        mgr.StartCoroutine(CoShowAnnouncement("<size=150%>A MANUAL UPDATE IS REQUIRED</size>"));
                     }));
                 }
             } catch {  
@@ -157,7 +156,7 @@ namespace TheOtherRoles.Modules
             popUp.gameObject.SetActive(show);
             yield return popUp.Init(show);
             
-            var announcementS = new Assets.InnerNet.Announcement
+            var announcementS = new Announcement
             {
                 Title = "BOR Announcement",
                 Text = announcement, // Can add clickable urls like this: "[https://www.google.de/]Text[]"

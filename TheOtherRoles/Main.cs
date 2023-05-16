@@ -21,6 +21,7 @@ using Reactor.Networking.Attributes;
 using AmongUs.Data;
 using TheOtherRoles.EnoFw;
 using TheOtherRoles.EnoFw.Kernel;
+using TheOtherRoles.EnoFw.Modules;
 using TheOtherRoles.Patches;
 
 namespace TheOtherRoles;
@@ -66,15 +67,11 @@ public class TheOtherRolesPlugin : BasePlugin
     // This is part of the Mini.RegionInstaller, Licensed under GPLv3
     // file="RegionInstallPlugin.cs" company="miniduikboot">
     public static void UpdateRegions() {
-        ServerManager serverManager = FastDestroyableSingleton<ServerManager>.Instance;
-        var regions = new[] {
-            new StaticHttpRegionInfo("Custom", StringNames.NoTranslation, Ip.Value, new Il2CppReferenceArray<ServerInfo>(new[] { new ServerInfo("Custom", Ip.Value, Port.Value, false) })).CastFast<IRegionInfo>(),
-            new StaticHttpRegionInfo("BOR", StringNames.NoTranslation, "http://87.98.131.98", new Il2CppReferenceArray<ServerInfo>(new[] { new ServerInfo("BOR", "http://87.98.131.98", 22023, false) })).CastFast<IRegionInfo>()
-        };
-            
+        var serverManager = FastDestroyableSingleton<ServerManager>.Instance;
+
         var currentRegion = serverManager.CurrentRegion;
-        Logger.LogInfo($"Adding {regions.Length} regions");
-        foreach (var region in regions) {
+        Logger.LogInfo($"Adding {CustomRegions.Regions.Length} regions");
+        foreach (var region in CustomRegions.Regions) {
             if (region == null) 
                 Logger.LogError("Could not add region");
             else {
@@ -112,7 +109,7 @@ public class TheOtherRolesPlugin : BasePlugin
         Port = Config.Bind("Custom", "Custom Server Port", (ushort)22023);
 
         defaultRegions = ServerManager.DefaultRegions;
-
+        
         UpdateRegions();
             
         DevGuid = Config.Bind("Custom", "Dev Guid", "");
@@ -135,7 +132,7 @@ public class TheOtherRolesPlugin : BasePlugin
         AddComponent<ModUpdateBehaviour>();
         MainMenuPatch.addSceneChangeCallbacks();
             
-        TheOtherRolesPlugin.Logger.LogDebug($"Current GUID: {CustomGuid.CurrentGuid.ToString()}");
+        Logger.LogDebug($"Current GUID: {CustomGuid.CurrentGuid.ToString()}");
         TheOtherRoles.LoadRoles();
         CustomGuid.FetchAdmins();
     }

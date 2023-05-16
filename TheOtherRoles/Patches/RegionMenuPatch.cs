@@ -27,6 +27,7 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using TheOtherRoles.EnoFw.Modules;
 using TheOtherRoles.Utilities;
 using UnityEngine.Events;
 
