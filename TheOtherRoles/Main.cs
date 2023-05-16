@@ -92,7 +92,7 @@ public class TheOtherRolesPlugin : BasePlugin
         Logger = Log;
         Instance = this;
 
-        // AddComponent<AdminComponent>();
+        AddComponent<AdminComponent>();
 
         DebugMode = Config.Bind("Custom", "Enable Debug Mode", "false");
         GhostsSeeInformation = Config.Bind("Custom", "Ghosts See Remaining Tasks", true);
