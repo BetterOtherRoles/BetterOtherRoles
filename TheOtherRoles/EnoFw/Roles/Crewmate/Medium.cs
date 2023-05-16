@@ -182,7 +182,7 @@ public class Medium : AbstractRole
                       RoleInfo.GetRolesString(Medium.Instance.Target.killerIfExisting, false, false, true) + ".";
         }
 
-        if (TheOtherRoles.Rnd.NextDouble() < Medium.Instance.AdditionalInfoChance)
+        if (TheOtherRoles.Rnd.Next(0, 100) <= Medium.Instance.AdditionalInfoChance)
         {
             int count = 0;
             string condition = "";

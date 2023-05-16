@@ -2,7 +2,6 @@
 using System.Text;
 using AmongUs.GameOptions;
 using HarmonyLib;
-using Reactor.Utilities.Attributes;
 using UnityEngine;
 
 namespace TheOtherRoles.EnoFw.Kernel;
