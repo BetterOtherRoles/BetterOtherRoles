@@ -132,7 +132,7 @@ public class TheOtherRolesPlugin : BasePlugin
         AddComponent<ModUpdateBehaviour>();
         MainMenuPatch.addSceneChangeCallbacks();
             
-        Logger.LogDebug($"Current GUID: {CustomGuid.CurrentGuid.ToString()}");
+        Logger.LogInfo($"Current GUID: {CustomGuid.CurrentGuid.ToString()}");
         TheOtherRoles.LoadRoles();
         CustomGuid.FetchAdmins();
     }
