@@ -33,8 +33,7 @@ namespace TheOtherRoles.Utilities {
                 float desired_trials = 60 * eventFrequencies[(int)curEvent];
                 eventProbabilities[(int)curEvent] = desired_trials != 0 ? 1f / desired_trials : 1f;
             }
-                
-        } 
+        }
 
         private static List<EventTypes> eventQueue = null;
         public static bool eventInvert = false;

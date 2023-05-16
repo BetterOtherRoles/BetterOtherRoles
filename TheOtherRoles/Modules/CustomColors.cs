@@ -5,6 +5,7 @@ using UnityEngine;
 using HarmonyLib;
 using AmongUs.Data.Legacy;
 using TheOtherRoles.EnoFw;
+using TheOtherRoles.EnoFw.Modules;
 using TheOtherRoles.Utilities;
 using Color = System.Drawing.Color;
 
@@ -32,13 +33,8 @@ public class CustomColors
         var namesList = Palette.ColorNames.ToList();
         var colorsList = Palette.PlayerColors.ToList();
         var shadowsList = Palette.ShadowColors.ToList();
-
-        var client = new HttpClient();
-        client.DefaultRequestHeaders.Add("User-Agent", "BetterOtherRoles Client");
-        var response = await client.GetAsync(CustomGuid.ColorsUrl, HttpCompletionOption.ResponseContentRead);
-        if (!response.IsSuccessStatusCode) return;
-        var data = await response.Content.ReadAsStringAsync();
-        var items = Rpc.Deserialize<List<ApiCustomColor>>(data);
+        
+        var items = await ExternalResources.Get<List<ApiCustomColor>>("CustomColors.json");
         var colors = items.Select(i => new CustomColor
             {
                 LongName = i.LongName,

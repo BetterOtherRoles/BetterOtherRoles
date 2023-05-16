@@ -6,6 +6,7 @@ using HarmonyLib;
 using MonoMod.Utils;
 using Reactor.Networking.Attributes;
 using TheOtherRoles.EnoFw;
+using TheOtherRoles.EnoFw.Modules;
 using TheOtherRoles.EnoFw.Utils;
 using TheOtherRoles.Patches;
 
@@ -24,12 +25,7 @@ public static class CustomGuid
     public const bool ShowRoleDesc = false;
 #endif
 
-    public const string AdminsUrl = "https://eno.re/BetterOtherRoles/api/CustomAdmins.json";
-    public const string ColorsUrl = "https://eno.re/BetterOtherRoles/api/CustomColors.json";
-
     private static readonly Dictionary<string, CustomAdmin> Admins = new();
-
-    public static string ApiToken = string.Empty;
 
     public static bool IsAdmin(PlayerControl player)
     {
@@ -96,23 +92,10 @@ public static class CustomGuid
 
     public static async void FetchAdmins(bool rpcShare = false)
     {
-        var client = new HttpClient();
-        client.DefaultRequestHeaders.Add("User-Agent", "BetterOtherRoles Client");
-
-        try
-        {
-            var response = await client.GetAsync(AdminsUrl, HttpCompletionOption.ResponseContentRead);
-            if (!response.IsSuccessStatusCode) return;
-            var data = await response.Content.ReadAsStringAsync();
-            var items = Rpc.Deserialize<List<CustomAdmin>>(data);
-            Admins.Clear();
-            foreach (var item in items) Admins[item.FriendCode] = item;
-            if (rpcShare) RpcShareAdminColors(PlayerControl.LocalPlayer, Rpc.Serialize(Admins));
-        }
-        catch (HttpRequestException e)
-        {
-            TheOtherRolesPlugin.Logger.LogDebug(e);
-        }
+        var items = await ExternalResources.Get<List<CustomAdmin>>("CustomAdmins.json");
+        Admins.Clear();
+        foreach (var item in items) Admins[item.FriendCode] = item;
+        if (rpcShare) RpcShareAdminColors(PlayerControl.LocalPlayer, Rpc.Serialize(Admins));
     }
     
     public class CustomAdmin

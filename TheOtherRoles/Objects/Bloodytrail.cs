@@ -22,13 +22,13 @@ namespace TheOtherRoles.Objects {
         }
 
         public Bloodytrail(PlayerControl player, PlayerControl bloodyPlayer) {
-            this.color = Palette.PlayerColors[(int)bloodyPlayer.Data.DefaultOutfit.ColorId];
+            this.color = Palette.PlayerColors[bloodyPlayer.Data.DefaultOutfit.ColorId];
             var sp = getBloodySprites();
             var index = Rnd.Next(0, sp.Count);
 
 
             blood = new GameObject("Blood" + index);
-            Vector3 position = new Vector3(player.transform.position.x, player.transform.position.y, player.transform.position.z + 0.005f);
+            Vector3 position = new Vector3(player.transform.position.x, player.transform.position.y, player.transform.position.z + 0.01f);
             blood.AddSubmergedComponent(SubmergedCompatibility.Classes.ElevatorMover);
             blood.transform.position = position;
             blood.transform.localPosition = position;

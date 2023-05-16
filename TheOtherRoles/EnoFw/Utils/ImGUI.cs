@@ -90,29 +90,4 @@ public static class ImGUI
             return texture;
         }
     }
-    
-    public static class MainStyles
-    {
-        private static bool _initialized;
-        
-        private static GUIStyleState _windowStyleState;
-
-        private static void CreateStyles()
-        {
-            if (_initialized) return;
-            _windowStyleState = new GUIStyleState();
-            _windowStyleState.background = new Texture2D(0, 0);
-            _windowStyleState.background.SetPixel(0, 0, DarkColor);
-            _windowStyleState.background.Apply();
-        }
-
-        public static GUIStyleState WindowStyleState
-        {
-            get
-            {
-                CreateStyles();
-                return _windowStyleState;
-            }
-        }
-    }
 }
