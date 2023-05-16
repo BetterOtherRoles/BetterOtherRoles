@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help us improve
 title: "[Bug Report]"
-labels: "\U0001F974 bug"
+labels: bug
 assignees: ''
 
 ---
@@ -25,8 +25,8 @@ If applicable, add screenshots to help explain your problem.
 
 **System (please complete the following information):**
  - OS: [e.g. Windows 11]
- - Among Us Version [e.g. v2021.11.15s]
- - TheOtherRoles Version [e.g. v3.3.3]
+ - Among Us Version [e.g. v2023.3.28s]
+ - BetterOtherRoles Version [e.g. v1.2.11]
 
 **Additional context**
 Add any other context about the problem here.
