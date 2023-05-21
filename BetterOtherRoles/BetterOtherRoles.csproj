@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Version>1.2.12</Version>
+        <Description>BetterOtherRoles</Description>
+        <Authors>Eno, Thilladon</Authors>
+		<LangVersion>latest</LangVersion>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <PlatformTarget>x86</PlatformTarget>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Resources\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AmongUs.GameLibs.Steam" Version="2023.3.28" />
+        <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.664" />
+        <PackageReference Include="BepInEx.IL2CPP.MSBuild" Version="2.0.1">
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+          <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Reactor" Version="2.1.0" />
+        <PackageReference Include="System.Reactive" Version="6.0.0" />
+    </ItemGroup>
+    <Target Name="CopyCustomContent" AfterTargets="AfterBuild" Condition="Exists('$(AmongUsLatest)/BepInEx/plugins/')">
+        <Message Text="Second occurrence" />
+        <Copy SourceFiles="$(ProjectDir)\bin\$(Configuration)\net6.0\BetterOtherRoles.dll" DestinationFolder="$(AmongUsLatest)/BepInEx/plugins/BetterOtherRoles/" />
+    </Target>
+</Project>

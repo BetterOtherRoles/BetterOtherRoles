@@ -1,0 +1,27 @@
+﻿using System.Collections.Generic;
+
+namespace BetterOtherRoles.EnoFw.Utils;
+
+public static class ListExtensions
+{
+    public static List<T> PickRandom<T>(this List<T> list, int count = 1)
+    {
+        var picked = 0;
+        var pickedItems = new List<T>();
+        if (count > list.Count) return pickedItems;
+        while (picked < count)
+        {
+            pickedItems.Add(list.PickOneRandom());
+            picked++;
+        }
+
+        return pickedItems;
+    }
+
+    public static T PickOneRandom<T>(this List<T> list)
+    {
+        var toRemove = list[RolesManager.Rnd.Next(0, list.Count)];
+        list.Remove(toRemove);
+        return toRemove;
+    }
+}
