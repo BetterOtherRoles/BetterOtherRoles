@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.EnoFw.Utils;
-using Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -21,7 +21,7 @@ public class Bloody : AbstractMultipleModifier
     {
         Duration = CustomOptions.ModifierSettings.CreateFloatList(
             $"{Key}{nameof(Duration)}",
-            Colors.Cs(Color, "Trail duration"),
+            CustomOptions.Cs(Color, "Trail duration"),
             3f,
             60f,
             10f,

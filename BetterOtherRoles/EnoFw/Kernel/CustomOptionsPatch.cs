@@ -209,7 +209,7 @@ public static class CustomOptionsPatch
                         var boolOption = UnityEngine.Object.Instantiate(boolTemplate, menus[cst.Key]);
                         optionBehaviours[cst.Key].Add(boolOption);
                         boolOption.OnValueChanged = new Action<OptionBehaviour>((_) => { });
-                        boolOption.TitleText.text = setting.Name;
+                        boolOption.TitleText.text = setting.DisplayNameWithIndentation;
                         boolOption.CheckMark.enabled = boolOption.oldValue = setting;
                         
                         setting.OptionBehaviour = boolOption;
@@ -219,7 +219,7 @@ public static class CustomOptionsPatch
                         var stringOption = UnityEngine.Object.Instantiate(template, menus[cst.Key]);
                         optionBehaviours[cst.Key].Add(stringOption);
                         stringOption.OnValueChanged = new Action<OptionBehaviour>((_) => { });
-                        stringOption.TitleText.text = setting.Name;
+                        stringOption.TitleText.text = setting.DisplayNameWithIndentation;
                         stringOption.Value = stringOption.oldValue = setting.SelectionIndex;
                         stringOption.ValueText.text = setting.StringSelections[setting.SelectionIndex];
 
@@ -239,7 +239,7 @@ public static class CustomOptionsPatch
         var option = CustomOption.Tab.Options.FirstOrDefault(option => option.OptionBehaviour == stringOption);
         if (option == null) return true;
         stringOption.OnValueChanged = new Action<OptionBehaviour>(_ => { });
-        stringOption.TitleText.text = option.Name;
+        stringOption.TitleText.text = option.DisplayNameWithIndentation;
         stringOption.Value = stringOption.oldValue = option.SelectionIndex;
         stringOption.ValueText.text = option.StringSelections[option.SelectionIndex];
 
@@ -251,7 +251,7 @@ public static class CustomOptionsPatch
         var option = CustomOption.Tab.Options.FirstOrDefault(option => option.OptionBehaviour == boolOption);
         if (option == null) return true;
         boolOption.OnValueChanged = new Action<OptionBehaviour>(_ => { });
-        boolOption.TitleText.text = option.Name;
+        boolOption.TitleText.text = option.DisplayNameWithIndentation;
         boolOption.CheckMark.enabled = boolOption.oldValue = option;
 
         return false;

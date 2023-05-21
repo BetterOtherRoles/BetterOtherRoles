@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.EnoFw.Utils;
-using BetterOtherRoles.Players;
 using HarmonyLib;
-using InnerNet;
-using UnityEngine;
 
 namespace BetterOtherRoles.EnoFw.Modules.BorApi;
 
@@ -22,17 +20,26 @@ public class BorClient : AbstractSocketClient<BorClient.Events>
     public readonly Dictionary<string, PublicAccountInfo> PublicAccountInfos = new();
 
     public MyAccount MyAccount { get; private set; }
+    public List<MyPreset> MyPresets { get; private set; } = new();
 
     public static void Load()
     {
         if (!Instance.Connected)
         {
-            new DeferrableAction(
-                () => { Instance.Connect(EOSManager.Instance.FriendCode, EOSManager.Instance.ProductUserId); },
-                () => EOSManager.InstanceExists && EOSManager.Instance.FriendCode is not (null or "") &&
-                      EOSManager.Instance.ProductUserId is not
-                          (null or "")).Start();
+            DeferrableAction.Defer(InternalLoad, IsReadyToLoad);
         }
+    }
+
+    private static void InternalLoad()
+    {
+        Instance.Connect(EOSManager.Instance.FriendCode, EOSManager.Instance.ProductUserId);
+    }
+
+    private static bool IsReadyToLoad()
+    {
+        if (!EOSManager.InstanceExists) return false;
+        return EOSManager.Instance.FriendCode is not (null or "") &&
+               EOSManager.Instance.ProductUserId is not (null or "");
     }
 
     private BorClient() : base(Endpoint)
@@ -40,6 +47,23 @@ public class BorClient : AbstractSocketClient<BorClient.Events>
         On<string>(Events.Error, OnError);
         On<List<PublicAccountInfo>>(Events.PublicAccountInfos, OnPublicAccountInfos);
         On<MyAccount>(Events.MyAccount, OnMyAccount);
+        On<List<MyPreset>>(Events.MyPresets, OnMyPresets);
+        On<List<CustomOptionValue>>(Events.LoadPreset, OnLoadPreset);
+    }
+
+    private static void OnLoadPreset(List<CustomOptionValue> optionValues)
+    {
+        foreach (var option in CustomOption.Tab.Options)
+        {
+            var opt = optionValues.Find(o => o.Key == option.Key);
+            if (opt == null) continue;
+            option.UpdateSelection(opt.Value, true);
+        }
+    }
+
+    private void OnMyPresets(List<MyPreset> myPresets)
+    {
+        MyPresets = myPresets;
     }
 
     private void OnMyAccount(MyAccount myAccount)
@@ -59,6 +83,61 @@ public class BorClient : AbstractSocketClient<BorClient.Events>
     private void OnError(string error)
     {
         BetterOtherRolesPlugin.Logger.LogError(error);
+    }
+
+    public void CustomOptionsReferential()
+    {
+        var referential = new List<ApiCustomOption>();
+        foreach (var option in CustomOption.Tab.Options.Where(o => o.IsHeader))
+        {
+            RenderApiCustomOption(referential, option);
+        }
+
+        Emit(Events.CustomOptionsReferential, referential);
+    }
+
+    private void RenderApiCustomOption(List<ApiCustomOption> referential, CustomOption option)
+    {
+        var opt = new ApiCustomOption
+        {
+            Key = option.Key,
+            Name = option.Name,
+            Color = option.Color,
+            DefaultValue = option.SelectionIndex,
+            Children = new List<ApiCustomOption>(),
+        };
+        referential.Add(opt);
+        if (!option.HasChildren) return;
+        foreach (var subOption in option.Children)
+        {
+            RenderApiCustomOption(opt.Children, subOption);
+        }
+    }
+
+    public void UpdateOptions(Dictionary<string, int> allOptions)
+    {
+        var data = allOptions.Select(opt => new CustomOptionValue { Key = opt.Key, Value = opt.Value }).ToList();
+        Emit(Events.UpdateOptions, data);
+    }
+
+    public void UpdateOption(string key, int value)
+    {
+        var data = new List<CustomOptionValue>
+        {
+            new()
+            {
+                Key = key,
+                Value = value
+            }
+        };
+        Emit(Events.UpdateOptions, data);
+    }
+
+    public void ChangeCurrentPreset(int index)
+    {
+        if (index >= MyPresets.Count) return;
+        var myPreset = MyPresets[index];
+        Emit(Events.ChangeCurrentPreset, myPreset.Id);
     }
 
     public void SendKillDone(PlayerControl target)
@@ -106,12 +185,19 @@ public class BorClient : AbstractSocketClient<BorClient.Events>
 
     public enum Events : uint
     {
-        Error = 0,
+        Error,
         SubscribeToAccounts,
         PublicAccountInfos,
         TaskDone,
         MurderPlayer,
         WinGame,
-        MyAccount
+        MyAccount,
+        ChangeCurrentPreset,
+        UpdatePreset,
+        LoadPreset,
+        CreatePreset,
+        UpdateOptions,
+        CustomOptionsReferential,
+        MyPresets
     }
 }

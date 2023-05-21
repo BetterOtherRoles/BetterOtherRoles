@@ -7,7 +7,7 @@ using BetterOtherRoles.EnoFw.Modules;
 using BetterOtherRoles.EnoFw.Roles.Crewmate;
 using BetterOtherRoles.Players;
 using BetterOtherRoles.Utilities;
-using Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using TMPro;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;

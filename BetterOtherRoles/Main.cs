@@ -8,24 +8,30 @@ using System;
 using UnityEngine;
 using Il2CppSystem.Security.Cryptography;
 using Il2CppSystem.Text;
-using Reactor.Networking.Attributes;
 using AmongUs.Data;
 using BetterOtherRoles.EnoFw;
 using BetterOtherRoles.EnoFw.Kernel;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Localization;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Localization.Providers;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Rpc;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Patches.Miscellaneous;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Utilities;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Utilities.Attributes;
 using BetterOtherRoles.EnoFw.Modules;
 using BetterOtherRoles.EnoFw.Modules.BorApi;
-using BetterOtherRoles.EnoFw.Utils;
 using BetterOtherRoles.Modules;
 using BetterOtherRoles.Patches;
 using BetterOtherRoles.Players;
 using BetterOtherRoles.Utilities;
+using Il2CppInterop.Runtime.Attributes;
 
 namespace BetterOtherRoles;
 
 [BepInPlugin(Id, "Better Other Roles", VersionString)]
-[BepInDependency(SubmergedCompatibility.SUBMERGED_GUID, BepInDependency.DependencyFlags.SoftDependency)]
 [BepInProcess("Among Us.exe")]
-[ReactorModFlags(Reactor.Networking.ModFlags.RequireOnAllClients)]
+[ReactorModFlags(ModFlags.RequireOnAllClients)]
 public class BetterOtherRolesPlugin : BasePlugin
 {
     public const string Id = "betterotherroles.eno.re";
@@ -54,10 +60,23 @@ public class BetterOtherRolesPlugin : BasePlugin
     public static ConfigEntry<string> DevGuid { get; set; }
 
     public static ConfigEntry<string> FeaturesCodes { get; private set; }
+    
+    public CustomRpcManager CustomRpcManager { get; } = new();
 
-    public static Sprite ModStamp;
-
-    public static IRegionInfo[] defaultRegions;
+    public BetterOtherRolesPlugin()
+    {
+        PluginSingleton<BetterOtherRolesPlugin>.Instance = this;
+        PluginSingleton<BasePlugin>.Initialize();
+        
+        RegisterInIl2CppAttribute.Initialize();
+        ModList.Initialize();
+        
+        RegisterCustomRpcAttribute.Initialize();
+        MessageConverterAttribute.Initialize();
+        MethodRpcAttribute.Initialize();
+        
+        LocalizationManager.Register(new HardCodedLocalizationProvider());
+    }
 
 
     // This is part of the Mini.RegionInstaller, Licensed under GPLv3
@@ -92,8 +111,12 @@ public class BetterOtherRolesPlugin : BasePlugin
     {
         Logger = Log;
         Instance = this;
-
-        AddComponent<AdminComponent>();
+        
+        AddComponent<ReactorComponent>().Plugin = this;
+        AddComponent<Coroutines.Component>();
+        AddComponent<Dispatcher>();
+        
+        FreeNamePatch.Initialize();
 
         DebugMode = Config.Bind("Custom", "Enable Debug Mode", "false");
         GhostsSeeInformation = Config.Bind("Custom", "Ghosts See Remaining Tasks", true);
@@ -108,8 +131,6 @@ public class BetterOtherRolesPlugin : BasePlugin
 
         Ip = Config.Bind("Custom", "Custom Server IP", "127.0.0.1");
         Port = Config.Bind("Custom", "Custom Server Port", (ushort)22023);
-
-        defaultRegions = ServerManager.DefaultRegions;
 
         UpdateRegions();
 
@@ -132,10 +153,54 @@ public class BetterOtherRolesPlugin : BasePlugin
 
         SubmergedCompatibility.Initialize();
         AddComponent<ModUpdateBehaviour>();
+        AddComponent<AdminComponent>();
         MainMenuPatch.addSceneChangeCallbacks();
 
         Logger.LogInfo($"Current GUID: {CustomGuid.CurrentGuid.ToString()}");
         RolesManager.LoadRoles();
+    }
+    
+    public override bool Unload()
+    {
+        Harmony.UnpatchSelf();
+
+        return base.Unload();
+    }
+    
+    [RegisterInIl2Cpp]
+    private class ReactorComponent : MonoBehaviour
+    {
+        [HideFromIl2Cpp]
+        public BetterOtherRolesPlugin Plugin { get; internal set; }
+
+        public ReactorComponent(IntPtr ptr) : base(ptr)
+        {
+        }
+
+        private void Update()
+        {
+            if (!Input.GetKeyDown(KeyCode.F5)) return;
+
+            Plugin!.Log.LogInfo("Reloading all configs");
+
+            foreach (var pluginInfo in IL2CPPChainloader.Instance.Plugins.Values)
+            {
+                var config = ((BasePlugin) pluginInfo.Instance).Config;
+                if (!config.Any())
+                {
+                    continue;
+                }
+
+                try
+                {
+                    config.Reload();
+                }
+                catch (Exception e)
+                {
+                    Plugin.Log.LogWarning($"Exception occured during reload of {pluginInfo.Metadata.Name}: {e}");
+                }
+            }
+        }
     }
 }
 

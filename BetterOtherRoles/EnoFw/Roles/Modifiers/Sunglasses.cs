@@ -15,7 +15,7 @@ public class Sunglasses : AbstractMultipleModifier
     {
         Vision = CustomOptions.ModifierSettings.CreateFloatList(
             $"{Key}{nameof(Vision)}",
-            Colors.Cs(Color, "Vision with sunglasses"),
+            CustomOptions.Cs(Color, "Vision with sunglasses"),
             -50f,
             -10f,
             -30f,

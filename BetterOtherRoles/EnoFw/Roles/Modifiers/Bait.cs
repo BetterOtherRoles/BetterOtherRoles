@@ -23,7 +23,7 @@ public class Bait : AbstractMultipleModifier
     {
         ReportDelayMinOption = CustomOptions.ModifierSettings.CreateFloatList(
             $"{Key}{nameof(ReportDelayMinOption)}",
-            Colors.Cs(Color, "Report delay min"),
+            CustomOptions.Cs(Color, "Report delay min"),
             0f,
             10f,
             0f,
@@ -33,7 +33,7 @@ public class Bait : AbstractMultipleModifier
             "s");
         ReportDelayMaxOption = CustomOptions.ModifierSettings.CreateFloatList(
             $"{Key}{nameof(ReportDelayMaxOption)}",
-            Colors.Cs(Color, "Report delay max"),
+            CustomOptions.Cs(Color, "Report delay max"),
             0f,
             10f,
             0f,
@@ -43,7 +43,7 @@ public class Bait : AbstractMultipleModifier
             "s");
         ShowKillFlash = CustomOptions.ModifierSettings.CreateBool(
             $"{Key}{nameof(ShowKillFlash)}",
-            Colors.Cs(Color, "Warn the killer with a flash"),
+            CustomOptions.Cs(Color, "Warn the killer with a flash"),
             false,
             SpawnRate);
     }

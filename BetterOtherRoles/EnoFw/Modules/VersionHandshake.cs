@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Timers;
 using BetterOtherRoles.EnoFw.Utils;
 using BetterOtherRoles.Modules;
 using BetterOtherRoles.Patches;
@@ -15,7 +14,7 @@ public static class VersionHandshake
 
     public static void Share()
     {
-        new DeferrableAction(InternalShare, () => AmongUsClient.Instance && CachedPlayer.LocalPlayer != null).Start();
+        DeferrableAction.Defer(InternalShare, () => AmongUsClient.Instance && CachedPlayer.LocalPlayer != null);
     }
 
     private static void InternalShare()
@@ -23,7 +22,7 @@ public static class VersionHandshake
         BetterOtherRolesPlugin.Logger.LogDebug("Sharing BetterOtherRoles version...");
         BetterOtherRolesPlugin.Logger.LogDebug($"My client id: {CachedPlayer.LocalPlayer.PlayerControl.OwnerId}");
         BetterOtherRolesPlugin.Logger.LogDebug($"My friend code: {AmongUsClient.Instance.GetClient(CachedPlayer.LocalPlayer.PlayerControl.OwnerId).FriendCode}");
-
+        
         var writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId,
             VersionHandshakeRpcId, SendOption.Reliable, -1);
         writer.Write((byte)BetterOtherRolesPlugin.Version.Major);

@@ -6,6 +6,7 @@ using UnityEngine;
 using System.Linq;
 using BetterOtherRoles.CustomGameModes;
 using BetterOtherRoles.EnoFw.Kernel;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Utilities.Extensions;
 using BetterOtherRoles.EnoFw.Modules;
 using BetterOtherRoles.EnoFw.Roles.Crewmate;
 using BetterOtherRoles.EnoFw.Roles.Impostor;
@@ -17,7 +18,6 @@ using BetterOtherRoles.Utilities;
 using HarmonyLib;
 using Il2CppInterop.Runtime.InteropTypes;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
-using Reactor.Utilities.Extensions;
 
 namespace BetterOtherRoles
 {

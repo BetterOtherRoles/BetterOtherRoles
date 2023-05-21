@@ -31,15 +31,6 @@
           "Samboy063.Cpp2IL.Core": "2022.0.7.2"
         }
       },
-      "Reactor": {
-        "type": "Direct",
-        "requested": "[2.1.0, )",
-        "resolved": "2.1.0",
-        "contentHash": "sJaWGAn+c8efXKZS+sFcz+ybHYdp7CFJVdcX5+r0QbyPpruo/GotNdhrxvUUlCVAhhX/e0epIFKGRZJcprhp9w==",
-        "dependencies": {
-          "BepInEx.Unity.IL2CPP": "6.0.0-be.663"
-        }
-      },
       "System.Reactive": {
         "type": "Direct",
         "requested": "[6.0.0, )",

@@ -3,7 +3,7 @@ using AmongUs.Data;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Objects;
 using BetterOtherRoles.Players;
-using Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -134,7 +134,7 @@ public class Ninja : AbstractRole
         Rpc_PlaceNinjaTrace(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
 
-    [MethodRpc((uint)Rpc.Role.PlaceNinjaTrace)]
+    [MethodRpc((uint)Rpc.Role.PlaceNinjaTrace, false)]
     private static void Rpc_PlaceNinjaTrace(PlayerControl sender, string rawData)
     {
         var (x, y, z) = Rpc.Deserialize<Tuple<float, float, float>>(rawData);

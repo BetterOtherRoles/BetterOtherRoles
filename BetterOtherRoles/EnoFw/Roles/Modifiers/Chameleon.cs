@@ -23,7 +23,7 @@ public class Chameleon : AbstractMultipleModifier
     {
         HoldDuration = CustomOptions.ModifierSettings.CreateFloatList(
             $"{Key}{nameof(HoldDuration)}",
-            Colors.Cs(Color, "Time until fading starts"),
+            CustomOptions.Cs(Color, "Time until fading starts"),
             1f,
             10f,
             3f,
@@ -33,7 +33,7 @@ public class Chameleon : AbstractMultipleModifier
             "s");
         FadeDuration = CustomOptions.ModifierSettings.CreateFloatList(
             $"{Key}{nameof(FadeDuration)}",
-            Colors.Cs(Color, "Fade duration"),
+            CustomOptions.Cs(Color, "Fade duration"),
             0.25f,
             10f,
             1f,
@@ -43,7 +43,7 @@ public class Chameleon : AbstractMultipleModifier
             "s");
         MinVisibilityOption = CustomOptions.ModifierSettings.CreateFloatList(
             $"{Key}{nameof(MinVisibilityOption)}",
-            Colors.Cs(Color, "Minimum visibility"),
+            CustomOptions.Cs(Color, "Minimum visibility"),
             0f,
             100f,
             0f,

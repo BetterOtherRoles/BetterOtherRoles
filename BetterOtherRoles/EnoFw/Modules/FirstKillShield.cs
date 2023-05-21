@@ -1,5 +1,5 @@
 ﻿using System;
-using Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 
 namespace BetterOtherRoles.EnoFw.Modules;
 

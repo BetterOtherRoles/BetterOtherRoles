@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Rpc;
 using BetterOtherRoles.EnoFw.Roles.Crewmate;
 using BetterOtherRoles.EnoFw.Roles.Impostor;
 using BetterOtherRoles.EnoFw.Roles.Modifiers;
@@ -10,8 +12,6 @@ using BetterOtherRoles.Objects;
 using BetterOtherRoles.Patches;
 using BetterOtherRoles.Players;
 using BetterOtherRoles.Utilities;
-using Reactor.Networking.Attributes;
-using BetterOtherRoles.EnoFw.Modules;
 
 namespace BetterOtherRoles.EnoFw.Kernel;
 
@@ -109,7 +109,7 @@ public static class KernelRpc
         Rpc_UseUncheckedVent(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
     
-    [MethodRpc((uint)Rpc.Kernel.UseUncheckedVent)]
+    [MethodRpc((uint)Rpc.Kernel.UseUncheckedVent, false)]
     private static void Rpc_UseUncheckedVent(PlayerControl sender, string rawData)
     {
         var (ventId, playerId, isEnter) = Rpc.Deserialize<Tuple<int, byte, bool>>(rawData);
@@ -376,10 +376,9 @@ public static class KernelRpc
         Rpc_ShareOptions(PlayerControl.LocalPlayer, Rpc.Serialize(options));
     }
 
-    [MethodRpc((uint)Rpc.Kernel.ShareOptions)]
+    [MethodRpc((uint)Rpc.Kernel.ShareOptions, true, RpcLocalHandling.None)]
     private static void Rpc_ShareOptions(PlayerControl sender, string rawData)
     {
-        if (sender.AmOwner) return;
         CustomOption.Tab.SetPreset(0);
         var options = Rpc.Deserialize<Dictionary<string, int>>(rawData);
         foreach (var o in options)

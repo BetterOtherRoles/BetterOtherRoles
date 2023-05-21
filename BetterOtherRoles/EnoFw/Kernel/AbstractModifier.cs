@@ -23,7 +23,7 @@ public abstract class AbstractModifier
 
         SpawnRate = CustomOptions.ModifierSettings.CreateFloatList(
             $"{Key}{nameof(SpawnRate)}",
-            Colors.Cs(Color, Name),
+            CustomOptions.Cs(Color, Name),
             0f,
             100f,
             0f,

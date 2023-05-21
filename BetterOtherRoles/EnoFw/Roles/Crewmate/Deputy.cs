@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.EnoFw.Modules;
+using BetterOtherRoles.EnoFw.Utils;
 using BetterOtherRoles.Players;
-using Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -19,7 +20,7 @@ public class Deputy : AbstractRole
     public int UsedHandcuff;
     public int RemainingHandcuffs => NumberOfHandcuffs - UsedHandcuff;
     public Promotions Promotion => (Promotions)(int)PromotedWhen;
-    public string IntroTextForSheriff => Cs($"Your Deputy is {(Player != null ? Player.Data.PlayerName : "unknown")}");
+    public string IntroTextForSheriff => Colors.Cs(Color, $"Your Deputy is {(Player != null ? Player.Data.PlayerName : "unknown")}");
 
     // Options
     public readonly CustomOption PromotedWhen;
@@ -83,7 +84,7 @@ public class Deputy : AbstractRole
             $"{Key}{nameof(KnowsSheriff)}",
             Cs("Sheriff and Deputy know each other"),
             true,
-            PromotedWhen);
+            SpawnRate);
     }
 
     public enum Promotions

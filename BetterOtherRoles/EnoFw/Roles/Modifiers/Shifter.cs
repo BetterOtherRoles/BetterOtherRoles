@@ -4,7 +4,7 @@ using BetterOtherRoles.EnoFw.Roles.Crewmate;
 using BetterOtherRoles.EnoFw.Roles.Neutral;
 using BetterOtherRoles.Objects;
 using BetterOtherRoles.Players;
-using Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 
 namespace BetterOtherRoles.EnoFw.Roles.Modifiers;

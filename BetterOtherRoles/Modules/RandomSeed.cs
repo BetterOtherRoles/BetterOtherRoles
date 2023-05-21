@@ -6,7 +6,7 @@ using BepInEx.Unity.IL2CPP.Utils;
 using BetterOtherRoles.EnoFw;
 using BetterOtherRoles.Players;
 using HarmonyLib;
-using Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using BetterOtherRoles.EnoFw.Kernel;
 using UnityEngine;
 using Random = System.Random;

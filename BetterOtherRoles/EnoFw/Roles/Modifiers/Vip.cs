@@ -15,7 +15,7 @@ public class Vip : AbstractMultipleModifier
     {
         ShowTeamColor = CustomOptions.ModifierSettings.CreateBool(
             $"{Key}{nameof(ShowTeamColor)}",
-            Colors.Cs(Color, "Show team color"),
+            CustomOptions.Cs(Color, "Show team color"),
             false,
             SpawnRate);
     }

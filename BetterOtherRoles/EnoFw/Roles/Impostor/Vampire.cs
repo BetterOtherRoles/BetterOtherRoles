@@ -1,7 +1,7 @@
 ﻿using System;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Objects;
-using Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -96,7 +96,7 @@ public class Vampire : AbstractRole
         Rpc_PlaceGarlic(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
 
-    [MethodRpc((uint)Rpc.Role.PlaceGarlic)]
+    [MethodRpc((uint)Rpc.Role.PlaceGarlic, false)]
     private static void Rpc_PlaceGarlic(PlayerControl sender, string rawData)
     {
         var (x, y, z) = Rpc.Deserialize<Tuple<float, float, float>>(rawData);

@@ -11,6 +11,11 @@ public class DeferrableAction
 
     private Timer _retryTimer;
 
+    public static void Defer(Action action, Func<bool> condition, uint interval = 1000)
+    {
+        new DeferrableAction(action, condition, interval).Start();
+    }
+
     public DeferrableAction(Action action, Func<bool> condition, uint interval = 1000)
     {
         _action = action;

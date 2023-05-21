@@ -25,7 +25,7 @@ public class Mini : AbstractSimpleModifier
     {
         GrowingUpDuration = CustomOptions.ModifierSettings.CreateFloatList(
             $"{Key}{nameof(GrowingUpDuration)}",
-            Colors.Cs(Color, "Growing up duration"),
+            CustomOptions.Cs(Color, "Growing up duration"),
             60f,
             1200f,
             400f,
@@ -35,7 +35,7 @@ public class Mini : AbstractSimpleModifier
             "s");
         IsGrowingUpInMeeting = CustomOptions.ModifierSettings.CreateBool(
             $"{Key}{nameof(IsGrowingUpInMeeting)}",
-            Colors.Cs(Color, "Grows up in meeting"),
+            CustomOptions.Cs(Color, "Grows up in meeting"),
             true,
             SpawnRate);
     }

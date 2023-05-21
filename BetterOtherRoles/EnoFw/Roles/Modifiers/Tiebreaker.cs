@@ -1,5 +1,5 @@
 ﻿using BetterOtherRoles.EnoFw.Kernel;
-using Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 
 namespace BetterOtherRoles.EnoFw.Roles.Modifiers;

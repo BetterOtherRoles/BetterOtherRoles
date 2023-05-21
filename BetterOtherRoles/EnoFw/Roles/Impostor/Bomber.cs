@@ -1,7 +1,7 @@
 ﻿using System;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Objects;
-using Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -137,7 +137,7 @@ public class Bomber : AbstractRole
         Rpc_PlaceBomb(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
 
-    [MethodRpc((uint)Rpc.Role.PlaceBomb)]
+    [MethodRpc((uint)Rpc.Role.PlaceBomb, false)]
     private static void Rpc_PlaceBomb(PlayerControl sender, string rawData)
     {
         var (x, y, z) = Rpc.Deserialize<Tuple<float, float, float>>(rawData);

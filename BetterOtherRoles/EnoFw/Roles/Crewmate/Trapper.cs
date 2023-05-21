@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Objects;
-using Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -123,7 +123,7 @@ public class Trapper : AbstractRole
         Rpc_SetTrap(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
 
-    [MethodRpc((uint)Rpc.Role.SetTrap)]
+    [MethodRpc((uint)Rpc.Role.SetTrap, false)]
     private static void Rpc_SetTrap(PlayerControl sender, string rawData)
     {
         if (Instance.Player == null) return;

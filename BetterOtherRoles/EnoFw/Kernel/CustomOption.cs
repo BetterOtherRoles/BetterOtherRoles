@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using BepInEx.Configuration;
+using BetterOtherRoles.EnoFw.Modules.BorApi;
 using BetterOtherRoles.EnoFw.Utils;
 using BetterOtherRoles.Players;
 using UnityEngine;
@@ -138,6 +139,8 @@ public class CustomOption
 
     public readonly string Key;
     public readonly string Name;
+    public readonly Color Color;
+    public readonly int DefaultSelection;
     public readonly List<string> StringSelections;
     public readonly List<float> FloatSelections;
     public int SelectionIndex;
@@ -154,11 +157,13 @@ public class CustomOption
     public readonly List<GameMode> AllowedGameModes = new() { GameMode.Classic, GameMode.Guesser };
 
     public ConfigEntry<int> Entry;
+    public ICustomOptionEntry CloudEntry;
 
     private CustomOption(
         OptionType type,
         string key,
         string name,
+        Color color,
         List<string> stringSelections,
         List<float> floatSelections,
         int defaultIndex = 0,
@@ -167,24 +172,32 @@ public class CustomOption
     {
         Key = key;
         Name = name;
+        Color = color;
         StringSelections = stringSelections;
         FloatSelections = floatSelections;
         SelectionIndex = defaultIndex;
+        DefaultSelection = defaultIndex;
         Parent = parent;
         IsHeader = isHeader;
         Type = type;
         if (Key == nameof(CustomOptions.Preset))
         {
             Entry = BetterOtherRolesPlugin.Preset;
+            CloudEntry = new PresetEntry(nameof(CustomOptions.Preset), 0);
         }
         else
         {
-            Entry = BetterOtherRolesPlugin.Instance.Config.Bind(((string)CustomOptions.Preset).Trim(' '), Key, SelectionIndex);
+            Entry = BetterOtherRolesPlugin.Instance.Config.Bind("Game Settings", Key, SelectionIndex);
+            CloudEntry = new CustomOptionEntry(Key, DefaultSelection);
         }
         SelectionIndex = Mathf.Clamp(Entry.Value, 0, StringSelections.Count - 1);
+        CloudEntry.InternalSetValue(SelectionIndex);
     }
 
-    public string DisplayName => IsHeader ? $"→ {Name}" : Name;
+    public string DisplayNameWithIndentation => !IsHeader ? $"→ {DisplayName}" : DisplayName;
+
+    public string DisplayName => Color == Color.clear ? Name : Colors.Cs(Color, Name);
+
     public string DisplayValue => Type == OptionType.Boolean ? (bool)this ? Colors.Cs(Color.green, "✔") : Colors.Cs(Color.red, "✖") : this;
 
     public CustomOption OnlyForMaps(params Maps[] maps)
@@ -203,12 +216,17 @@ public class CustomOption
         return this;
     }
 
-    public void UpdateSelection(int selection)
+    public void UpdateSelection(int selection, bool internalOnly = false)
     {
         SelectionIndex = Mathf.Clamp(
             (selection + StringSelections.Count) % StringSelections.Count,
             0,
             StringSelections.Count - 1);
+        if (internalOnly)
+        {
+            CloudEntry.InternalSetValue(SelectionIndex);
+            return;
+        }
         if (StringSelections.Count > 0 && OptionBehaviour != null)
         {
             if (Type == OptionType.Boolean && OptionBehaviour is ToggleOption boolOption)
@@ -219,6 +237,8 @@ public class CustomOption
                     Entry.Value = SelectionIndex;
                     ShareOptionChange();
                 }
+
+                CloudEntry?.SetValue(SelectionIndex);
             }
             else if (OptionBehaviour is StringOption stringOption)
             {
@@ -229,12 +249,16 @@ public class CustomOption
                 if (Key == nameof(CustomOptions.Preset) && SelectionIndex != Tab.Preset)
                 {
                     Tab.SwitchPreset(SelectionIndex);
-                    ShareOptionChange();
                 }
-                else if (Entry != null)
+                else
                 {
-                    Entry.Value = SelectionIndex;
-                    ShareOptionChange();
+                    if (Entry != null)
+                    {
+                        Entry.Value = SelectionIndex;
+                        ShareOptionChange();
+                    }
+
+                    CloudEntry?.SetValue(SelectionIndex);
                 }
             }
         }
@@ -281,14 +305,15 @@ public class CustomOption
 
         public CustomOption CreateBool(
             string key,
-            string name,
+            NameAndColor name,
             bool defaultValue,
             CustomOption parent = null)
         {
             var customOption = new CustomOption(
                 OptionType.Boolean,
                 key,
-                name,
+                name.Name,
+                name.Color,
                 new List<string> { "off", "on" },
                 null,
                 defaultValue ? 1 : 0,
@@ -299,7 +324,7 @@ public class CustomOption
 
         public CustomOption CreateFloatList(
             string key,
-            string name,
+            NameAndColor name,
             float minValue,
             float maxValue,
             float defaultValue,
@@ -319,7 +344,8 @@ public class CustomOption
             var customOption = new CustomOption(
                 OptionType.FloatList,
                 key,
-                name,
+                name.Name,
+                name.Color,
                 selections,
                 floatSelections,
                 floatSelections.Contains(defaultValue) ? floatSelections.IndexOf(defaultValue) : 0,
@@ -330,7 +356,7 @@ public class CustomOption
 
         public CustomOption CreateStringList(
             string key,
-            string name,
+            NameAndColor name,
             List<string> selections,
             string defaultValue = null,
             CustomOption parent = null)
@@ -340,7 +366,8 @@ public class CustomOption
             var customOption = new CustomOption(
                 OptionType.StringList,
                 key,
-                name,
+                name.Name,
+                name.Color,
                 selections,
                 null,
                 selection,
@@ -364,14 +391,11 @@ public class CustomOption
         {
             SaveVanillaOptions();
             Preset = newPreset;
-            var presetKey = ((string)CustomOptions.Preset).Trim(' ');
-            VanillaSettings = BetterOtherRolesPlugin.Instance.Config.Bind(presetKey, "GameOptions", string.Empty);
+            VanillaSettings = BetterOtherRolesPlugin.Instance.Config.Bind("Vanilla", "GameOptions", string.Empty);
             LoadVanillaOptions();
             foreach (var setting in Options)
             {
                 if (setting.Key == nameof(CustomOptions.Preset)) continue;
-                setting.Entry =
-                    BetterOtherRolesPlugin.Instance.Config.Bind(presetKey, setting.Key, setting.SelectionIndex);
                 setting.SelectionIndex = Mathf.Clamp(setting.Entry.Value, 0, setting.StringSelections.Count - 1);
                 if (setting.OptionBehaviour == null) continue;
                 if (setting.OptionBehaviour is StringOption stringOption)
@@ -429,6 +453,18 @@ public class CustomOption
         {
             Settings.Add(option);
             return option;
+        }
+    }
+    
+    public class NameAndColor
+    {
+        public readonly string Name;
+        public readonly Color Color;
+
+        public NameAndColor(string name, Color color)
+        {
+            Name = name;
+            Color = color;
         }
     }
 }

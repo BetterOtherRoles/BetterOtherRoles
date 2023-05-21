@@ -1,7 +1,7 @@
 ﻿using System;
 using BetterOtherRoles.EnoFw;
 using BetterOtherRoles.Players;
-using Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 
 namespace BetterOtherRoles.Modules;
 

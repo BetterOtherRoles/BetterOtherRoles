@@ -14,7 +14,7 @@ public  abstract class AbstractMultipleModifier : AbstractModifier
     {
         Quantity = CustomOptions.ModifierSettings.CreateFloatList(
             $"{Key}{nameof(Quantity)}",
-            Colors.Cs(Color, "Quantity"),
+            CustomOptions.Cs(Color, "Quantity"),
             1f,
             15f,
             1f,

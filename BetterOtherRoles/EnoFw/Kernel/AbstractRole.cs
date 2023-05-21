@@ -98,9 +98,9 @@ public abstract class AbstractRole
         AllRoles.Add(Key, this);
     }
 
-    public string Cs(string text)
+    public CustomOption.NameAndColor Cs(string text)
     {
-        return Colors.Cs(Color, text);
+        return CustomOptions.Cs(Color, text);
     }
 
     public virtual void ClearAndReload()

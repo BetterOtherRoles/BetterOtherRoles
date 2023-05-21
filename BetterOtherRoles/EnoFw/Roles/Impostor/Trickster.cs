@@ -2,7 +2,7 @@
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Objects;
 using BetterOtherRoles.Players;
-using Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -89,7 +89,7 @@ public class Trickster : AbstractRole
         Rpc_PlaceJackInTheBox(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
 
-    [MethodRpc((uint)Rpc.Role.PlaceJackInTheBox)]
+    [MethodRpc((uint)Rpc.Role.PlaceJackInTheBox, false)]
     private static void Rpc_PlaceJackInTheBox(PlayerControl sender, string rawData)
     {
         var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawData);

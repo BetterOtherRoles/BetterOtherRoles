@@ -2,13 +2,13 @@
 using System.Linq;
 using BetterOtherRoles.CustomGameModes;
 using BetterOtherRoles.EnoFw.Kernel;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using BetterOtherRoles.EnoFw.Roles.Crewmate;
 using BetterOtherRoles.EnoFw.Roles.Impostor;
 using BetterOtherRoles.EnoFw.Roles.Modifiers;
 using BetterOtherRoles.EnoFw.Roles.Neutral;
 using BetterOtherRoles.Players;
 using BetterOtherRoles.Utilities;
-using Reactor.Networking.Attributes;
 using UnityEngine;
 
 namespace BetterOtherRoles.EnoFw.Modules;

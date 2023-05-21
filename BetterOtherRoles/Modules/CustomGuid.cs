@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Reflection;
 using HarmonyLib;
 using MonoMod.Utils;
-using Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using BetterOtherRoles.EnoFw;
 using BetterOtherRoles.EnoFw.Modules;
 using BetterOtherRoles.EnoFw.Utils;

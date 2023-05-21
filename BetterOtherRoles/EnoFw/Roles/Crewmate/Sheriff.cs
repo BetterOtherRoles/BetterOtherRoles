@@ -1,4 +1,5 @@
 ﻿using BetterOtherRoles.EnoFw.Kernel;
+using BetterOtherRoles.EnoFw.Utils;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -11,7 +12,7 @@ public class Sheriff : AbstractRole
     // Fields
     public PlayerControl FormerDeputy; // Needed for keeping handcuffs + shifting
     public PlayerControl FormerSheriff; // When deputy gets promoted...
-    public string IntroTextForDeputy => Cs($"Your Sheriff is {(Player != null ? Player.Data.PlayerName : "unknown")}");
+    public string IntroTextForDeputy => Colors.Cs(Color, $"Your Sheriff is {(Player != null ? Player.Data.PlayerName : "unknown")}");
     
     // Options
     public readonly CustomOption Cooldown;

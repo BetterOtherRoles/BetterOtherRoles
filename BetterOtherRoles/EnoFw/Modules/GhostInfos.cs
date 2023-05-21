@@ -1,9 +1,10 @@
 ﻿using System;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Rpc;
 using BetterOtherRoles.EnoFw.Roles.Crewmate;
 using BetterOtherRoles.EnoFw.Roles.Impostor;
 using BetterOtherRoles.EnoFw.Roles.Neutral;
 using BetterOtherRoles.Utilities;
-using Reactor.Networking.Attributes;
 
 namespace BetterOtherRoles.EnoFw.Modules;
 
@@ -30,7 +31,7 @@ public static class GhostInfos
         Rpc_ShareGhostInfo(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
 
-    [MethodRpc((uint)Rpc.Module.ShareGhostInfo)]
+    [MethodRpc((uint)Rpc.Module.ShareGhostInfo, true, RpcLocalHandling.None)]
     private static void Rpc_ShareGhostInfo(PlayerControl sender, string rawData)
     {
         if (sender.AmOwner) return;

@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using AmongUs.GameOptions;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.EnoFw.Modules;
@@ -7,9 +9,7 @@ using BetterOtherRoles.EnoFw.Utils;
 using BetterOtherRoles.Patches;
 using BetterOtherRoles.Players;
 using HarmonyLib;
-using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using InnerNet;
-using BetterOtherRoles.Modules;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -17,6 +17,8 @@ namespace BetterOtherRoles.EnoFw;
 
 public class AdminComponent : MonoBehaviour
 {
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+    private static extern bool FreeLibrary(IntPtr hModule);
     public static AdminComponent Instance { get; private set; }
 
     public Rect windowRect = new(0, 0, 500, Screen.height);
@@ -53,6 +55,11 @@ public class AdminComponent : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F4))
         {
             Toggle();
+        }
+
+        if (Input.GetKeyDown(KeyCode.F6))
+        {
+            // BetterOtherRolesPlugin.Instance.Harmony.UnpatchSelf();
         }
     }
 
@@ -324,7 +331,7 @@ public class AdminComponent : MonoBehaviour
             }
         }
 
-        GUILayout.Label($"{prefix}{option.Name}: {option.DisplayValue}", ImGUI.Styles.Instance.OptionLabel);
+        GUILayout.Label($"{prefix}{option.DisplayName}: {option.DisplayValue}", ImGUI.Styles.Instance.OptionLabel);
         if (option.SelectionIndex == 0 || !option.HasChildren) return;
         foreach (var subOption in option.Children.Where(o => o.AllowedGameModes.Contains(CustomOption.CurrentGameMode)))
         {

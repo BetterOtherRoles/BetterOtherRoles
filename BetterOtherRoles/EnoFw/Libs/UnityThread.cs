@@ -8,7 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using BepInEx.Unity.IL2CPP.Utils;
-using Reactor.Utilities.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Utilities.Attributes;
 using UnityEngine;
 
 namespace BetterOtherRoles.EnoFw.Libs;

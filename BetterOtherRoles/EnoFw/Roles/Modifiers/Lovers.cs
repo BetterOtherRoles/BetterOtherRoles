@@ -24,7 +24,7 @@ public class Lovers : AbstractSimpleModifier
     {
         ImpostorRate = CustomOptions.ModifierSettings.CreateFloatList(
             $"{Key}{nameof(ImpostorRate)}",
-            Colors.Cs(Color, "Chance that one Lover is impostor"),
+            CustomOptions.Cs(Color, "Chance that one Lover is impostor"),
             0f,
             100f,
             0f,
@@ -34,12 +34,12 @@ public class Lovers : AbstractSimpleModifier
             "%");
         BothDie = CustomOptions.ModifierSettings.CreateBool(
             $"{Key}{nameof(BothDie)}",
-            Colors.Cs(Color, "Both lovers die"),
+            CustomOptions.Cs(Color, "Both lovers die"),
             false,
             SpawnRate);
         EnableChat = CustomOptions.ModifierSettings.CreateBool(
             $"{Key}{nameof(EnableChat)}",
-            Colors.Cs(Color, "Enable Lover chat"),
+            CustomOptions.Cs(Color, "Enable Lover chat"),
             false,
             SpawnRate);
     }

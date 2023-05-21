@@ -128,70 +128,70 @@ public static class CustomOptions
 
         Preset = MainSettings.CreateStringList(
             nameof(Preset),
-            Colors.Cs("#504885", "Current preset"),
+            Cs("#504885", "Current preset"),
             new List<string> { "Online", "Preset 1", "Preset 2", "Preset 3", "Preset 4", "Preset 5", "Skeld", "Dleks", "Mira HQ", "Polus", "Airship", "Submerged" },
             "Online");
         EnableRoles = MainSettings.CreateBool(
             nameof(EnableRoles),
-            Colors.Cs("#ff1010", "Enable roles"),
+            Cs("#ff1010", "Enable roles"),
             true);
 
         MinCrewmateRoles = MainSettings.CreateFloatList(
             nameof(MinCrewmateRoles),
-            Colors.Cs(Colors.Crewmate, "Minimum Crewmate Roles"),
+            Cs(Colors.Crewmate, "Minimum Crewmate Roles"),
             0f,
             15f,
             15f,
             1f);
         MaxCrewmateRoles = MainSettings.CreateFloatList(
             nameof(MaxCrewmateRoles),
-            Colors.Cs(Colors.Crewmate, "Maximum Crewmate Roles"),
+            Cs(Colors.Crewmate, "Maximum Crewmate Roles"),
             0f,
             15f,
             15f,
             1f);
         FillCrewmateRoles = MainSettings.CreateBool(
             nameof(FillCrewmateRoles),
-            Colors.Cs(Colors.Crewmate, "Fill crewmate roles"),
+            Cs(Colors.Crewmate, "Fill crewmate roles"),
             false);
         MinNeutralRoles = MainSettings.CreateFloatList(
             nameof(MinNeutralRoles),
-            Colors.Cs(Colors.Neutral, "Minimum Neutral Roles"),
+            Cs(Colors.Neutral, "Minimum Neutral Roles"),
             0f,
             15f,
             15f,
             1f);
         MaxNeutralRoles = MainSettings.CreateFloatList(
             nameof(MaxNeutralRoles),
-            Colors.Cs(Colors.Neutral, "Maximum Neutral Roles"),
+            Cs(Colors.Neutral, "Maximum Neutral Roles"),
             0f,
             15f,
             15f,
             1f);
         MinImpostorRoles = MainSettings.CreateFloatList(
             nameof(MinImpostorRoles),
-            Colors.Cs(Colors.Impostor, "Minimum Impostor Roles"),
+            Cs(Colors.Impostor, "Minimum Impostor Roles"),
             0f,
             15f,
             15f,
             1f);
         MaxImpostorRoles = MainSettings.CreateFloatList(
             nameof(MaxImpostorRoles),
-            Colors.Cs(Colors.Impostor, "Maximum Impostor Roles"),
+            Cs(Colors.Impostor, "Maximum Impostor Roles"),
             0f,
             15f,
             15f,
             1f);
         MinModifiers = MainSettings.CreateFloatList(
             nameof(MinModifiers),
-            Colors.Cs(Colors.Modifier, "Minimum Modifiers"),
+            Cs(Colors.Modifier, "Minimum Modifiers"),
             0f,
             15f,
             15f,
             1f);
         MaxModifiers = MainSettings.CreateFloatList(
             nameof(MaxModifiers),
-            Colors.Cs(Colors.Modifier, "Maximum Modifiers"),
+            Cs(Colors.Modifier, "Maximum Modifiers"),
             0f,
             15f,
             15f,
@@ -199,21 +199,21 @@ public static class CustomOptions
 
         RandomizeWirePositions = MainSettings.CreateBool(
             nameof(RandomizeWirePositions),
-            "Randomize wire tasks positions",
+            Cs("Randomize wire tasks positions"),
             false);
 
         RandomizeUploadPositions = MainSettings.CreateBool(
             nameof(RandomizeUploadPositions),
-            "Randomize upload task position",
+            Cs("Randomize upload task position"),
             false);
 
         EnableBetterPolus = MainSettings.CreateBool(
             nameof(EnableBetterPolus),
-            Colors.Cs("#04701e", "Enable Better Polus"),
+            Cs("#04701e", "Enable Better Polus"),
             false).OnlyForMaps(CustomOption.Maps.Polus);
         BetterPolusReactorDuration = MainSettings.CreateFloatList(
             nameof(BetterPolusReactorDuration),
-            Colors.Cs("#04701e", "Reactor sabotage duration"),
+            Cs("#04701e", "Reactor sabotage duration"),
             15f,
             100f,
             40f,
@@ -224,69 +224,69 @@ public static class CustomOptions
 
         EnableBetterSkeld = MainSettings.CreateBool(
             nameof(EnableBetterSkeld),
-            "Enable Better Skeld",
+            Cs("Enable Better Skeld"),
             false).OnlyForMaps(CustomOption.Maps.Skeld);
 
         MaxEmergencyMeetings = MainSettings.CreateFloatList(
             nameof(MaxEmergencyMeetings),
-            "Number of emergency meetings",
+            Cs("Number of emergency meetings"),
             0f,
             15f,
             10f,
             1f);
         BlockSkippingInEmergencyMeetings = MainSettings.CreateBool(
             nameof(BlockSkippingInEmergencyMeetings),
-            "Disable skip button in emergency meetings",
+            Cs("Disable skip button in emergency meetings"),
             false,
             MaxEmergencyMeetings);
         NoVoteIsSelfVote = MainSettings.CreateBool(
             nameof(NoVoteIsSelfVote),
-            "No vote is self vote",
+            Cs("No vote is self vote"),
             false,
             MaxEmergencyMeetings);
 
         HidePlayerNames = MainSettings.CreateBool(
             nameof(HidePlayerNames),
-            "Hide player names",
+            Cs("Hide player names"),
             false);
 
         AllowParallelMedBayScans = MainSettings.CreateBool(
             nameof(AllowParallelMedBayScans),
-            "Allow parallel MedBay scans",
+            Cs("Allow parallel MedBay scans"),
             false);
         RandomizePositionDuringScan = MainSettings.CreateBool(
             nameof(RandomizePositionDuringScan),
-            "Randomize position during medbay scan",
+            Cs("Randomize position during medbay scan"),
             false);
 
         FinishTasksBeforeHauntingOrZoomingOut = MainSettings.CreateBool(
             nameof(FinishTasksBeforeHauntingOrZoomingOut),
-            "Finish tasks before haunting or zooming out",
+            Cs("Finish tasks before haunting or zooming out"),
             false);
 
         CamerasNightVision = MainSettings.CreateBool(
             nameof(CamerasNightVision),
-            "Cams switch to night vision if lights are off",
+            Cs("Cams switch to night vision if lights are off"),
             false);
         CamerasNightVisionIfImpostor = MainSettings.CreateBool(
             nameof(CamerasNightVisionIfImpostor),
-            "Impostor ignore night vision cams",
+            Cs("Impostor ignore night vision cams"),
             false,
             CamerasNightVision);
 
         ShieldFirstKilledPlayer = MainSettings.CreateBool(
             nameof(ShieldFirstKilledPlayer),
-            "Shield first killed player",
+            Cs("Shield first killed player"),
             false);
         RemoveFirstKillShield = MainSettings.CreateStringList(
             nameof(RemoveFirstKillShield),
-            "Remove shield when",
+            Cs("Remove shield when"),
             new List<string> { "First meeting ended", "Timer expired" },
             "First meeting ended",
             ShieldFirstKilledPlayer);
         RemoveShieldTimer = MainSettings.CreateFloatList(
             nameof(RemoveShieldTimer),
-            "Shield duration",
+            Cs("Shield duration"),
             10f,
             600f,
             60f,
@@ -296,22 +296,22 @@ public static class CustomOptions
             "s");
         ShowShieldIndicator = MainSettings.CreateBool(
             nameof(ShowShieldIndicator),
-            "Show shield indicator",
+            Cs("Show shield indicator"),
             false,
             RemoveFirstKillShield);
 
         RandomizeMeetingOrder = MainSettings.CreateBool(
             nameof(RandomizeMeetingOrder),
-            "Randomize players in meeting",
+            Cs("Randomize players in meeting"),
             false);
 
         DynamicMap = MainSettings.CreateBool(
             nameof(DynamicMap),
-            "Play on a random map",
+            Cs("Play on a random map"),
             false);
         DynamicMapEnableSkeld = MainSettings.CreateFloatList(
             nameof(DynamicMapEnableSkeld),
-            "Skeld",
+            Cs("Skeld"),
             0f,
             100f,
             0f,
@@ -321,7 +321,7 @@ public static class CustomOptions
             "%");
         DynamicMapEnableDleks = MainSettings.CreateFloatList(
             nameof(DynamicMapEnableDleks),
-            "Dleks",
+            Cs("Dleks"),
             0f,
             100f,
             0f,
@@ -331,7 +331,7 @@ public static class CustomOptions
             "%");
         DynamicMapEnableMira = MainSettings.CreateFloatList(
             nameof(DynamicMapEnableMira),
-            "Mira HQ",
+            Cs("Mira HQ"),
             0f,
             100f,
             0f,
@@ -341,7 +341,7 @@ public static class CustomOptions
             "%");
         DynamicMapEnablePolus = MainSettings.CreateFloatList(
             nameof(DynamicMapEnablePolus),
-            "Polus",
+            Cs("Polus"),
             0f,
             100f,
             0f,
@@ -351,7 +351,7 @@ public static class CustomOptions
             "%");
         DynamicMapEnableAirShip = MainSettings.CreateFloatList(
             nameof(DynamicMapEnableAirShip),
-            "Airship",
+            Cs("Airship"),
             0f,
             100f,
             0f,
@@ -361,7 +361,7 @@ public static class CustomOptions
             "%");
         DynamicMapEnableSubmerged = MainSettings.CreateFloatList(
             nameof(DynamicMapEnableSubmerged),
-            "Submerged",
+            Cs("Submerged"),
             0f,
             100f,
             0f,
@@ -371,13 +371,13 @@ public static class CustomOptions
             "%");
         DynamicMapSeparateSettings = MainSettings.CreateBool(
             nameof(DynamicMapSeparateSettings),
-            "Use random map setting presets",
+            Cs("Use random map setting presets"),
             false,
             DynamicMap);
 
         GuesserGameModeCrewNumber = MainSettings.CreateFloatList(
                 nameof(GuesserGameModeCrewNumber),
-                "Number of crewmate guessers",
+                Cs("Number of crewmate guessers"),
                 1f,
                 15f,
                 15f,
@@ -385,7 +385,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.Guesser);
         GuesserGameModeNeutralNumber = MainSettings.CreateFloatList(
                 nameof(GuesserGameModeNeutralNumber),
-                "Number of neutral guessers",
+                Cs("Number of neutral guessers"),
                 1f,
                 15f,
                 15f,
@@ -393,7 +393,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.Guesser);
         GuesserGameModeImpostorNumber = MainSettings.CreateFloatList(
                 nameof(GuesserGameModeImpostorNumber),
-                "Number of impostor guessers",
+                Cs("Number of impostor guessers"),
                 1f,
                 15f,
                 15f,
@@ -401,17 +401,17 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.Guesser);
         GuesserForceJackalGuesser = MainSettings.CreateBool(
                 nameof(GuesserForceJackalGuesser),
-                "Force Jackal to be guesser",
+                Cs("Force Jackal to be guesser"),
                 false)
             .OnlyForGameModes(CustomOption.GameMode.Guesser);
         GuesserGameModeHaveModifier = MainSettings.CreateBool(
                 nameof(GuesserGameModeHaveModifier),
-                "Guessers can have a modifier",
+                Cs("Guessers can have a modifier"),
                 true)
             .OnlyForGameModes(CustomOption.GameMode.Guesser);
         GuesserGameModeNumberOfShots = MainSettings.CreateFloatList(
                 nameof(GuesserGameModeNumberOfShots),
-                "Guesser number of shots",
+                Cs("Guesser number of shots"),
                 1f,
                 15f,
                 3f,
@@ -419,33 +419,33 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.Guesser);
         GuesserGameModeHasMultipleShotsPerMeeting = MainSettings.CreateBool(
                 nameof(GuesserGameModeHasMultipleShotsPerMeeting),
-                "Guesser can shoot multiple times per meeting",
+                Cs("Guesser can shoot multiple times per meeting"),
                 false)
             .OnlyForGameModes(CustomOption.GameMode.Guesser);
         GuesserGameModeKillsThroughShield = MainSettings.CreateBool(
                 nameof(GuesserGameModeKillsThroughShield),
-                "Guesser ignore the Medic shield",
+                Cs("Guesser ignore the Medic shield"),
                 true)
             .OnlyForGameModes(CustomOption.GameMode.Guesser);
         GuesserGameModeEvilCanKillSpy = MainSettings.CreateBool(
                 nameof(GuesserGameModeEvilCanKillSpy),
-                "Impostor Guesser can guess the Spy",
+                Cs("Impostor Guesser can guess the Spy"),
                 true)
             .OnlyForGameModes(CustomOption.GameMode.Guesser);
         GuesserGameModeCantGuessSnitchIfTasksDone = MainSettings.CreateBool(
                 nameof(GuesserGameModeCantGuessSnitchIfTasksDone),
-                "Guesser can't guess Snitch when tasks completed",
+                Cs("Guesser can't guess Snitch when tasks completed"),
                 true)
             .OnlyForGameModes(CustomOption.GameMode.Guesser);
 
         HideNSeekMap = MainSettings.CreateStringList(
                 nameof(HideNSeekMap),
-                "Map",
+                Cs("Map"),
                 new List<string> { "The Skeld", "Mira HQ", "Polus", "Airship", "Submerged" })
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HideNSeekHunterCount = MainSettings.CreateFloatList(
                 nameof(HideNSeekHunterCount),
-                "Number of Hunters",
+                Cs("Number of Hunters"),
                 1f,
                 3f,
                 1f,
@@ -453,7 +453,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HideNSeekKillCooldown = MainSettings.CreateFloatList(
                 nameof(HideNSeekKillCooldown),
-                "Kill cooldown",
+                Cs("Kill cooldown"),
                 2.5f,
                 60f,
                 10f,
@@ -461,7 +461,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HideNSeekHunterVision = MainSettings.CreateFloatList(
                 nameof(HideNSeekHunterVision),
-                "Hunter vision",
+                Cs("Hunter vision"),
                 0.25f,
                 2f,
                 0.5f,
@@ -469,7 +469,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HideNSeekHuntedVision = MainSettings.CreateFloatList(
                 nameof(HideNSeekHuntedVision),
-                "Hunted vision",
+                Cs("Hunted vision"),
                 0.25f,
                 2f,
                 0.5f,
@@ -477,7 +477,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HideNSeekCommonTasks = HideNSeekHuntedVision = MainSettings.CreateFloatList(
                 nameof(HideNSeekCommonTasks),
-                "Common tasks",
+                Cs("Common tasks"),
                 0f,
                 4f,
                 1f,
@@ -485,7 +485,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HideNSeekShortTasks = MainSettings.CreateFloatList(
                 nameof(HideNSeekShortTasks),
-                "Short tasks",
+                Cs("Short tasks"),
                 1f,
                 23f,
                 1f,
@@ -493,7 +493,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HideNSeekLongTasks = MainSettings.CreateFloatList(
                 nameof(HideNSeekLongTasks),
-                "Long tasks",
+                Cs("Long tasks"),
                 0f,
                 15f,
                 3f,
@@ -501,7 +501,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HideNSeekTimer = MainSettings.CreateFloatList(
                 nameof(HideNSeekTimer),
-                "Timer",
+                Cs("Timer"),
                 1f,
                 30f,
                 5f,
@@ -512,12 +512,12 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HideNSeekTaskWin = MainSettings.CreateBool(
                 nameof(HideNSeekTaskWin),
-                "Task win is possible",
+                Cs("Task win is possible"),
                 false)
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HideNSeekTaskPunish = MainSettings.CreateFloatList(
             nameof(HideNSeekTaskPunish),
-            "Finish task timer reduction",
+            Cs("Finish task timer reduction"),
             0f,
             30f,
             10f,
@@ -528,12 +528,12 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HideNSeekCanSabotage = MainSettings.CreateBool(
                 nameof(HideNSeekCanSabotage),
-                "Enable sabotages",
+                Cs("Enable sabotages"),
                 false)
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HideNSeekHunterWaiting = MainSettings.CreateFloatList(
                 nameof(HideNSeekHunterWaiting),
-                "Time the Hunter needs to wait",
+                Cs("Time the Hunter needs to wait"),
                 2.5f,
                 60f,
                 15f,
@@ -545,7 +545,7 @@ public static class CustomOptions
         
         HunterLightCooldown = MainSettings.CreateFloatList(
                 nameof(HunterLightCooldown),
-                Colors.Cs(Color.red, "Hunter light cooldown"),
+                Cs(Color.red, "Hunter light cooldown"),
                 5f,
                 60f,
                 30f,
@@ -556,7 +556,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HunterLightDuration = MainSettings.CreateFloatList(
                 nameof(HunterLightDuration),
-                Colors.Cs(Color.red, "Hunter light duration"),
+                Cs(Color.red, "Hunter light duration"),
                 1f,
                 60f,
                 5f,
@@ -567,7 +567,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HunterLightVision = MainSettings.CreateFloatList(
                 nameof(HunterLightVision),
-                Colors.Cs(Color.red, "Hunter light vision"),
+                Cs(Color.red, "Hunter light vision"),
                 1f,
                 5f,
                 3f,
@@ -578,7 +578,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HunterLightPunish = MainSettings.CreateFloatList(
                 nameof(HunterLightPunish),
-                Colors.Cs(Color.red, "Hunter light timer reduction"),
+                Cs(Color.red, "Hunter light timer reduction"),
                 0f,
                 30f,
                 5f,
@@ -589,7 +589,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HunterAdminCooldown = MainSettings.CreateFloatList(
                 nameof(HunterAdminCooldown),
-                Colors.Cs(Color.red, "Hunter admin cooldown"),
+                Cs(Color.red, "Hunter admin cooldown"),
                 5f,
                 60f,
                 30f,
@@ -600,7 +600,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HunterAdminDuration = MainSettings.CreateFloatList(
                 nameof(HunterAdminDuration),
-                Colors.Cs(Color.red, "Hunter admin duration"),
+                Cs(Color.red, "Hunter admin duration"),
                 1f,
                 60f,
                 5f,
@@ -611,7 +611,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HunterAdminPunish = MainSettings.CreateFloatList(
                 nameof(HunterAdminPunish),
-                Colors.Cs(Color.red, "Hunter admin time reduction"),
+                Cs(Color.red, "Hunter admin time reduction"),
                 0f,
                 30f,
                 5f,
@@ -622,7 +622,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HunterArrowCooldown = MainSettings.CreateFloatList(
                 nameof(HunterArrowCooldown),
-                Colors.Cs(Color.red, "Hunter arrow cooldown"),
+                Cs(Color.red, "Hunter arrow cooldown"),
                 5f,
                 60f,
                 30f,
@@ -633,7 +633,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HunterArrowDuration = MainSettings.CreateFloatList(
                 nameof(HunterArrowDuration),
-                Colors.Cs(Color.red, "Hunter arrow duration"),
+                Cs(Color.red, "Hunter arrow duration"),
                 1f,
                 60f,
                 5f,
@@ -644,7 +644,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HunterArrowPunish = MainSettings.CreateFloatList(
                 nameof(HunterArrowPunish),
-                Colors.Cs(Color.red, "Hunter arrow time reduction"),
+                Cs(Color.red, "Hunter arrow time reduction"),
                 0f,
                 30f,
                 5f,
@@ -656,7 +656,7 @@ public static class CustomOptions
         
         HuntedShieldCooldown = MainSettings.CreateFloatList(
                 nameof(HuntedShieldCooldown),
-                Colors.Cs(Color.gray, "Hunted shield cooldown"),
+                Cs(Color.gray, "Hunted shield cooldown"),
                 5f,
                 60f,
                 30f,
@@ -667,7 +667,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HuntedShieldDuration = MainSettings.CreateFloatList(
                 nameof(HuntedShieldDuration),
-                Colors.Cs(Color.gray, "Hunted shield duration"),
+                Cs(Color.gray, "Hunted shield duration"),
                 1f,
                 60f,
                 5f,
@@ -678,7 +678,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HuntedShieldRewindTime = MainSettings.CreateFloatList(
                 nameof(HuntedShieldRewindTime),
-                Colors.Cs(Color.gray, "Hunted shield rewind time"),
+                Cs(Color.gray, "Hunted shield rewind time"),
                 1f,
                 10f,
                 3f,
@@ -689,7 +689,7 @@ public static class CustomOptions
             .OnlyForGameModes(CustomOption.GameMode.HideNSeek);
         HuntedShieldNumber = MainSettings.CreateFloatList(
                 nameof(HuntedShieldNumber),
-                Colors.Cs(Color.gray, "Hunted shield number"),
+                Cs(Color.gray, "Hunted shield number"),
                 1f,
                 15f,
                 3f,
@@ -701,7 +701,7 @@ public static class CustomOptions
 
         MafiaSpawnRate = ImpostorsSettings.CreateFloatList(
             nameof(MafiaSpawnRate),
-            Colors.Cs(Palette.ImpostorRed, "Mafia"),
+            Cs(Palette.ImpostorRed, "Mafia"),
             0f,
             100f,
             0f,
@@ -712,8 +712,23 @@ public static class CustomOptions
 
         HideModifiers = ModifierSettings.CreateBool(
             nameof(HideModifiers),
-            Colors.Cs(Color.yellow, "Hide after death modifiers"),
+            Cs(Color.yellow, "Hide after death modifiers"),
             false);
+    }
+    
+    public static CustomOption.NameAndColor Cs(string color, string name)
+    {
+        return new CustomOption.NameAndColor(name, Colors.FromHex(color));
+    }
+
+    public static CustomOption.NameAndColor Cs(Color color, string name)
+    {
+        return new CustomOption.NameAndColor(name, color);
+    }
+
+    public static CustomOption.NameAndColor Cs(string name)
+    {
+        return new CustomOption.NameAndColor(name, Color.clear);
     }
 
     public static void Load()

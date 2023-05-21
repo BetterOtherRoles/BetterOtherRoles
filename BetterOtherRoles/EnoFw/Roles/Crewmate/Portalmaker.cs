@@ -1,7 +1,7 @@
 ﻿using System;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Objects;
-using Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -91,7 +91,7 @@ public class Portalmaker : AbstractRole
         Rpc_PlacePortal(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
 
-    [MethodRpc((uint)Rpc.Role.PlacePortal)]
+    [MethodRpc((uint)Rpc.Role.PlacePortal, false)]
     private static void Rpc_PlacePortal(PlayerControl sender, string rawData)
     {
         var (x, y, z) = Rpc.Deserialize<Tuple<float, float, float>>(rawData);

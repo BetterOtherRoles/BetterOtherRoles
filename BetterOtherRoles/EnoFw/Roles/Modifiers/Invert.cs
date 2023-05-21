@@ -16,7 +16,7 @@ public class Invert : AbstractMultipleModifier
     {
         MeetingsOption = CustomOptions.ModifierSettings.CreateFloatList(
             $"{Key}{nameof(MeetingsOption)}",
-            Colors.Cs(Color, "Number of meetings inverted"),
+            CustomOptions.Cs(Color, "Number of meetings inverted"),
             1f,
             15f,
             3f,

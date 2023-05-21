@@ -1,6 +1,6 @@
 ﻿using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Utilities;
-using Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 

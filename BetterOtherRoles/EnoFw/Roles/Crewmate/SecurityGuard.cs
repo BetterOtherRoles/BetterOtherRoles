@@ -4,7 +4,7 @@ using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Players;
 using BetterOtherRoles.Utilities;
 using PowerTools;
-using Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
@@ -181,7 +181,7 @@ public class SecurityGuard : AbstractRole
         Rpc_SealVent(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
 
-    [MethodRpc((uint)Rpc.Role.SealVent)]
+    [MethodRpc((uint)Rpc.Role.SealVent, false)]
     private static void Rpc_SealVent(PlayerControl sender, string rawData)
     {
         var ventId = Rpc.Deserialize<Tuple<int>>(rawData).Item1;
@@ -209,7 +209,7 @@ public class SecurityGuard : AbstractRole
         Rpc_PlaceCamera(PlayerControl.LocalPlayer, Rpc.Serialize(data));
     }
 
-    [MethodRpc((uint)Rpc.Role.PlaceCamera)]
+    [MethodRpc((uint)Rpc.Role.PlaceCamera, false)]
     private static void Rpc_PlaceCamera(PlayerControl sender, string rawDData)
     {
         var referenceCamera = Object.FindObjectOfType<SurvCamera>(); 
