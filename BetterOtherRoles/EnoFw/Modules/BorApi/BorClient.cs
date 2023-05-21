@@ -2,7 +2,9 @@
 using System.Linq;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.EnoFw.Utils;
+using BetterOtherRoles.Players;
 using HarmonyLib;
+using InnerNet;
 
 namespace BetterOtherRoles.EnoFw.Modules.BorApi;
 
