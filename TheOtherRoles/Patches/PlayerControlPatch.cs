@@ -57,7 +57,7 @@ namespace TheOtherRoles.Patches
 
                 if (hasVisibleShield)
                 {
-                    target.cosmetics.currentBodySprite.BodySprite.material.SetFloat("_Outline", 1f);
+                    target.cosmetics.currentBodySprite.BodySprite.material.SetFloat("_Outline", 1.5f);
                     target.cosmetics.currentBodySprite.BodySprite.material.SetColor("_OutlineColor", color);
                 }
                 else

@@ -12,7 +12,7 @@ using TheOtherRoles.EnoFw.Roles.Neutral;
 
 namespace TheOtherRoles
 {
-    class RoleInfo
+    public class RoleInfo
     {
         public Color color;
         public string name;
