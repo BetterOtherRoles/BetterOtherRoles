@@ -392,9 +392,9 @@ public static class CustomOptionsPatch
     [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.RpcSyncSettings))]
     public static class RpcSyncSettingsPatch
     {
-        public static void Postfix()
+        public static void Postfix(PlayerControl __instance)
         {
-            ShareCustomOptions();
+            DeferrableAction.Defer(ShareCustomOptions, () => CachedPlayer.LocalPlayer != null && __instance != null);
         }
     }
 

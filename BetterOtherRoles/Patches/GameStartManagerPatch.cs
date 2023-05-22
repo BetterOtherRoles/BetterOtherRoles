@@ -155,6 +155,7 @@ namespace BetterOtherRoles.Patches
                         if (kickingTimer > 20)
                         {
                             kickingTimer = 0;
+                            BetterOtherRolesPlugin.Logger.LogWarning("AmongUsClient.Instance.ExitGame");
                             AmongUsClient.Instance.ExitGame(DisconnectReasons.ExitGame);
                             SceneChanger.ChangeScene("MainMenu");
                         }
