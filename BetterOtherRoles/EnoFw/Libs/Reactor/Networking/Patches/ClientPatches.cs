@@ -84,6 +84,7 @@ internal static class ClientPatches
 
                         if (innerNetClient.AmHost)
                         {
+                            BetterOtherRolesPlugin.Logger.LogWarning($"ModList.IsAnyModIsRequiredOnAllClients : {ModList.IsAnyModIsRequiredOnAllClients}");
                             if (reactorClientData == null && ModList.IsAnyModIsRequiredOnAllClients)
                             {
                                 BetterOtherRolesPlugin.Logger.LogWarning("Kicking " + clientData.PlayerName + " for not having Reactor installed");

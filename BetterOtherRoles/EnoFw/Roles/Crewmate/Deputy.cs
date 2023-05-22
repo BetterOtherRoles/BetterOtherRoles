@@ -4,7 +4,6 @@ using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.EnoFw.Modules;
 using BetterOtherRoles.EnoFw.Utils;
 using BetterOtherRoles.Players;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -130,11 +129,11 @@ public class Deputy : AbstractRole
 
     public static void DeputyPromotes()
     {
-        Rpc_DeputyPromotes(PlayerControl.LocalPlayer);
+        RpcManager.Instance.Send((uint)Rpc.Role.DeputyPromotes);
     }
 
-    [MethodRpc((uint)Rpc.Role.DeputyPromotes)]
-    private static void Rpc_DeputyPromotes(PlayerControl sender)
+    [BindRpc((uint)Rpc.Role.DeputyPromotes)]
+    public static void Rpc_DeputyPromotes()
     {
         if (Instance.Player == null) return;
         Sheriff.Instance.ReplaceCurrentSheriff(Instance.Player);
@@ -144,14 +143,12 @@ public class Deputy : AbstractRole
 
     public static void DeputyUsedHandcuffs(byte targetId)
     {
-        var data = new Tuple<byte>(targetId);
-        Rpc_DeputyUsedHandcuffs(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.DeputyUsedHandcuffs, targetId);
     }
 
-    [MethodRpc((uint)Rpc.Role.DeputyUsedHandcuffs)]
-    private static void Rpc_DeputyUsedHandcuffs(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.DeputyUsedHandcuffs)]
+    public static void Rpc_DeputyUsedHandcuffs(byte targetId)
     {
-        var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         Instance.UsedHandcuff++;
         Instance.HandcuffedPlayers.Add(targetId);
     }

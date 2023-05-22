@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.EnoFw.Roles.Neutral;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -60,13 +59,13 @@ public class Pursuer : AbstractRole
     public static void SetBlanked(byte playerId, bool add)
     {
         var data = new Tuple<byte, bool>(playerId, add);
-        Rpc_SetBlanked(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.SetBlanked, data);
     }
 
-    [MethodRpc((uint)Rpc.Role.SetBlanked)]
-    private static void Rpc_SetBlanked(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.SetBlanked)]
+    public static void Rpc_SetBlanked(Tuple<byte, bool> data)
     {
-        var (playerId, add) = Rpc.Deserialize<Tuple<byte, bool>>(rawData);
+        var (playerId, add) = data;
 
         var blankTarget = Helpers.playerById(playerId);
         if (blankTarget == null) return;

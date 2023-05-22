@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Players;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -69,11 +68,11 @@ public class Camouflager : AbstractRole
 
     public static void CamouflagerCamouflage()
     {
-        Rpc_CamouflagerCamouflage(PlayerControl.LocalPlayer);
+        RpcManager.Instance.Send((uint)Rpc.Role.CamouflagerCamouflage);
     }
 
-    [MethodRpc((uint)Rpc.Role.CamouflagerCamouflage)]
-    private static void Rpc_CamouflagerCamouflage(PlayerControl sender)
+    [BindRpc((uint)Rpc.Role.CamouflagerCamouflage)]
+    public static void Rpc_CamouflagerCamouflage()
     {
         if (Instance.Player == null) return;
         Instance.CamouflageTimer = Instance.CamoDuration;

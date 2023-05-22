@@ -1,7 +1,6 @@
 ﻿using System;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Objects;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -118,11 +117,11 @@ public class Bomber : AbstractRole
 
     public static void DefuseBomb()
     {
-        Rpc_DefuseBomb(PlayerControl.LocalPlayer);
+        RpcManager.Instance.Send((uint)Rpc.Role.DefuseBomb);
     }
 
-    [MethodRpc((uint)Rpc.Role.DefuseBomb)]
-    private static void Rpc_DefuseBomb(PlayerControl sender)
+    [BindRpc((uint)Rpc.Role.DefuseBomb)]
+    public static void Rpc_DefuseBomb()
     {
         SoundEffectsManager.playAtPosition("bombDefused", Instance.Bomb.bomb.transform.position, range: Instance.BombHearRange);
         Instance.ClearBomb();
@@ -134,13 +133,13 @@ public class Bomber : AbstractRole
     public static void PlaceBomb(float x, float y, float z)
     {
         var data = new Tuple<float, float, float>(x, y, z);
-        Rpc_PlaceBomb(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.PlaceBomb, data, false);
     }
 
-    [MethodRpc((uint)Rpc.Role.PlaceBomb, false)]
-    private static void Rpc_PlaceBomb(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.PlaceBomb)]
+    public static void Rpc_PlaceBomb(Tuple<float, float, float> xyz)
     {
-        var (x, y, z) = Rpc.Deserialize<Tuple<float, float, float>>(rawData);
+        var (x, y, z) = xyz;
         if (Instance.Player == null) return;
         var position = new Vector3(x, y, z);
         var _ = new Bomb(position);

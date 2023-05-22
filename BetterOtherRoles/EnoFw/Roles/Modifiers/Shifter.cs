@@ -1,10 +1,8 @@
-﻿using System;
-using BetterOtherRoles.EnoFw.Kernel;
+﻿using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.EnoFw.Roles.Crewmate;
 using BetterOtherRoles.EnoFw.Roles.Neutral;
 using BetterOtherRoles.Objects;
 using BetterOtherRoles.Players;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 
 namespace BetterOtherRoles.EnoFw.Roles.Modifiers;
@@ -139,27 +137,23 @@ public class Shifter : AbstractSimpleModifier
 
     public static void SetFutureShifted(byte playerId)
     {
-        var data = new Tuple<byte>(playerId);
-        Rpc_SetFutureShifted(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.SetFutureShifted, playerId);
     }
 
-    [MethodRpc((uint)Rpc.Role.SetFutureShifted)]
-    private static void Rpc_SetFutureShifted(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.SetFutureShifted)]
+    public static void Rpc_SetFutureShifted(byte playerId)
     {
-        var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         Instance.FutureShift = Helpers.playerById(playerId);
     }
 
     public static void ShifterShift(byte targetId)
     {
-        var data = new Tuple<byte>(targetId);
-        Rpc_ShifterShift(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.ShifterShift, targetId);
     }
 
-    [MethodRpc((uint)Rpc.Role.ShifterShift)]
-    private static void Rpc_ShifterShift(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.ShifterShift)]
+    public static void Rpc_ShifterShift(byte targetId)
     {
-        var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var oldShifter = Instance.Player;
         var player = Helpers.playerById(targetId);
         if (player == null || oldShifter == null) return;

@@ -1,7 +1,6 @@
 ﻿using System;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Objects;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -69,14 +68,13 @@ public class Portalmaker : AbstractRole
 
     public static void UsePortal(byte playerId, byte exit)
     {
-        var data = new Tuple<byte, byte>(playerId, exit);
-        Rpc_UsePortal(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.UsePortal, new Tuple<byte, byte>(playerId, exit));
     }
 
-    [MethodRpc((uint)Rpc.Role.UsePortal)]
-    private static void Rpc_UsePortal(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.UsePortal)]
+    public static void Rpc_UsePortal(Tuple<byte, byte> data)
     {
-        var (playerId, exit) = Rpc.Deserialize<Tuple<byte, byte>>(rawData);
+        var (playerId, exit) = data;
         Local_UsePortal(playerId, exit);
     }
     
@@ -87,14 +85,13 @@ public class Portalmaker : AbstractRole
 
     public static void PlacePortal(float x, float y, float z)
     {
-        var data = new Tuple<float, float, float>(x, y, z);
-        Rpc_PlacePortal(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.PlacePortal, new Tuple<float, float, float>(x, y, z), false);
     }
 
-    [MethodRpc((uint)Rpc.Role.PlacePortal, false)]
-    private static void Rpc_PlacePortal(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.PlacePortal)]
+    public static void Rpc_PlacePortal(Tuple<float, float, float> xyz)
     {
-        var (x, y, z) = Rpc.Deserialize<Tuple<float, float, float>>(rawData);
+        var (x, y, z) = xyz;
         var position = new Vector3(x, y, z);
         var _ = new Portal(position);
     }

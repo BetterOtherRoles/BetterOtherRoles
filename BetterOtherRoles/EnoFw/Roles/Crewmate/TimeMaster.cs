@@ -2,7 +2,6 @@
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Players;
 using BetterOtherRoles.Utilities;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -71,11 +70,11 @@ public class TimeMaster : AbstractRole
 
     public static void TimeMasterRewindTime()
     {
-        Rpc_TimeMasterRewindTime(PlayerControl.LocalPlayer);
+        RpcManager.Instance.Send((uint)Rpc.Role.TimeMasterRewindTime);
     }
 
-    [MethodRpc((uint)Rpc.Role.TimeMasterRewindTime)]
-    private static void Rpc_TimeMasterRewindTime(PlayerControl sender)
+    [BindRpc((uint)Rpc.Role.TimeMasterRewindTime)]
+    public static void Rpc_TimeMasterRewindTime()
     {
         Instance.ShieldActive = true;
         SoundEffectsManager.stop("timemasterShield");
@@ -100,11 +99,11 @@ public class TimeMaster : AbstractRole
 
     public static void TimeMasterShield()
     {
-        Rpc_TimeMasterShield(PlayerControl.LocalPlayer);
+        RpcManager.Instance.Send((uint)Rpc.Role.TimeMasterShield);
     }
 
-    [MethodRpc((uint)Rpc.Role.TimeMasterShield)]
-    private static void Rpc_TimeMasterShield(PlayerControl sender)
+    [BindRpc((uint)Rpc.Role.TimeMasterShield)]
+    public static void Rpc_TimeMasterShield()
     {
         Instance.ShieldActive = true;
         FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Instance.ShieldDuration, new Action<float>(p => {

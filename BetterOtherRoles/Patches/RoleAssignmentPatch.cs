@@ -723,23 +723,6 @@ class RoleManagerSelectRolesPatch
         return selection;
     }
 
-    private static void setRolesAgain()
-    {
-        while (playerRoleMap.Any())
-        {
-            var roles = new Dictionary<byte, byte>();
-            var amount = (byte)Math.Min(playerRoleMap.Count, 20);
-            for (var i = 0; i < amount; i++)
-            {
-                var option = playerRoleMap[0];
-                roles.Add(option.Item1, option.Item2);
-                playerRoleMap.RemoveAt(0);
-            }
-
-            KernelRpc.WorkaroundSetRoles(roles);
-        }
-    }
-
     public class RoleAssignmentData
     {
         public List<PlayerControl> crewmates { get; set; }

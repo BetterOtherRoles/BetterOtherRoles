@@ -2,7 +2,6 @@
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Objects;
 using BetterOtherRoles.Players;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -71,11 +70,11 @@ public class Trickster : AbstractRole
 
     public static void LightsOut()
     {
-        Rpc_LightsOut(PlayerControl.LocalPlayer);
+        RpcManager.Instance.Send((uint)Rpc.Role.LightsOut);
     }
 
-    [MethodRpc((uint)Rpc.Role.LightsOut)]
-    private static void Rpc_LightsOut(PlayerControl sender)
+    [BindRpc((uint)Rpc.Role.LightsOut)]
+    public static void Rpc_LightsOut()
     {
         Instance.LightsOutTimer = Instance.LightsOutDuration;
         // If the local player is impostor indicate lights out
@@ -86,17 +85,18 @@ public class Trickster : AbstractRole
     public static void PlaceJackInTheBox(float x, float y)
     {
         var data = new Tuple<float, float>(x, y);
-        Rpc_PlaceJackInTheBox(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.PlaceJackInTheBox, data, false);
     }
 
-    [MethodRpc((uint)Rpc.Role.PlaceJackInTheBox, false)]
-    private static void Rpc_PlaceJackInTheBox(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.PlaceJackInTheBox)]
+    public static void Rpc_PlaceJackInTheBox(Tuple<float, float> xy)
     {
-        var (x, y) = Rpc.Deserialize<Tuple<float, float>>(rawData);
+        if (Instance.Player == null) return;
+        var (x, y) = xy;
         var position = Vector3.zero;
         position.x = x;
         position.y = y;
-        position.z = sender.transform.position.z;
+        position.z = Instance.Player.transform.position.z;
         var _ = new JackInTheBox(position);
     }
 }

@@ -1,8 +1,6 @@
-﻿using System;
-using BetterOtherRoles.EnoFw.Kernel;
+﻿using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.EnoFw.Roles.Crewmate;
 using BetterOtherRoles.Players;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -86,11 +84,11 @@ public class Lawyer : AbstractRole
 
     public static void LawyerPromotesToPursuer()
     {
-        Rpc_LawyerPromotesToPursuer(PlayerControl.LocalPlayer);
+        RpcManager.Instance.Send((uint)Rpc.Role.LawyerPromotesToPursuer);
     }
 
-    [MethodRpc((uint)Rpc.Role.LawyerPromotesToPursuer)]
-    private static void Rpc_LawyerPromotesToPursuer(PlayerControl sender)
+    [BindRpc((uint)Rpc.Role.LawyerPromotesToPursuer)]
+    public static void Rpc_LawyerPromotesToPursuer()
     {
         var player = Instance.Player;
         var client = Instance.Target;
@@ -106,15 +104,12 @@ public class Lawyer : AbstractRole
 
     public static void LawyerSetTarget(byte playerId)
     {
-        var data = new Tuple<byte>(playerId);
-        Rpc_LawyerSetTarget(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.LawyerSetTarget, playerId);
     }
 
-    [MethodRpc((uint)Rpc.Role.LawyerSetTarget)]
-    private static void Rpc_LawyerSetTarget(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.LawyerSetTarget)]
+    public static void Rpc_LawyerSetTarget(byte playerId)
     {
-        var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
-
         Instance.Target = Helpers.playerById(playerId);
     }
 }

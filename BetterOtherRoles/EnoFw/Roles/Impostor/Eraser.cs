@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using BetterOtherRoles.EnoFw.Kernel;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -55,14 +54,12 @@ public class Eraser : AbstractRole
 
     public static void SetFutureErased(byte playerId)
     {
-        var data = new Tuple<byte>(playerId);
-        Rpc_SetFutureErased(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.SetFutureErased, playerId);
     }
 
-    [MethodRpc((uint)Rpc.Role.SetFutureErased)]
-    private static void Rpc_SetFutureErased(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.SetFutureErased)]
+    public static void Rpc_SetFutureErased(byte playerId)
     {
-        var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var player = Helpers.playerById(playerId);
         if (player == null) return;
         Instance.FutureErased.Add(player);

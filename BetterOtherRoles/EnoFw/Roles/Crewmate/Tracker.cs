@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Objects;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -109,14 +108,12 @@ public class Tracker : AbstractRole
 
     public static void TrackerUsedTracker(byte playerId)
     {
-        var data = new Tuple<byte>(playerId);
-        Rpc_TrackerUsedTracker(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.TrackerUsedTracker, playerId);
     }
 
-    [MethodRpc((uint)Rpc.Role.TrackerUsedTracker)]
-    private static void Rpc_TrackerUsedTracker(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.TrackerUsedTracker)]
+    public static void Rpc_TrackerUsedTracker(byte targetId)
     {
-        var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var target = Helpers.playerById(targetId);
         if (target == null) return;
         Instance.UsedTracker = true;

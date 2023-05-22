@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using BetterOtherRoles.EnoFw.Kernel;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using BetterOtherRoles.Players;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
@@ -113,15 +112,15 @@ public class Undertaker : AbstractRole
     public static void DropBody(float x, float y, float z)
     {
         var data = new Tuple<float, float, float>(x, y, z);
-        Rpc_DropBody(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.UndertakerDropBody, data);
     }
 
-    [MethodRpc((uint)Rpc.Role.UndertakerDropBody)]
-    private static void Rpc_DropBody(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.UndertakerDropBody)]
+    public static void Rpc_DropBody(Tuple<float, float, float> xyz)
     {
         if (Instance.Player == null || Instance.DraggedBody == null) return;
-        
-        var (x, y, z) = Rpc.Deserialize<Tuple<float, float, float>>(rawData);
+
+        var (x, y, z) = xyz;
         var transform = Instance.DraggedBody.transform;
         var position = new Vector3(x, y, z);
         transform.position = position;
@@ -132,15 +131,13 @@ public class Undertaker : AbstractRole
 
     public static void DragBody(byte playerId)
     {
-        var data = new Tuple<byte>(playerId);
-        Rpc_DragBody(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.UndertakerDragBody, playerId);
     }
 
-    [MethodRpc((uint)Rpc.Role.UndertakerDragBody)]
-    private static void Rpc_DragBody(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.UndertakerDragBody)]
+    public static void Rpc_DragBody(byte playerId)
     {
         if (Instance.Player == null) return;
-        var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var body = UnityEngine.Object.FindObjectsOfType<DeadBody>().FirstOrDefault(b => b.ParentId == playerId);
         if (body == null) return;
         Instance.DraggedBody = body;

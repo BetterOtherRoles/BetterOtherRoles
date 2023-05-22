@@ -1,6 +1,5 @@
 ﻿using System;
 using BetterOtherRoles.EnoFw.Kernel;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -73,13 +72,12 @@ public class Mayor : AbstractRole
 
     public static void MayorSetVoteTwice(bool value)
     {
-        var data = new Tuple<bool>(value);
-        Rpc_MayorSetVoteTwice(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.MayorSetVoteTwice, value, true);
     }
 
-    [MethodRpc((uint)Rpc.Role.MayorSetVoteTwice)]
-    private static void Rpc_MayorSetVoteTwice(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.MayorSetVoteTwice)]
+    public static void Rpc_MayorSetVoteTwice(bool value)
     {
-        Instance.VoteTwice = Rpc.Deserialize<Tuple<bool>>(rawData).Item1;
+        Instance.VoteTwice = value;
     }
 }

@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Rpc;
 using BetterOtherRoles.EnoFw.Roles.Crewmate;
 using BetterOtherRoles.EnoFw.Roles.Impostor;
 using BetterOtherRoles.EnoFw.Roles.Modifiers;
@@ -19,51 +17,47 @@ public static class KernelRpc
 {
     public static void ShareGameMode(byte gameMode)
     {
-        var data = new Tuple<byte>(gameMode);
-        Rpc_ShareGameMode(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Kernel.ShareGameMode, gameMode);
     }
     
-    [MethodRpc((uint)Rpc.Kernel.ShareGameMode)]
-    private static void Rpc_ShareGameMode(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Kernel.ShareGameMode)]
+    public static void Rpc_ShareGameMode(byte gameMode)
     {
-        var gameMode = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         TORMapOptions.gameMode = (CustomGamemodes)gameMode;
     }
     
     public static void SetGameStarting()
     {
-        Rpc_SetGameStarting(PlayerControl.LocalPlayer);
+        RpcManager.Instance.Send((uint)Rpc.Kernel.SetGameStarting);
     }
     
-    [MethodRpc((uint)Rpc.Kernel.SetGameStarting)]
-    private static void Rpc_SetGameStarting(PlayerControl sender)
+    [BindRpc((uint)Rpc.Kernel.SetGameStarting)]
+    public static void Rpc_SetGameStarting()
     {
         GameStartManagerPatch.GameStartManagerUpdatePatch.startingTimer = 5f;
     }
     
     public static void DynamicMapOption(byte mapId)
     {
-        var data = new Tuple<byte>(mapId);
-        Rpc_DynamicMapOption(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Kernel.DynamicMapOption, mapId);
     }
 
-    [MethodRpc((uint)Rpc.Kernel.DynamicMapOption)]
-    private static void Rpc_DynamicMapOption(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Kernel.DynamicMapOption)]
+    public static void Rpc_DynamicMapOption(byte mapId)
     {
-        var mapId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         GameOptionsManager.Instance.currentNormalGameOptions.MapId = mapId;
     }
     
     public static void UncheckedCmdReportDeadBody(byte sourceId, byte? targetId)
     {
         var data = new Tuple<byte, byte?>(sourceId, targetId);
-        Rpc_UncheckedCmdReportDeadBody(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Kernel.UncheckedCmdReportDeadBody, data);
     }
     
-    [MethodRpc((uint)Rpc.Kernel.UncheckedCmdReportDeadBody)]
-    private static void Rpc_UncheckedCmdReportDeadBody(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Kernel.UncheckedCmdReportDeadBody)]
+    public static void Rpc_UncheckedCmdReportDeadBody(Tuple<byte, byte?> data)
     {
-        var (sourceId, targetId) = Rpc.Deserialize<Tuple<byte, byte?>>(rawData);
+        var (sourceId, targetId) = data;
         var source = Helpers.playerById(sourceId);
         var target = targetId == null ? null : Helpers.playerById(targetId.Value)?.Data;
         if (source == null) return;
@@ -72,14 +66,12 @@ public static class KernelRpc
     
     public static void UncheckedExilePlayer(byte targetId)
     {
-        var data = new Tuple<byte>(targetId);
-        Rpc_UncheckedExilePlayer(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Kernel.UncheckedExilePlayer, targetId);
     }
     
-    [MethodRpc((uint)Rpc.Kernel.UncheckedExilePlayer)]
-    private static void Rpc_UncheckedExilePlayer(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Kernel.UncheckedExilePlayer)]
+    public static void Rpc_UncheckedExilePlayer(byte targetId)
     {
-        var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var target = Helpers.playerById(targetId);
         if (target == null) return;
         target.Exiled();
@@ -88,14 +80,14 @@ public static class KernelRpc
     public static void UncheckedMurderPlayer(byte sourceId, byte targetId, bool showAnimation)
     {
         var data = new Tuple<byte, byte, bool>(sourceId, targetId, showAnimation);
-        Rpc_UncheckedMurderPlayer(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Kernel.UncheckedMurderPlayer, data);
     }
     
-    [MethodRpc((uint)Rpc.Kernel.UncheckedMurderPlayer)]
-    private static void Rpc_UncheckedMurderPlayer(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Kernel.UncheckedMurderPlayer)]
+    public static void Rpc_UncheckedMurderPlayer(Tuple<byte, byte, bool> data)
     {
         if (AmongUsClient.Instance.GameState != InnerNet.InnerNetClient.GameStates.Started) return;
-        var (sourceId, targetId, showAnimation) = Rpc.Deserialize<Tuple<byte, byte, bool>>(rawData);
+        var (sourceId, targetId, showAnimation) = data;
         var source = Helpers.playerById(sourceId);
         var target = Helpers.playerById(targetId);
         if (source == null || target == null) return;
@@ -106,13 +98,13 @@ public static class KernelRpc
     public static void UseUncheckedVent(int ventId, byte playerId, bool isEnter)
     {
         var data = new Tuple<int, byte, bool>(ventId, playerId, isEnter);
-        Rpc_UseUncheckedVent(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Kernel.UseUncheckedVent, data, false);
     }
     
-    [MethodRpc((uint)Rpc.Kernel.UseUncheckedVent, false)]
-    private static void Rpc_UseUncheckedVent(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Kernel.UseUncheckedVent)]
+    public static void Rpc_UseUncheckedVent(Tuple<int, byte, bool> data)
     {
-        var (ventId, playerId, isEnter) = Rpc.Deserialize<Tuple<int, byte, bool>>(rawData);
+        var (ventId, playerId, isEnter) = data;
         var player = Helpers.playerById(playerId);
         if (player == null) return;
         JackInTheBox.startAnimation(ventId);
@@ -123,13 +115,12 @@ public static class KernelRpc
     public static void SetModifier(byte modifierId, byte playerId, byte flag)
     {
         var data = new Tuple<byte, byte, byte>(modifierId, playerId, flag);
-        Rpc_SetModifier(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Kernel.SetModifier, data);
     }
     
-    [MethodRpc((uint)Rpc.Kernel.SetModifier)]
-    private static void Rpc_SetModifier(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Kernel.SetModifier)]
+    public static void Rpc_SetModifier(Tuple<byte, byte, byte> data)
     {
-        var data = Rpc.Deserialize<Tuple<byte, byte, byte>>(rawData);
         Local_SetModifier((RoleId)data.Item1, data.Item2, data.Item3);
     }
 
@@ -178,13 +169,12 @@ public static class KernelRpc
 
     public static void WorkaroundSetRoles(Dictionary<byte, byte> roles)
     {
-        Rpc_WorkaroundSetRoles(PlayerControl.LocalPlayer, Rpc.Serialize(roles));
+        RpcManager.Instance.Send((uint)Rpc.Kernel.WorkaroundSetRoles, roles);
     }
 
-    [MethodRpc((uint)Rpc.Kernel.WorkaroundSetRoles)]
-    private static void Rpc_WorkaroundSetRoles(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Kernel.WorkaroundSetRoles)]
+    public static void Rpc_WorkaroundSetRoles(Dictionary<byte, byte> roles)
     {
-        var roles = Rpc.Deserialize<Dictionary<byte, byte>>(rawData);
         foreach (var role in roles)
         {
             Local_SetRole((RoleId)role.Key, role.Value);
@@ -193,13 +183,12 @@ public static class KernelRpc
 
     public static void SetRole(byte roleId, byte playerId)
     {
-        Rpc_SetRole(PlayerControl.LocalPlayer, Rpc.Serialize(new Tuple<byte, byte>(roleId, playerId)));
+        RpcManager.Instance.Send((uint)Rpc.Kernel.SetRole, new Tuple<byte, byte>(roleId, playerId));
     }
 
-    [MethodRpc((uint)Rpc.Kernel.SetRole)]
-    private static void Rpc_SetRole(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Kernel.SetRole)]
+    public static void Rpc_SetRole(Tuple<byte, byte> data)
     {
-        var data = Rpc.Deserialize<Tuple<byte, byte>>(rawData);
         Local_SetRole((RoleId)data.Item1, data.Item2);
     }
 
@@ -353,11 +342,11 @@ public static class KernelRpc
 
     public static void ForceEnd()
     {
-        Rpc_ForceEnd(PlayerControl.LocalPlayer);
+        RpcManager.Instance.Send((uint)Rpc.Kernel.ForceEnd);
     }
 
-    [MethodRpc((uint)Rpc.Kernel.ForceEnd)]
-    private static void Rpc_ForceEnd(PlayerControl sender)
+    [BindRpc((uint)Rpc.Kernel.ForceEnd)]
+    public static void Rpc_ForceEnd()
     {
         if (AmongUsClient.Instance.GameState != InnerNet.InnerNetClient.GameStates.Started) return;
         foreach (var player in CachedPlayer.AllPlayers.Select(p => p.PlayerControl))
@@ -373,14 +362,13 @@ public static class KernelRpc
 
     public static void ShareOptions(Dictionary<string, int> options)
     {
-        Rpc_ShareOptions(PlayerControl.LocalPlayer, Rpc.Serialize(options));
+        RpcManager.Instance.Send((uint)Rpc.Kernel.ShareOptions, options, true, RpcManager.LocalExecution.None);
     }
 
-    [MethodRpc((uint)Rpc.Kernel.ShareOptions, true, RpcLocalHandling.None)]
-    private static void Rpc_ShareOptions(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Kernel.ShareOptions)]
+    public static void Rpc_ShareOptions(Dictionary<string, int> options)
     {
         CustomOption.Tab.SetPreset(0);
-        var options = Rpc.Deserialize<Dictionary<string, int>>(rawData);
         foreach (var o in options)
         {
             if (o.Key == CustomOptions.Preset.Key) continue;
@@ -391,11 +379,11 @@ public static class KernelRpc
 
     public static void ResetVariables()
     {
-        Rpc_ResetVariables(PlayerControl.LocalPlayer);
+        RpcManager.Instance.Send((uint)Rpc.Kernel.ResetVariables);
     }
 
-    [MethodRpc((uint)Rpc.Kernel.ResetVariables)]
-    private static void Rpc_ResetVariables(PlayerControl sender)
+    [BindRpc((uint)Rpc.Kernel.ResetVariables)]
+    public static void Rpc_ResetVariables()
     {
         Local_ResetVariables();
     }

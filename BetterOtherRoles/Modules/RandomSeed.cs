@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using BepInEx.Unity.IL2CPP.Utils;
 using BetterOtherRoles.EnoFw;
 using BetterOtherRoles.Players;
 using HarmonyLib;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using BetterOtherRoles.EnoFw.Kernel;
 using UnityEngine;
 using Random = System.Random;
@@ -26,14 +24,12 @@ public static class RandomSeed
 
     private static void ShareRandomSeed(int seed)
     {
-        var data = new Tuple<int>(seed);
-        Rpc_ShareRandomSeed(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint) Rpc.Module.ShareRandomSeed, seed);
     }
 
-    [MethodRpc((uint) Rpc.Module.ShareRandomSeed)]
-    private static void Rpc_ShareRandomSeed(PlayerControl sender, string rawData)
+    [BindRpc((uint) Rpc.Module.ShareRandomSeed)]
+    public static void Rpc_ShareRandomSeed(int seed)
     {
-        var seed = Rpc.Deserialize<Tuple<int>>(rawData).Item1;
         _random = new Random(seed);
     }
 

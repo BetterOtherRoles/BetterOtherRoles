@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using BetterOtherRoles.EnoFw;
 using BetterOtherRoles.EnoFw.Kernel;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Extensions;
 using BetterOtherRoles.EnoFw.Modules;
 using BetterOtherRoles.Players;
 using BetterOtherRoles.Utilities;
@@ -26,7 +27,6 @@ namespace BetterOtherRoles.Patches
         {
             public static void Postfix(AmongUsClient __instance)
             {
-                if (CachedPlayer.LocalPlayer == null) return;
                 VersionHandshake.Share();
             }
         }

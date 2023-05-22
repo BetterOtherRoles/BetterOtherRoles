@@ -1,7 +1,6 @@
 ﻿using System;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Objects;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -71,13 +70,13 @@ public class Vampire : AbstractRole
     public static void VampireSetBitten(byte targetId, bool performReset)
     {
         var data = new Tuple<byte, bool>(targetId, performReset);
-        Rpc_VampireSetBitten(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.VampireSetBitten, data);
     }
 
-    [MethodRpc((uint)Rpc.Role.VampireSetBitten)]
-    private static void Rpc_VampireSetBitten(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.VampireSetBitten)]
+    public static void Rpc_VampireSetBitten(Tuple<byte, bool> data)
     {
-        var (targetId, performReset) = Rpc.Deserialize<Tuple<byte, bool>>(rawData);
+        var (targetId, performReset) = data;
         if (performReset)
         {
             Instance.Bitten = null;
@@ -93,16 +92,14 @@ public class Vampire : AbstractRole
     public static void PlaceGarlic(float x, float y, float z)
     {
         var data = new Tuple<float, float, float>(x, y, z);
-        Rpc_PlaceGarlic(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.PlaceGarlic, data, false);
     }
 
-    [MethodRpc((uint)Rpc.Role.PlaceGarlic, false)]
-    private static void Rpc_PlaceGarlic(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.PlaceGarlic)]
+    public static void Rpc_PlaceGarlic(Tuple<float, float, float> xyz)
     {
-        var (x, y, z) = Rpc.Deserialize<Tuple<float, float, float>>(rawData);
+        var (x, y, z) = xyz;
         var position = new Vector3(x, y, z);
-        position.x = x;
-        position.y = y;
         var _ = new Garlic(position);
     }
 }

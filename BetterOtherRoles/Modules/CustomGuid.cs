@@ -1,14 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
 using System.Reflection;
 using HarmonyLib;
-using MonoMod.Utils;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
-using BetterOtherRoles.EnoFw;
-using BetterOtherRoles.EnoFw.Modules;
-using BetterOtherRoles.EnoFw.Utils;
-using BetterOtherRoles.Patches;
 
 namespace BetterOtherRoles.Modules;
 

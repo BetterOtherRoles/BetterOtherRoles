@@ -1,5 +1,4 @@
 ﻿using BetterOtherRoles.EnoFw.Kernel;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -48,11 +47,11 @@ public class Sidekick : AbstractRole
 
     public static void SidekickPromotes()
     {
-        Rpc_SidekickPromotes(PlayerControl.LocalPlayer);
+        RpcManager.Instance.Send((uint)Rpc.Role.SidekickPromotes);
     }
 
-    [MethodRpc((uint)Rpc.Role.SidekickPromotes)]
-    private static void Rpc_SidekickPromotes(PlayerControl sender)
+    [BindRpc((uint)Rpc.Role.SidekickPromotes)]
+    public static void Rpc_SidekickPromotes()
     {
         Local_SidekickPromotes();
     }

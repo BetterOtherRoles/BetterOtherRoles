@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using BetterOtherRoles.EnoFw.Kernel;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -94,15 +93,12 @@ public class Witch : AbstractRole
 
     public static void SetFutureSpelled(byte playerId)
     {
-        var data = new Tuple<byte>(playerId);
-        Rpc_SetFutureSpelled(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.SetFutureSpelled, playerId);
     }
 
-    [MethodRpc((uint)Rpc.Role.SetFutureSpelled)]
-    private static void Rpc_SetFutureSpelled(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.SetFutureSpelled)]
+    public static void Rpc_SetFutureSpelled(byte playerId)
     {
-        var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
-        
         var player = Helpers.playerById(playerId);
         if (player != null) {
             Instance.FutureSpelled.Add(player);

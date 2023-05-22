@@ -1,6 +1,5 @@
 ﻿using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Utilities;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -56,11 +55,11 @@ public class Engineer : AbstractRole
 
     public static void EngineerUsedRepair()
     {
-        Rpc_EngineerUsedRepair(PlayerControl.LocalPlayer);
+        RpcManager.Instance.Send((uint)Rpc.Role.EngineerUsedRepair);
     }
 
-    [MethodRpc((uint)Rpc.Role.EngineerUsedRepair)]
-    private static void Rpc_EngineerUsedRepair(PlayerControl sender)
+    [BindRpc((uint)Rpc.Role.EngineerUsedRepair)]
+    public static void Rpc_EngineerUsedRepair()
     {
         Instance.UsedFixes++;
         if (!Helpers.shouldShowGhostInfo()) return;
@@ -69,22 +68,22 @@ public class Engineer : AbstractRole
 
     public static void EngineerFixSubmergedOxygen()
     {
-        Rpc_EngineerFixSubmergedOxygen(PlayerControl.LocalPlayer);
+        RpcManager.Instance.Send((uint)Rpc.Role.EngineerFixSubmergedOxygen);
     }
 
-    [MethodRpc((uint)Rpc.Role.EngineerFixSubmergedOxygen)]
-    private static void Rpc_EngineerFixSubmergedOxygen(PlayerControl sender)
+    [BindRpc((uint)Rpc.Role.EngineerFixSubmergedOxygen)]
+    public static void Rpc_EngineerFixSubmergedOxygen()
     {
         SubmergedCompatibility.RepairOxygen();
     }
 
     public static void EngineerFixLights()
     {
-        Rpc_EngineerFixLights(PlayerControl.LocalPlayer);
+        RpcManager.Instance.Send((uint)Rpc.Role.EngineerFixLights);
     }
 
-    [MethodRpc((uint)Rpc.Role.EngineerFixLights)]
-    private static void Rpc_EngineerFixLights(PlayerControl sender)
+    [BindRpc((uint)Rpc.Role.EngineerFixLights)]
+    public static void Rpc_EngineerFixLights()
     {
         var switchSystem = MapUtilities.Systems[SystemTypes.Electrical].CastFast<SwitchSystem>();
         switchSystem.ActualSwitches = switchSystem.ExpectedSwitches;

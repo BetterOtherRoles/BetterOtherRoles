@@ -1,6 +1,5 @@
 ﻿using System;
 using BetterOtherRoles.EnoFw.Kernel;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -69,14 +68,12 @@ public class Morphling : AbstractRole
 
     public static void MorphlingMorph(byte targetId)
     {
-        var data = new Tuple<byte>(targetId);
-        Rpc_MorphlingMorph(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.MorphlingMorph, targetId);
     }
 
-    [MethodRpc((uint)Rpc.Role.MorphlingMorph)]
-    private static void Rpc_MorphlingMorph(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.MorphlingMorph)]
+    public static void Rpc_MorphlingMorph(byte targetId)
     {
-        var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var target = Helpers.playerById(targetId);
         if (Instance.Player == null || target == null) return;
         Instance.MorphTimer = Instance.MorphDuration;

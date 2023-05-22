@@ -2,7 +2,6 @@
 using System.Linq;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Players;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -77,11 +76,11 @@ public class Arsonist : AbstractRole
     
     public static void ArsonistWin()
     {
-        Rpc_ArsonistWin(PlayerControl.LocalPlayer);
+        RpcManager.Instance.Send((uint)Rpc.Role.ArsonistWin);
     }
 
-    [MethodRpc((uint)Rpc.Role.ArsonistWin)]
-    private static void Rpc_ArsonistWin(PlayerControl sender)
+    [BindRpc((uint)Rpc.Role.ArsonistWin)]
+    public static void Rpc_ArsonistWin()
     {
         Instance.TriggerArsonistWin = true;
         foreach (var player in CachedPlayer.AllPlayers.Select(p => p.PlayerControl))

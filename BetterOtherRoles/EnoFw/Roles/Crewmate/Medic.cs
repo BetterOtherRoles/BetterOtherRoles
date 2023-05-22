@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Players;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -92,14 +90,12 @@ public class Medic : AbstractRole
 
     public static void MedicSetShielded(byte targetId)
     {
-        var data = new Tuple<byte>(targetId);
-        Rpc_MedicSetShielded(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.MedicSetShielded, targetId);
     }
 
-    [MethodRpc((uint)Rpc.Role.MedicSetShielded)]
-    private static void Rpc_MedicSetShielded(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.MedicSetShielded)]
+    public static void Rpc_MedicSetShielded(byte targetId)
     {
-        var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var target = Helpers.playerById(targetId);
         if (target == null) return;
         Instance.UsedShield = true;
@@ -109,14 +105,12 @@ public class Medic : AbstractRole
 
     public static void SetFutureShielded(byte targetId)
     {
-        var data = new Tuple<byte>(targetId);
-        Rpc_SetFutureShielded(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.SetFutureShielded, targetId);
     }
 
-    [MethodRpc((uint)Rpc.Role.SetFutureShielded)]
-    private static void Rpc_SetFutureShielded(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.SetFutureShielded)]
+    public static void Rpc_SetFutureShielded(byte targetId)
     {
-        var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var target = Helpers.playerById(targetId);
         if (target == null) return;
         Instance.UsedShield = true;
@@ -125,11 +119,11 @@ public class Medic : AbstractRole
 
     public static void ShieldedMurderAttempt()
     {
-        Rpc_ShieldedMurderAttempt(PlayerControl.LocalPlayer);
+        RpcManager.Instance.Send((uint)Rpc.Role.ShieldedMurderAttempt);
     }
 
-    [MethodRpc((uint)Rpc.Role.ShieldedMurderAttempt)]
-    private static void Rpc_ShieldedMurderAttempt(PlayerControl sender)
+    [BindRpc((uint)Rpc.Role.ShieldedMurderAttempt)]
+    public static void Rpc_ShieldedMurderAttempt()
     {
         if (Instance.Shielded == null || !Instance.HasPlayer) return;
 

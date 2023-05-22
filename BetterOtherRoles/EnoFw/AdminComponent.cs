@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using AmongUs.GameOptions;
 using BetterOtherRoles.EnoFw.Kernel;
+using BetterOtherRoles.EnoFw.Libs.Reactor.Utilities.Attributes;
 using BetterOtherRoles.EnoFw.Modules;
 using BetterOtherRoles.EnoFw.Utils;
 using BetterOtherRoles.Patches;
@@ -15,6 +17,7 @@ using UnityEngine.SceneManagement;
 
 namespace BetterOtherRoles.EnoFw;
 
+[RegisterInIl2Cpp]
 public class AdminComponent : MonoBehaviour
 {
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]

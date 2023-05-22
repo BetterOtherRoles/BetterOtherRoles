@@ -1,6 +1,5 @@
 ﻿using System;
 using BetterOtherRoles.EnoFw.Kernel;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -73,13 +72,13 @@ public class Swapper : AbstractRole
     public static void SwapperSwap(byte pId1, byte pId2)
     {
         var data = new Tuple<byte, byte>(pId1, pId2);
-        Rpc_SwapperSwap(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.SwapperSwap, data);
     }
 
-    [MethodRpc((uint)Rpc.Role.SwapperSwap)]
-    private static void Rpc_SwapperSwap(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.SwapperSwap)]
+    public static void Rpc_SwapperSwap(Tuple<byte, byte> data)
     {
-        var (pId1, pId2) = Rpc.Deserialize<Tuple<byte, byte>>(rawData);
+        var (pId1, pId2) = data;
         if (!MeetingHud.Instance) return;
         Instance.PlayerId1 = pId1;
         Instance.PlayerId2 = pId2;

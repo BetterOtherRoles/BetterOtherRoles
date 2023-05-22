@@ -2,7 +2,6 @@
 using System.Linq;
 using BetterOtherRoles.CustomGameModes;
 using BetterOtherRoles.EnoFw.Kernel;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using BetterOtherRoles.EnoFw.Roles.Crewmate;
 using BetterOtherRoles.EnoFw.Roles.Impostor;
 using BetterOtherRoles.EnoFw.Roles.Modifiers;
@@ -17,28 +16,24 @@ public static class CommonRpc
 {
     public static void ShareRoom(byte playerId, byte roomId)
     {
-        var data = new Tuple<byte, byte>(playerId, roomId);
-        Rpc_ShareRoom(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Module.ShareRoom, new Tuple<byte, byte>(playerId, roomId), true, RpcManager.LocalExecution.None);
     }
     
-    [MethodRpc((uint)Rpc.Module.ShareRoom)]
-    private static void Rpc_ShareRoom(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Module.ShareRoom)]
+    public static void Rpc_ShareRoom(Tuple<byte, byte> data)
     {
-        if (sender.PlayerId == CachedPlayer.LocalPlayer.PlayerId) return;
-        var (playerId, roomId) = Rpc.Deserialize<Tuple<byte, byte>>(rawData);
+        var (playerId, roomId) = data;
         Snitch.Instance.PlayerRoomMap[playerId] = roomId;
     }
     
     public static void HuntedRewindTime(byte playerId)
     {
-        var data = new Tuple<byte>(playerId);
-        Rpc_HuntedRewindTime(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Module.HuntedRewindTime, playerId);
     }
     
-    [MethodRpc((uint)Rpc.Module.HuntedRewindTime)]
-    private static void Rpc_HuntedRewindTime(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Module.HuntedRewindTime)]
+    public static void Rpc_HuntedRewindTime(byte playerId)
     {
-        var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         Hunted.timeshieldActive.Remove(playerId); // Shield is no longer active when rewinding
         SoundEffectsManager.stop("timemasterShield");  // Shield sound stopped when rewinding
         if (playerId == CachedPlayer.LocalPlayer.PlayerControl.PlayerId) {
@@ -64,14 +59,12 @@ public static class CommonRpc
     
     public static void HuntedShield(byte playerId)
     {
-        var data = new Tuple<byte>(playerId);
-        Rpc_HuntedShield(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Module.HuntedShield, playerId);
     }
     
-    [MethodRpc((uint)Rpc.Module.HuntedShield)]
-    private static void Rpc_HuntedShield(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Module.HuntedShield)]
+    public static void Rpc_HuntedShield(byte playerId)
     {
-        var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         if (!Hunted.timeshieldActive.Contains(playerId)) Hunted.timeshieldActive.Add(playerId);
         FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Hunted.shieldDuration, new Action<float>((p) => {
             if (p == 1f) Hunted.timeshieldActive.Remove(playerId);
@@ -80,27 +73,23 @@ public static class CommonRpc
     
     public static void ShareTimer(float punish)
     {
-        var data = new Tuple<float>(punish);
-        Rpc_ShareTimer(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Module.ShareTimer, punish);
     }
     
-    [MethodRpc((uint)Rpc.Module.ShareTimer)]
-    private static void Rpc_ShareTimer(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Module.ShareTimer)]
+    public static void Rpc_ShareTimer(float punish)
     {
-        var punish = Rpc.Deserialize<Tuple<float>>(rawData).Item1;
         HideNSeek.timer -= punish;
     }
     
     public static void SetGuesserGm(byte playerId)
     {
-        var data = new Tuple<byte>(playerId);
-        Rpc_SetGuesserGm(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Module.SetGuesserGm, playerId);
     }
     
-    [MethodRpc((uint)Rpc.Module.SetGuesserGm)]
-    private static void Rpc_SetGuesserGm(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Module.SetGuesserGm)]
+    public static void Rpc_SetGuesserGm(byte playerId)
     {
-        var playerId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var target = Helpers.playerById(playerId);
         if (target == null) return;
         var _ = new GuesserGM(target);
@@ -108,14 +97,13 @@ public static class CommonRpc
     
     public static void CleanBody(byte playerId, byte cleaningPlayerId)
     {
-        var data = new Tuple<byte, byte>(playerId, cleaningPlayerId);
-        Rpc_CleanBody(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.CleanBody, new Tuple<byte, byte>(playerId, cleaningPlayerId));
     }
 
-    [MethodRpc((uint)Rpc.Role.CleanBody)]
-    private static void Rpc_CleanBody(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.CleanBody)]
+    public static void Rpc_CleanBody(Tuple<byte, byte> data)
     {
-        var (playerId, cleaningPlayerId) = Rpc.Deserialize<Tuple<byte, byte>>(rawData);
+        var (playerId, cleaningPlayerId) = data;
         if (Medium.Instance.FeatureDeadBodies != null)
         {
             var deadBody = Medium.Instance.FeatureDeadBodies.Find(x => x.Item1.player.PlayerId == playerId).Item1;
@@ -141,14 +129,13 @@ public static class CommonRpc
 
     public static void ErasePlayerRoles(byte playerId, bool ignoreModifier = true)
     {
-        var data = new Tuple<byte, bool>(playerId, ignoreModifier);
-        Rpc_ErasePlayerRoles(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.ErasePlayerRoles, new Tuple<byte, bool>(playerId, ignoreModifier));
     }
 
-    [MethodRpc((uint)Rpc.Role.ErasePlayerRoles)]
-    private static void Rpc_ErasePlayerRoles(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.ErasePlayerRoles)]
+    public static void Rpc_ErasePlayerRoles(Tuple<byte, bool> data)
     {
-        var (playerId, ignoreModifier) = Rpc.Deserialize<Tuple<byte, bool>>(rawData);
+        var (playerId, ignoreModifier) = data;
         Local_ErasePlayerRoles(playerId, ignoreModifier);
         Eraser.Instance.AlreadyErased.Add(playerId);
     }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Objects;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -107,27 +106,27 @@ public class Trapper : AbstractRole
     public static void TriggerTrap(byte playerId, byte trapId)
     {
         var data = new Tuple<byte, byte>(playerId, trapId);
-        Rpc_TriggerTrap(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.TriggerTrap, data);
     }
 
-    [MethodRpc((uint)Rpc.Role.TriggerTrap)]
-    private static void Rpc_TriggerTrap(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.TriggerTrap)]
+    public static void Rpc_TriggerTrap(Tuple<byte, byte> data)
     {
-        var (playerId, trapId) = Rpc.Deserialize<Tuple<byte, byte>>(rawData);
+        var (playerId, trapId) = data;
         Trap.triggerTrap(playerId, trapId);
     }
 
     public static void SetTrap(float x, float y, float z)
     {
         var data = new Tuple<float, float, float>(x, y, z);
-        Rpc_SetTrap(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.SetTrap, data, false);
     }
 
-    [MethodRpc((uint)Rpc.Role.SetTrap, false)]
-    private static void Rpc_SetTrap(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.SetTrap)]
+    public static void Rpc_SetTrap(Tuple<float, float, float> xyz)
     {
         if (Instance.Player == null) return;
-        var (x, y, z) = Rpc.Deserialize<Tuple<float, float, float>>(rawData);
+        var (x, y, z) = xyz;
         Instance.Charges--;
         var position = new Vector3(x, y, z);
         var _ = new Trap(position);

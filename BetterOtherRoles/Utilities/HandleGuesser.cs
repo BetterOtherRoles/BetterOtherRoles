@@ -2,7 +2,7 @@
 using System.Linq;
 using BetterOtherRoles.CustomGameModes;
 using BetterOtherRoles.EnoFw;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
+using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.EnoFw.Roles.Crewmate;
 using BetterOtherRoles.EnoFw.Roles.Impostor;
 using BetterOtherRoles.EnoFw.Roles.Modifiers;
@@ -71,14 +71,13 @@ public static class HandleGuesser {
     public static void GuesserShoot(byte killerId, byte dyingTargetId, byte guessedTargetId, byte guessedRoleId)
     {
         var data = new Tuple<byte, byte, byte, byte>(killerId, dyingTargetId, guessedTargetId, guessedRoleId);
-        Rpc_GuesserShoot(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.GuesserShoot, data);
     }
 
-    [MethodRpc((uint)Rpc.Role.GuesserShoot)]
-    private static void Rpc_GuesserShoot(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.GuesserShoot)]
+    public static void Rpc_GuesserShoot(Tuple<byte, byte, byte, byte> data)
     {
-        var (killerId, dyingTargetId, guessedTargetId, guessedRoleId) =
-            Rpc.Deserialize<Tuple<byte, byte, byte, byte>>(rawData);
+        var (killerId, dyingTargetId, guessedTargetId, guessedRoleId) = data;
 
         var dyingTarget = Helpers.playerById(dyingTargetId);
         if (dyingTarget == null) return;

@@ -7,7 +7,6 @@ using BetterOtherRoles.EnoFw.Modules;
 using BetterOtherRoles.EnoFw.Roles.Crewmate;
 using BetterOtherRoles.Players;
 using BetterOtherRoles.Utilities;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using TMPro;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
@@ -119,14 +118,12 @@ public class Jackal : AbstractRole
 
     public static void JackalCreatesSidekick(byte targetId)
     {
-        var data = new Tuple<byte>(targetId);
-        Rpc_JackalCreatesSidekick(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.JackalCreatesSidekick, targetId);
     }
 
-    [MethodRpc((uint)Rpc.Role.JackalCreatesSidekick)]
-    private static void Rpc_JackalCreatesSidekick(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.JackalCreatesSidekick)]
+    public static void Rpc_JackalCreatesSidekick(byte targetId)
     {
-        var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var player = Helpers.playerById(targetId);
         if (player == null) return;
         if (Lawyer.Instance.Target == player && Lawyer.Instance.IsProsecutor && Lawyer.Instance.Player != null && !Lawyer.Instance.Player.Data.IsDead) Lawyer.Instance.IsProsecutor = false;

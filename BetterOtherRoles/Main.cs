@@ -112,7 +112,7 @@ public class BetterOtherRolesPlugin : BasePlugin
         Logger = Log;
         Instance = this;
         
-        AddComponent<ReactorComponent>().Plugin = this;
+        AddComponent<BorComponent>().Plugin = this;
         AddComponent<Coroutines.Component>();
         AddComponent<Dispatcher>();
         
@@ -139,6 +139,7 @@ public class BetterOtherRolesPlugin : BasePlugin
         Preset = Config.Bind("MainConfig", "Preset", 0);
         Harmony.PatchAll();
 
+        RpcManager.Instance.Load();
         CustomColors.Load();
         CustomOptions.Load();
         BorClient.Load();
@@ -168,12 +169,12 @@ public class BetterOtherRolesPlugin : BasePlugin
     }
     
     [RegisterInIl2Cpp]
-    private class ReactorComponent : MonoBehaviour
+    private class BorComponent : MonoBehaviour
     {
         [HideFromIl2Cpp]
         public BetterOtherRolesPlugin Plugin { get; internal set; }
 
-        public ReactorComponent(IntPtr ptr) : base(ptr)
+        public BorComponent(IntPtr ptr) : base(ptr)
         {
         }
 

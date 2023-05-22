@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using AmongUs.GameOptions;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.EnoFw.Roles.Crewmate;
 using BetterOtherRoles.EnoFw.Roles.Impostor;
 using BetterOtherRoles.Objects;
 using BetterOtherRoles.Utilities;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -81,14 +79,12 @@ public class Thief : AbstractRole
 
     public static void ThiefStealsRole(byte targetId)
     {
-        var data = new Tuple<byte>(targetId);
-        Rpc_ThiefStealsRole(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.ThiefStealsRole, targetId);
     }
 
-    [MethodRpc((uint)Rpc.Role.ThiefStealsRole)]
-    private static void Rpc_ThiefStealsRole(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.ThiefStealsRole)]
+    public static void Rpc_ThiefStealsRole(byte targetId)
     {
-        var targetId = Rpc.Deserialize<Tuple<byte>>(rawData).Item1;
         var target = Helpers.playerById(targetId);
         var thiefPlayer = Instance.Player;
         if (target == null) return;

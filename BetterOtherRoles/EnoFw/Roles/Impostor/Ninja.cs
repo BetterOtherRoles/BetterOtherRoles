@@ -3,7 +3,6 @@ using AmongUs.Data;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Objects;
 using BetterOtherRoles.Players;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
 
@@ -98,13 +97,13 @@ public class Ninja : AbstractRole
     public static void SetInvisible(byte playerId, bool visible)
     {
         var data = new Tuple<byte, bool>(playerId, visible);
-        Rpc_SetInvisible(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.SetInvisible, data);
     }
 
-    [MethodRpc((uint)Rpc.Role.SetInvisible)]
-    private static void Rpc_SetInvisible(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.SetInvisible)]
+    public static void Rpc_SetInvisible(Tuple<byte, bool> data)
     {
-        var (playerId, visible) = Rpc.Deserialize<Tuple<byte, bool>>(rawData);
+        var (playerId, visible) = data;
 
         var target = Helpers.playerById(playerId);
         if (target == null) return;
@@ -131,13 +130,13 @@ public class Ninja : AbstractRole
     public static void PlaceNinjaTrace(float x, float y, float z)
     {
         var data = new Tuple<float, float, float>(x, y, z);
-        Rpc_PlaceNinjaTrace(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.PlaceNinjaTrace, data, false);
     }
 
-    [MethodRpc((uint)Rpc.Role.PlaceNinjaTrace, false)]
-    private static void Rpc_PlaceNinjaTrace(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.PlaceNinjaTrace)]
+    public static void Rpc_PlaceNinjaTrace(Tuple<float, float, float> xyz)
     {
-        var (x, y, z) = Rpc.Deserialize<Tuple<float, float, float>>(rawData);
+        var (x, y, z) = xyz;
         var position = new Vector3(x, y, z);
         var _ = new NinjaTrace(position, Instance.TraceDuration);
         if (CachedPlayer.LocalPlayer.PlayerControl == Instance.Player) return;

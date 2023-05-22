@@ -1,5 +1,4 @@
 ﻿using BetterOtherRoles.EnoFw.Kernel;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 
 namespace BetterOtherRoles.EnoFw.Roles.Modifiers;
@@ -22,11 +21,11 @@ public class Tiebreaker : AbstractSimpleModifier
 
     public static void SetTiebreak()
     {
-        Rpc_SetTiebreak(PlayerControl.LocalPlayer);
+        RpcManager.Instance.Send((uint)Rpc.Role.SetTiebreak);
     }
 
-    [MethodRpc((uint)Rpc.Role.SetTiebreak)]
-    private static void Rpc_SetTiebreak(PlayerControl sender)
+    [BindRpc((uint)Rpc.Role.SetTiebreak)]
+    public static void Rpc_SetTiebreak()
     {
         Instance.IsTiebreak = true;
     }

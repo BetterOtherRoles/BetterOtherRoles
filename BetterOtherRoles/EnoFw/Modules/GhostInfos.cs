@@ -1,6 +1,5 @@
 ﻿using System;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Rpc;
+using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.EnoFw.Roles.Crewmate;
 using BetterOtherRoles.EnoFw.Roles.Impostor;
 using BetterOtherRoles.EnoFw.Roles.Neutral;
@@ -27,15 +26,13 @@ public static class GhostInfos
 
     public static void ShareGhostInfo(Types type, string rawData)
     {
-        var data = new Tuple<byte, string>((byte)type, rawData);
-        Rpc_ShareGhostInfo(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Module.ShareGhostInfo, new Tuple<byte, string>((byte)type, rawData), true, RpcManager.LocalExecution.None);
     }
 
-    [MethodRpc((uint)Rpc.Module.ShareGhostInfo, true, RpcLocalHandling.None)]
-    private static void Rpc_ShareGhostInfo(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Module.ShareGhostInfo)]
+    public static void Rpc_ShareGhostInfo(Tuple<byte, string> rawData)
     {
-        if (sender.AmOwner) return;
-        var (id, data) = Rpc.Deserialize<Tuple<byte, string>>(rawData);
+        var (id, data) = rawData;
         switch ((Types)id)
         {
             case Types.HandcuffNoticed:

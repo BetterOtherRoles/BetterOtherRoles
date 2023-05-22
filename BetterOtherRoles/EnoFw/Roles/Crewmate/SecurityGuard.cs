@@ -4,7 +4,6 @@ using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.Players;
 using BetterOtherRoles.Utilities;
 using PowerTools;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using Option = BetterOtherRoles.EnoFw.Kernel.CustomOption;
@@ -177,14 +176,12 @@ public class SecurityGuard : AbstractRole
 
     public static void SealVent(int ventId)
     {
-        var data = new Tuple<int>(ventId);
-        Rpc_SealVent(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.SealVent, ventId, false);
     }
 
-    [MethodRpc((uint)Rpc.Role.SealVent, false)]
-    private static void Rpc_SealVent(PlayerControl sender, string rawData)
+    [BindRpc((uint)Rpc.Role.SealVent)]
+    public static void Rpc_SealVent(int ventId)
     {
-        var ventId = Rpc.Deserialize<Tuple<int>>(rawData).Item1;
         var vent = MapUtilities.CachedShipStatus.AllVents.FirstOrDefault(x => x != null && x.Id == ventId);
         if (vent == null) return;
 
@@ -206,16 +203,16 @@ public class SecurityGuard : AbstractRole
     public static void PlaceCamera(float x, float y, float z)
     {
         var data = new Tuple<float, float, float>(x, y, z);
-        Rpc_PlaceCamera(PlayerControl.LocalPlayer, Rpc.Serialize(data));
+        RpcManager.Instance.Send((uint)Rpc.Role.PlaceCamera, data, false);
     }
 
-    [MethodRpc((uint)Rpc.Role.PlaceCamera, false)]
-    private static void Rpc_PlaceCamera(PlayerControl sender, string rawDData)
+    [BindRpc((uint)Rpc.Role.PlaceCamera)]
+    public static void Rpc_PlaceCamera(Tuple<float, float, float> xyz)
     {
         var referenceCamera = Object.FindObjectOfType<SurvCamera>(); 
         if (referenceCamera == null) return; // Mira HQ
-        
-        var (x, y, z) = Rpc.Deserialize<Tuple<float, float, float>>(rawDData);
+
+        var (x, y, z) = xyz;
         Instance.UsedScrews += Instance.CamPrice;
         Instance.PlacedCameras++;
 
