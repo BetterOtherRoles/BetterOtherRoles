@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using BetterOtherRoles.EnoFw.Utils;
+using BetterOtherRoles.Players;
 using HarmonyLib;
 using UnityEngine;
 
@@ -399,9 +401,9 @@ public static class CustomOptionsPatch
     [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.CoSpawnPlayer))]
     public static class AmongUsClientOnPlayerJoinedPatch
     {
-        public static void Postfix()
+        public static void Postfix(PlayerPhysics __instance)
         {
-            ShareCustomOptions();
+            DeferrableAction.Defer(ShareCustomOptions, () => CachedPlayer.LocalPlayer != null && __instance.myPlayer != null);
         }
     }
 
