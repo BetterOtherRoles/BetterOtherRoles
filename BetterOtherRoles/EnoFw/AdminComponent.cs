@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using AmongUs.GameOptions;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.EnoFw.Modules;
@@ -18,8 +16,6 @@ namespace BetterOtherRoles.EnoFw;
 [RegisterInIl2Cpp]
 public class AdminComponent : MonoBehaviour
 {
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-    private static extern bool FreeLibrary(IntPtr hModule);
     public static AdminComponent Instance { get; private set; }
 
     public Rect windowRect = new(0, 0, 500, Screen.height);
