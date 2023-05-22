@@ -28,6 +28,10 @@ namespace BetterOtherRoles.Patches
             public static void Postfix(AmongUsClient __instance)
             {
                 VersionHandshake.Share();
+                if (AmongUsClient.Instance.AmHost)
+                {
+                    KernelRpc.ShareGameMode((byte)TORMapOptions.gameMode);
+                }
             }
         }
 
@@ -207,11 +211,6 @@ namespace BetterOtherRoles.Patches
 
                 __instance.PlayerCounter.text = currentText + suffix;
                 __instance.PlayerCounter.autoSizeTextContainer = true;
-
-                if (AmongUsClient.Instance.AmHost)
-                {
-                    KernelRpc.ShareGameMode((byte)TORMapOptions.gameMode);
-                }
             }
         }
 
