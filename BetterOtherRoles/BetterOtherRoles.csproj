@@ -24,10 +24,6 @@
         </PackageReference>
         <PackageReference Include="System.Reactive" Version="6.0.0" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="EnoFw\Libs\Reactor\" />
-    </ItemGroup>
     <Target Name="CopyCustomContent" AfterTargets="AfterBuild" Condition="Exists('$(AmongUsLatest)/BepInEx/plugins/')">
         <Message Text="Second occurrence" />
         <Copy SourceFiles="$(ProjectDir)\bin\$(Configuration)\net6.0\BetterOtherRoles.dll" DestinationFolder="$(AmongUsLatest)/BepInEx/plugins/BetterOtherRoles/" />

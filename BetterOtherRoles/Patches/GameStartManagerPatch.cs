@@ -5,12 +5,9 @@ using System;
 using System.Linq;
 using BetterOtherRoles.EnoFw;
 using BetterOtherRoles.EnoFw.Kernel;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Extensions;
 using BetterOtherRoles.EnoFw.Modules;
-using BetterOtherRoles.Players;
 using BetterOtherRoles.Utilities;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
-using BetterOtherRoles.Modules;
 
 namespace BetterOtherRoles.Patches
 {

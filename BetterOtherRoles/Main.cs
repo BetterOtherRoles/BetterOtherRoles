@@ -11,16 +11,9 @@ using Il2CppSystem.Text;
 using AmongUs.Data;
 using BetterOtherRoles.EnoFw;
 using BetterOtherRoles.EnoFw.Kernel;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Localization;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Localization.Providers;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Attributes;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Networking.Rpc;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Patches.Miscellaneous;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Utilities;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Utilities.Attributes;
 using BetterOtherRoles.EnoFw.Modules;
 using BetterOtherRoles.EnoFw.Modules.BorApi;
+using BetterOtherRoles.EnoFw.Utils;
 using BetterOtherRoles.Modules;
 using BetterOtherRoles.Patches;
 using BetterOtherRoles.Players;
@@ -31,7 +24,6 @@ namespace BetterOtherRoles;
 
 [BepInPlugin(Id, "Better Other Roles", VersionString)]
 [BepInProcess("Among Us.exe")]
-[ReactorModFlags(ModFlags.RequireOnAllClients)]
 public class BetterOtherRolesPlugin : BasePlugin
 {
     public const string Id = "betterotherroles.eno.re";
@@ -60,22 +52,10 @@ public class BetterOtherRolesPlugin : BasePlugin
     public static ConfigEntry<string> DevGuid { get; set; }
 
     public static ConfigEntry<string> FeaturesCodes { get; private set; }
-    
-    public CustomRpcManager CustomRpcManager { get; } = new();
 
     public BetterOtherRolesPlugin()
     {
-        PluginSingleton<BetterOtherRolesPlugin>.Instance = this;
-        PluginSingleton<BasePlugin>.Initialize();
-        
         RegisterInIl2CppAttribute.Initialize();
-        ModList.Initialize();
-        
-        RegisterCustomRpcAttribute.Initialize();
-        MessageConverterAttribute.Initialize();
-        MethodRpcAttribute.Initialize();
-        
-        LocalizationManager.Register(new HardCodedLocalizationProvider());
     }
 
 
@@ -113,10 +93,6 @@ public class BetterOtherRolesPlugin : BasePlugin
         Instance = this;
         
         AddComponent<BorComponent>().Plugin = this;
-        AddComponent<Coroutines.Component>();
-        AddComponent<Dispatcher>();
-        
-        FreeNamePatch.Initialize();
 
         DebugMode = Config.Bind("Custom", "Enable Debug Mode", "false");
         GhostsSeeInformation = Config.Bind("Custom", "Ghosts See Remaining Tasks", true);

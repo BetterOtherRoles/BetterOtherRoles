@@ -6,7 +6,6 @@ using UnityEngine;
 using System.Linq;
 using BetterOtherRoles.CustomGameModes;
 using BetterOtherRoles.EnoFw.Kernel;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Utilities.Extensions;
 using BetterOtherRoles.EnoFw.Modules;
 using BetterOtherRoles.EnoFw.Roles.Crewmate;
 using BetterOtherRoles.EnoFw.Roles.Impostor;
@@ -573,7 +572,7 @@ namespace BetterOtherRoles
                 }
 
                 if (p == 1f && renderer != null) renderer.enabled = false;
-                if (p == 1f) messageText.gameObject.Destroy();
+                if (p == 1f) UnityEngine.Object.Destroy(messageText.gameObject);
             })));
         }
 

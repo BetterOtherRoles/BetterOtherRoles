@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using AmongUs.GameOptions;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Utilities.Extensions;
 using BetterOtherRoles.Players;
 using BetterOtherRoles.Utilities;
 using HarmonyLib;
@@ -89,8 +88,7 @@ public class RoleDisplayInterface
         }
 
         foreach (var tmp in roleDescriptionTMPs)
-            if (tmp)
-                tmp.gameObject.Destroy();
+            if (tmp) UnityEngine.Object.Destroy(tmp.gameObject);
     }
 
     private static void ToggleRoleDescription(HudManager hudManager)

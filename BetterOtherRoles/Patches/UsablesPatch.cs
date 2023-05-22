@@ -10,7 +10,6 @@ using AmongUs.GameOptions;
 using BetterOtherRoles.CustomGameModes;
 using BetterOtherRoles.EnoFw;
 using BetterOtherRoles.EnoFw.Kernel;
-using BetterOtherRoles.EnoFw.Libs.Reactor.Utilities.Extensions;
 using BetterOtherRoles.EnoFw.Modules;
 using BetterOtherRoles.EnoFw.Roles.Crewmate;
 using BetterOtherRoles.EnoFw.Roles.Impostor;
@@ -811,7 +810,7 @@ namespace BetterOtherRoles.Patches {
 
         private static void resetNightVision() {
             foreach (var go in nightVisionOverlays) {
-                go.Destroy();
+                UnityEngine.Object.Destroy(go);
             }
             nightVisionOverlays = null;
 

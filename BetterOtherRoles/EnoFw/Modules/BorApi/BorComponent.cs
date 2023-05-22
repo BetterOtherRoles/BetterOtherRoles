@@ -1,4 +1,4 @@
-﻿using BetterOtherRoles.EnoFw.Libs.Reactor.Utilities.Attributes;
+﻿using BetterOtherRoles.EnoFw.Utils;
 using Il2CppInterop.Runtime.Attributes;
 using UnityEngine;
 

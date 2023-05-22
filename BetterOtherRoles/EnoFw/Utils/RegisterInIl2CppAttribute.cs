@@ -5,7 +5,7 @@ using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
 
-namespace BetterOtherRoles.EnoFw.Libs.Reactor.Utilities.Attributes;
+namespace BetterOtherRoles.EnoFw.Utils;
 
 /// <summary>
 /// Automatically registers an il2cpp type using <see cref="ClassInjector.RegisterTypeInIl2Cpp{T}()"/>.
