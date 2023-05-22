@@ -30,6 +30,7 @@ public class RpcManager
 
     public void Send<T>(uint id, T data, bool immediately = true, LocalExecution localExecution = LocalExecution.After)
     {
+        BetterOtherRolesPlugin.Logger.LogWarning($"Send RPC : {id}");
         var rawData = string.Empty;
         if (typeof(T) != typeof(NoData))
         {
@@ -119,6 +120,7 @@ public class RpcManager
             if (callId != ReservedRpcId) return;
             var rpcId = reader.ReadUInt32();
             var rawData = reader.ReadString();
+            BetterOtherRolesPlugin.Logger.LogWarning($"Received RPC : {rpcId}");
             Instance.Invoke(rpcId, rawData);
         }
     }
