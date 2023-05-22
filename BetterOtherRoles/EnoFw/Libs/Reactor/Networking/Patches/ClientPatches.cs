@@ -18,6 +18,7 @@ internal static class ClientPatches
     {
         public static void Prefix(InnerNetClient __instance, ref DisconnectReasons reason)
         {
+            BetterOtherRolesPlugin.Logger.LogWarning($"DisconnectInternal");
             if (reason == DisconnectReasons.Kicked && ReactorConnection.Instance?.LastKickReason is { } lastKickReason)
             {
                 reason = DisconnectReasons.Custom;
@@ -103,6 +104,7 @@ internal static class ClientPatches
 
                             if (!Mod.Validate(reactorClientData?.Mods ?? Array.Empty<Mod>(), ModList.Current, out var reason))
                             {
+                                BetterOtherRolesPlugin.Logger.LogWarning($"KickWithReason: {reason}");
                                 ClientExtensions.KickWithReason(innerNetClient, clientData.Id, reason);
                                 __result = false;
                                 return false;
