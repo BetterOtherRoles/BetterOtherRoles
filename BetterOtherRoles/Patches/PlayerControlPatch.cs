@@ -297,6 +297,8 @@ namespace BetterOtherRoles.Patches
 
         static void undertakerUpdate()
         {
+            // TODO : <FIX> Undertaker can drop target through walls of weapons. </FIX>.
+            
             var undertakerPlayer = Undertaker.Instance.Player;
             var bodyComponent = Undertaker.Instance.DraggedBody;
 

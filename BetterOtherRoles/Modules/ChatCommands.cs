@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using HarmonyLib;
 using System.Linq;
 using AmongUs.Data;
+using AmongUs.GameOptions;
 using BetterOtherRoles.EnoFw.Kernel;
 using BetterOtherRoles.EnoFw.Roles.Crewmate;
 using BetterOtherRoles.EnoFw.Roles.Modifiers;
@@ -9,6 +11,11 @@ using BetterOtherRoles.EnoFw.Roles.Neutral;
 using BetterOtherRoles.Players;
 using BetterOtherRoles.Utilities;
 using BetterOtherRoles.EnoFw.Modules;
+using BetterOtherRoles.EnoFw.Roles.Impostor;
+using BetterOtherRoles.Patches;
+using InnerNet;
+using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace BetterOtherRoles.Modules;
 
@@ -17,6 +24,21 @@ public static class ChatCommands
 {
     public static bool isLover(this PlayerControl player) =>
         !(player == null) && (Lovers.Instance.Is(player));
+    
+    public enum State
+    {
+        General,
+        Lover,
+        Cultist
+    }
+
+    public static State activeChat = State.General;
+
+    public static GameObject LoverChatButton { get; set; }
+    public static GameObject CultistChatButton { get; set; }
+
+    public static bool isTeamCultist(this PlayerControl player) =>
+        !(player == null) && (Cultist.Instance.Player == player || Cultist.Instance.CultMember == player);
 
     [HarmonyPatch(typeof(ChatController), nameof(ChatController.SendChat))]
     private static class SendChatPatch
@@ -122,15 +144,82 @@ public static class ChatCommands
             return !handled;
         }
     }
+    
+    [HarmonyPatch(typeof(ChatController), nameof(ChatController.Toggle))]
+    public static class ChatControllerUpdateHUD
+    {
+        
+        public static void Postfix(ChatController __instance)
+        {
+            BetterOtherRolesPlugin.Logger.LogMessage($"{ __instance.IsOpen }");
+            
+            if (__instance == null || AmongUsClient.Instance == null || GameOptionsManager.Instance == null || CachedPlayer.LocalPlayer == null) return;
+            
+            var isGameActive = AmongUsClient.Instance.GameState is InnerNetClient.GameStates.Started && GameOptionsManager.Instance.currentGameOptions.GameMode is not GameModes.HideNSeek;
+            
+            if (__instance.IsOpen && isGameActive)
+            {
+
+                // Transform PhoneUI = UnityEngine.Object.FindObjectsOfType<Transform>()
+                //     .FirstOrDefault(x => x.name == "PhoneUI");
+                // Transform container = UnityEngine.Object.Instantiate(PhoneUI, __instance.transform);
+                // container.transform.localPosition = new Vector3(0, 0, -5f);
+
+                
+                // var buttonTemplate = instanceMeetingHUD.playerStates[0].transform.FindChild("votePlayerBase");
+                // var maskTemplate = instanceMeetingHUD.playerStates[0].transform.FindChild("MaskArea");
+                // var smallButtonTemplate = instanceMeetingHUD.playerStates[0].Buttons.transform.Find("CancelButton");
+                // var textTemplate = instanceMeetingHUD.playerStates[0].NameText;
+                
+                var buttonTemplate = __instance.ChatButton.transform;
+                var textTemplate = __instance.CharCount;
+
+                if (!buttonTemplate || !textTemplate) return;
+                
+                List<Transform> buttons = new List<Transform>();
+                Transform selectedButton = null;
+                
+                Transform generalButtonParent = new GameObject().transform;
+                generalButtonParent.SetParent(__instance.transform);
+                Transform generalButton = UnityEngine.Object.Instantiate(buttonTemplate, generalButtonParent);
+                TMPro.TextMeshPro generalLabel = UnityEngine.Object.Instantiate(textTemplate, generalButton);
+                
+                generalButton.GetComponent<SpriteRenderer>().sprite = FastDestroyableSingleton<HatManager>.Instance
+                    .GetNamePlateById("nameplate_NoPlate").viewData.viewData.Image;
+
+                
+                generalButton.GetComponent<PassiveButton>().OnClick.AddListener((System.Action)(() =>
+                {
+                    if (selectedButton != generalButton)
+                    {
+                        selectedButton = generalButton;
+                        buttons.ForEach(x =>
+                            x.GetComponent<SpriteRenderer>().color = x == selectedButton ? Color.red : Color.white);
+
+                        activeChat = State.General;
+                    } 
+                }));
+
+                generalLabel.text = "General";
+                generalLabel.alignment = TMPro.TextAlignmentOptions.Center;
+                generalLabel.transform.localPosition = new Vector3(0, 0, generalLabel.transform.localPosition.z);
+                generalLabel.transform.localScale *= 1.7f;
+                
+                buttons.Add(generalButton);
+            }
+        }
+    }
 
     [HarmonyPatch(typeof(HudManager), nameof(HudManager.Update))]
     public static class EnableChat
     {
         public static void Postfix(HudManager __instance)
         {
+
             if (!__instance.Chat.isActiveAndEnabled &&
                 (AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay ||
-                 (CachedPlayer.LocalPlayer.PlayerControl.isLover() && Lovers.Instance.EnableChat)))
+                 (CachedPlayer.LocalPlayer.PlayerControl.isLover() && Lovers.Instance.EnableChat) ||
+                 (CachedPlayer.LocalPlayer.PlayerControl.isTeamCultist() && Cultist.Instance.EnableChat)))
                 __instance.Chat.SetVisible(true);
         }
     }
@@ -159,11 +248,17 @@ public static class ChatCommands
         {
             if (__instance != FastDestroyableSingleton<HudManager>.Instance.Chat)
                 return true;
+
             PlayerControl localPlayer = CachedPlayer.LocalPlayer.PlayerControl;
+
+            if (MeetingHud.Instance != null) return false;
+
             return localPlayer == null || MeetingHud.Instance != null || LobbyBehaviour.Instance != null ||
                    localPlayer.Data.IsDead ||
-                   localPlayer.isLover() && Lovers.Instance.EnableChat ||
+                   (localPlayer.isLover() && Lovers.Instance.EnableChat) ||
+                   (localPlayer.isTeamCultist() && Cultist.Instance.EnableChat) ||
                    sourcePlayer.PlayerId == CachedPlayer.LocalPlayer.PlayerId;
         }
     }
+    
 }

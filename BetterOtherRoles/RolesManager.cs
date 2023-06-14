@@ -24,6 +24,7 @@ public static class RolesManager
         Mayor.Instance.ClearAndReload();
         Medic.Instance.ClearAndReload();
         Medium.Instance.ClearAndReload();
+        NiceGuesser.Instance.ClearAndReload();
         Portalmaker.Instance.ClearAndReload();
         Pursuer.Instance.ClearAndReload();
         SecurityGuard.Instance.ClearAndReload();
@@ -39,12 +40,15 @@ public static class RolesManager
         BountyHunter.Instance.ClearAndReload();
         Camouflager.Instance.ClearAndReload();
         Cleaner.Instance.ClearAndReload();
+        Cultist.Instance.ClearAndReload();
         Eraser.Instance.ClearAndReload();
+        EvilGuesser.Instance.ClearAndReload();
         Godfather.Instance.ClearAndReload();
         Janitor.Instance.ClearAndReload();
         Mafioso.Instance.ClearAndReload();
         Morphling.Instance.ClearAndReload();
         Ninja.Instance.ClearAndReload();
+        SuperImpostor.Instance.ClearAndReload();
         Trickster.Instance.ClearAndReload();
         Undertaker.Instance.ClearAndReload();
         Vampire.Instance.ClearAndReload();
@@ -53,8 +57,6 @@ public static class RolesManager
         Witch.Instance.ClearAndReload();
         Arsonist.Instance.ClearAndReload();
         Fallen.Instance.ClearAndReload();
-        NiceGuesser.Instance.ClearAndReload();
-        EvilGuesser.Instance.ClearAndReload();
         Jackal.Instance.ClearAndReload();
         Sidekick.Instance.ClearAndReload();
         Jester.Instance.ClearAndReload();

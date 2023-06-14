@@ -48,6 +48,8 @@ public enum RoleId
     Bomber,
     Whisperer,
     Undertaker,
+    Cultist,
+    SuperImpostor,
     Crewmate,
     Impostor,
 

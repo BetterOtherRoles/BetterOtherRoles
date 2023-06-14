@@ -166,6 +166,8 @@ class RoleManagerSelectRolesPatch
         impSettings.Add((byte)RoleId.Vampire, Vampire.Instance.SpawnRate / 10);
         impSettings.Add((byte)RoleId.Whisperer, Whisperer.Instance.SpawnRate / 10);
         impSettings.Add((byte)RoleId.Undertaker, Undertaker.Instance.SpawnRate / 10);
+        impSettings.Add((byte)RoleId.Cultist, Cultist.Instance.SpawnRate / 10);
+        impSettings.Add((byte)RoleId.SuperImpostor, SuperImpostor.Instance.SpawnRate / 10);
         impSettings.Add((byte)RoleId.Eraser, Eraser.Instance.SpawnRate / 10);
         impSettings.Add((byte)RoleId.Trickster, Trickster.Instance.SpawnRate / 10);
         impSettings.Add((byte)RoleId.Cleaner, Cleaner.Instance.SpawnRate / 10);
@@ -241,6 +243,33 @@ class RoleManagerSelectRolesPatch
             setRoleToRandomPlayer((byte)RoleId.Mafioso, data.impostors);
             data.maxImpostorRoles -= 3;
         }
+        
+        // Handle Cultist Assignement
+        if (data.impostors.Count >= 2 && data.maxImpostorRoles >=2 &&
+            Rnd.Next(1, 101) <= Cultist.Instance.SpawnRate * 10)
+        {
+            BetterOtherRolesPlugin.Logger.LogMessage($"Assign Cultist");
+            BetterOtherRolesPlugin.Logger.LogMessage($"Impostor remaining before assignation: { data.impostors.Count }");
+            BetterOtherRolesPlugin.Logger.LogMessage($"Impostor remaining before assignation: { data.maxImpostorRoles }");
+            BetterOtherRolesPlugin.Logger.LogMessage($"Impostor remaining before assignation: { impValues }");
+            
+            setRoleToRandomPlayer((byte)RoleId.Cultist, data.impostors);
+
+            BetterOtherRolesPlugin.Logger.LogMessage($"Impostor remaining after assignation: { data.impostors.Count }");
+
+            var secondImpostor = data.impostors.First();
+
+            secondImpostor.RpcSetRole(RoleTypes.Crewmate);
+            secondImpostor.SetRole(RoleTypes.Crewmate);
+            
+            data.crewmates.Add(secondImpostor);
+            data.impostors.Clear();
+            
+            BetterOtherRolesPlugin.Logger.LogMessage($"Impostor remaining after tweak: { data.impostors.Count }");
+            
+            data.maxImpostorRoles = 0;
+            impValues = 0;
+        }
     }
 
     private static void selectFactionForFactionIndependentRoles(RoleAssignmentData data)
@@ -288,6 +317,7 @@ class RoleManagerSelectRolesPatch
             var roleId = rolesToAssign[roleType][index];
             setRoleToRandomPlayer(rolesToAssign[roleType][index], players);
             rolesToAssign[roleType].RemoveAt(index);
+            
 
             if (blockedRolePairings.TryGetValue(roleId, out var pairing))
             {
@@ -306,6 +336,7 @@ class RoleManagerSelectRolesPatch
             }
 
             // Adjust the role limit
+            
             switch (roleType)
             {
                 case RoleType.Crewmate:

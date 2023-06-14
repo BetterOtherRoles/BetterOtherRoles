@@ -133,10 +133,15 @@ public class Thief : AbstractRole
 
         if (Instance.StealRole)
         {
+            if (target.Data.Role.IsImpostor)
+            {
+                target.SetRole(RoleTypes.CrewmateGhost);
+            }
+                
+            
+            target.clearAllTasks();
             Fallen.Instance.ClearAndReload();
-            Fallen.Instance.Player = target; // Change target to Fallen ???
-            RoleManager.Instance.SetRole(target, RoleTypes.Crewmate);
-            Fallen.Instance.Player.clearAllTasks();
+            Fallen.Instance.Player = target;
         }
 
         if (Instance.Player == PlayerControl.LocalPlayer) CustomButton.ResetAllCooldowns();

@@ -337,6 +337,12 @@ public static class KernelRpc
             case RoleId.Undertaker:
                 Undertaker.Instance.Player = player;
                 break;
+            case RoleId.Cultist:
+                Cultist.Instance.Player = player;
+                break;
+            case RoleId.SuperImpostor:
+                SuperImpostor.Instance.Player = player;
+                break;
         }
     }
 

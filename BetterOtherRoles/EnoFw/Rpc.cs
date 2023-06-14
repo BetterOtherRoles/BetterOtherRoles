@@ -72,7 +72,8 @@ public static class Rpc
         PlaceBomb,
         DefuseBomb,
         UndertakerDragBody,
-        UndertakerDropBody
+        UndertakerDropBody,
+        CultistSetAlly
     }
 
     public enum Module : uint

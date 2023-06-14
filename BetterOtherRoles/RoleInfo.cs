@@ -80,6 +80,13 @@ namespace BetterOtherRoles
         public static RoleInfo undertaker = new RoleInfo("Undertaker", Undertaker.Instance.Color,
             "Hide Dead Bodies by Dragging them", "Drag dead bodies away.", RoleId.Undertaker);
 
+        public static RoleInfo cultist = new RoleInfo("Cultist", Cultist.Instance.Color, 
+            "Choose your ally at the beginning of the game and discuss your ways to kill", 
+            "Choose your ally and win the game together", RoleId.Cultist);
+
+        public static RoleInfo superimpostor = new RoleInfo("SuperImpostor", SuperImpostor.Instance.Color,
+            "Choose a role you want to play", "Select your impostor role", RoleId.SuperImpostor);
+        
         public static RoleInfo eraser = new RoleInfo("Eraser", Eraser.Instance.Color,
             "Kill the Crewmates and erase their roles", "Erase the roles of your enemies", RoleId.Eraser);
 
@@ -233,6 +240,8 @@ namespace BetterOtherRoles
             vampire,
             whisperer,
             undertaker,
+            cultist,
+            superimpostor,
             eraser,
             trickster,
             cleaner,
@@ -330,6 +339,8 @@ namespace BetterOtherRoles
             if (p == Vampire.Instance.Player) infos.Add(vampire);
             if (p == Whisperer.Instance.Player) infos.Add(whisperer);
             if (p == Undertaker.Instance.Player) infos.Add(undertaker);
+            if (p == Cultist.Instance.Player) infos.Add(cultist);
+            if (p == SuperImpostor.Instance.Player) infos.Add(superimpostor);
             if (p == Eraser.Instance.Player) infos.Add(eraser);
             if (p == Trickster.Instance.Player) infos.Add(trickster);
             if (p == Cleaner.Instance.Player) infos.Add(cleaner);

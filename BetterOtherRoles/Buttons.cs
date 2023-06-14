@@ -43,6 +43,7 @@ namespace BetterOtherRoles
         public static CustomButton vampireKillButton;
         public static CustomButton whispererKillButton;
         public static CustomButton undertakerDragButton;
+        public static CustomButton cultistChooseAllyButton;
         public static CustomButton garlicButton;
         public static CustomButton jackalKillButton;
         public static CustomButton sidekickKillButton;
@@ -119,6 +120,7 @@ namespace BetterOtherRoles
             vampireKillButton.MaxTimer = Vampire.Instance.BiteCooldown;
             whispererKillButton.MaxTimer = Whisperer.Instance.WhisperCooldown;
             undertakerDragButton.MaxTimer = Undertaker.Instance.DragCooldown;
+            cultistChooseAllyButton.MaxTimer = 0f;
             trackerTrackPlayerButton.MaxTimer = 0f;
             garlicButton.MaxTimer = 0f;
             jackalKillButton.MaxTimer = Jackal.Instance.KillCooldown;
@@ -1106,6 +1108,55 @@ namespace BetterOtherRoles
                 () => { }, // Action OnEffectEnds
                 false, // Bool mirror = false
                 "" // String buttonText = ""
+            );
+            
+            cultistChooseAllyButton = new CustomButton(
+                () =>
+                {
+                    Cultist.SetAlly(Cultist.Instance.CurrentTarget.PlayerId);
+                },
+                () =>
+                {
+                    return Cultist.Instance.Player != null && Cultist.Instance.Player == CachedPlayer.LocalPlayer.PlayerControl &&
+                           !CachedPlayer.LocalPlayer.Data.IsDead && Cultist.Instance.HasChosenAlly != true;
+                },
+                () =>
+                {
+                    return Cultist.Instance.CurrentTarget != null && CachedPlayer.LocalPlayer.PlayerControl.CanMove;
+                },
+                null,
+                Cultist.ChooseAllySprite,
+                CustomButton.ButtonPositions.upperRowLeft,
+                __instance,
+                "ActionQuaternary",
+                false,
+                0f,
+                () =>
+                {
+                    cultistChooseAllyButton.Timer = 0f;
+                }
+            );
+
+            garlicButton = new CustomButton(
+                () =>
+                {
+                    Vampire.Instance.LocalPlacedGarlic = true;
+                    var pos = CachedPlayer.LocalPlayer.transform.position;
+                    Vampire.PlaceGarlic(pos.x, pos.y, pos.z);
+                    SoundEffectsManager.play("garlic");
+                },
+                () =>
+                {
+                    return !Vampire.Instance.LocalPlacedGarlic && !CachedPlayer.LocalPlayer.Data.IsDead &&
+                           Vampire.Instance.GarlicsActive && !HideNSeek.isHideNSeekGM;
+                },
+                () => { return CachedPlayer.LocalPlayer.PlayerControl.CanMove && !Vampire.Instance.LocalPlacedGarlic; },
+                () => { },
+                Vampire.GarlicButtonSprite,
+                new Vector3(0, -0.06f, 0),
+                __instance,
+                null,
+                true
             );
 
             vampireKillButton = new CustomButton(

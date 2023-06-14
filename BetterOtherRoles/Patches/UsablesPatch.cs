@@ -46,6 +46,8 @@ namespace BetterOtherRoles.Patches {
             new GameObject().AddComponent<VentKeybind>();
         }
     }
+    
+    
 
     [HarmonyPatch(typeof(Vent), nameof(Vent.CanUse))]
     public static class VentCanUsePatch
@@ -242,6 +244,16 @@ namespace BetterOtherRoles.Patches {
     public static class TryMoveToVentPatch {
         public static bool Prefix(Vent otherVent) {
             return !Trapper.Instance.PlayersOnMap.Contains(CachedPlayer.LocalPlayer.PlayerControl);
+        }
+    }
+
+    [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.SetRole))]
+    class PlayerControlSetRolePatch
+    {
+        static void Prefix(PlayerControl __instance)
+        {
+            BetterOtherRolesPlugin.Logger.LogMessage($"Set Role Assigned to False");
+            if (__instance.roleAssigned) __instance.roleAssigned = false;
         }
     }
 
