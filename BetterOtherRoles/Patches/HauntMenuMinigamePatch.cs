@@ -2,10 +2,8 @@
 using AmongUs.GameOptions;
 using System.Collections.Generic;
 using System.Linq;
-using System;
-using BetterOtherRoles.EnoFw;
-using BetterOtherRoles.EnoFw.Roles.Impostor;
 using BetterOtherRoles.Players;
+using System;
 
 namespace BetterOtherRoles.Patches {
     [HarmonyPatch]
@@ -65,7 +63,7 @@ namespace BetterOtherRoles.Patches {
         [HarmonyPatch(typeof(HauntMenuMinigame), nameof(HauntMenuMinigame.FixedUpdate))]
         public static void UpdatePostfix(HauntMenuMinigame __instance) {
             if (GameOptionsManager.Instance.currentGameOptions.GameMode != GameModes.Normal) return;
-            if (CachedPlayer.LocalPlayer.Data.Role.IsImpostor && Vampire.Instance.Player != CachedPlayer.LocalPlayer.PlayerControl)
+            if (CachedPlayer.LocalPlayer.Data.Role.IsImpostor && Vampire.vampire != CachedPlayer.LocalPlayer.PlayerControl)
                 __instance.gameObject.transform.localPosition = new UnityEngine.Vector3(-6f, -1.1f, __instance.gameObject.transform.localPosition.z);
             return;
         }
@@ -73,11 +71,12 @@ namespace BetterOtherRoles.Patches {
         [HarmonyPostfix]
         [HarmonyPatch(typeof(AbilityButton), nameof(AbilityButton.Update))]
         public static void showOrHideAbilityButtonPostfix(AbilityButton __instance) {
-            if (CachedPlayer.LocalPlayer.Data.IsDead && CustomOptions.FinishTasksBeforeHauntingOrZoomingOut) {
+            bool isHideNSeek = GameOptionsManager.Instance.currentGameOptions.GameMode == GameModes.HideNSeek;
+            if (CachedPlayer.LocalPlayer.Data.IsDead && (CustomOptionHolder.finishTasksBeforeHauntingOrZoomingOut.getBool() || isHideNSeek)) {
                 // player has haunt button.
                 var (playerCompleted, playerTotal) = TasksHandler.taskInfo(CachedPlayer.LocalPlayer.Data);
                 int numberOfLeftTasks = playerTotal - playerCompleted;
-                if (numberOfLeftTasks <= 0)
+                if (numberOfLeftTasks <= 0 || isHideNSeek)
                     __instance.Show();
                 else
                     __instance.Hide();

@@ -4,11 +4,9 @@ using System.Linq;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Unity.IL2CPP;
+using HarmonyLib;
 using BetterOtherRoles.Patches;
 using BetterOtherRoles.Players;
-using HarmonyLib;
-using Il2CppInterop.Runtime;
-using Il2CppInterop.Runtime.Injection;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -127,8 +125,8 @@ namespace BetterOtherRoles
                 Assembly = Plugin!.GetType().Assembly;
             }
 
-            CredentialsPatch.PingTrackerPatch.ModStamp = new GameObject();
-            Object.DontDestroyOnLoad(CredentialsPatch.PingTrackerPatch.ModStamp);
+            CredentialsPatch.PingTrackerPatch.modStamp = new GameObject();
+            Object.DontDestroyOnLoad(CredentialsPatch.PingTrackerPatch.modStamp);
             
             Types = AccessTools.GetTypesFromAssembly(Assembly);
             

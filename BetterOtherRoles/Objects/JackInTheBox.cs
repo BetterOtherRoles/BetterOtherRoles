@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-using BetterOtherRoles.EnoFw.Roles.Impostor;
 using BetterOtherRoles.Players;
 using BetterOtherRoles.Utilities;
 
@@ -38,13 +37,12 @@ namespace BetterOtherRoles.Objects {
         public Vent vent;
         private SpriteRenderer boxRenderer;
 
-        public JackInTheBox(Vector3 p) {
+        public JackInTheBox(Vector2 p) {
             gameObject = new GameObject("JackInTheBox"){layer = 11};
             gameObject.AddSubmergedComponent(SubmergedCompatibility.Classes.ElevatorMover);
-            Vector3 position = new Vector3(p.x, p.y,  p.z + 0.005f);
+            Vector3 position = new Vector3(p.x, p.y,  p.y/1000f + 0.01f);
             position += (Vector3)CachedPlayer.LocalPlayer.PlayerControl.Collider.offset; // Add collider offset that DoMove moves the player up at a valid position
             // Create the marker
-
             gameObject.transform.position = position;
             boxRenderer = gameObject.AddComponent<SpriteRenderer>();
             boxRenderer.sprite = getBoxAnimationSprite(0);
@@ -72,7 +70,7 @@ namespace BetterOtherRoles.Objects {
             vent.name = "JackInTheBoxVent_" + vent.Id;
 
             // Only render the box for the Trickster
-            var playerIsTrickster = CachedPlayer.LocalPlayer.PlayerControl == Trickster.Instance.Player;
+            var playerIsTrickster = CachedPlayer.LocalPlayer.PlayerControl == Trickster.trickster;
             gameObject.SetActive(playerIsTrickster);
 
             AllJackInTheBoxes.Add(this);
@@ -81,7 +79,7 @@ namespace BetterOtherRoles.Objects {
         public static void UpdateStates() {
             if (boxesConvertedToVents == true) return;
             foreach (var box in AllJackInTheBoxes) {
-                var playerIsTrickster = CachedPlayer.LocalPlayer.PlayerControl == Trickster.Instance.Player;
+                var playerIsTrickster = CachedPlayer.LocalPlayer.PlayerControl == Trickster.trickster;
                 box.gameObject.SetActive(playerIsTrickster);
             }
         }

@@ -4,11 +4,11 @@ using System.Text;
 using UnityEngine;
 using BetterOtherRoles;
 using BetterOtherRoles.Patches;
-using static BetterOtherRoles.RolesManager;
-using System.Linq;
-using BetterOtherRoles.Modules;
 using BetterOtherRoles.Players;
+using static BetterOtherRoles.BetterOtherRoles;
+using System.Linq;
 using InnerNet;
+using BetterOtherRoles.Modules;
 
 namespace BetterOtherRoles.Utilities {
     public static class EventUtility {
@@ -24,7 +24,7 @@ namespace BetterOtherRoles.Utilities {
         public static readonly float[] eventDurations = {0f, 1f, 5f, 0f};
         public static double[] eventProbabilities;
         private static bool knocked = false;
-        public static bool disableHorses = true;
+        public static bool disableHorses = false;
 
         public static void Load() {
             if (!isEnabled) return;
@@ -33,7 +33,8 @@ namespace BetterOtherRoles.Utilities {
                 float desired_trials = 60 * eventFrequencies[(int)curEvent];
                 eventProbabilities[(int)curEvent] = desired_trials != 0 ? 1f / desired_trials : 1f;
             }
-        }
+                
+        } 
 
         private static List<EventTypes> eventQueue = null;
         public static bool eventInvert = false;
@@ -41,12 +42,14 @@ namespace BetterOtherRoles.Utilities {
         public static void clearAndReload() {
             eventQueue = new List<EventTypes>();
             eventInvert = false;
+            if (canBeEnabled && CustomOptionHolder.enableCodenameDisableHorses != null)
+                disableHorses = CustomOptionHolder.enableCodenameDisableHorses.getBool();
         }
 
         public static void Update() {
-            if (!isEnabled || eventQueue == null || AmongUsClient.Instance.GameState != InnerNetClient.GameStates.Started || RolesManager.Rnd == null || IntroCutscene.Instance) return;
+            if (!isEnabled || eventQueue == null || AmongUsClient.Instance.GameState != InnerNet.InnerNetClient.GameStates.Started || BetterOtherRoles.Rnd == null || IntroCutscene.Instance) return;
             foreach (EventTypes curEvent in eventQueue.ToArray()) {
-                if (RolesManager.Rnd.NextSingle() < eventProbabilities[(int)curEvent]) {
+                if (BetterOtherRoles.Rnd.NextSingle() < eventProbabilities[(int)curEvent]) {
                     eventQueue.Remove(curEvent);
                     StartEvent(curEvent);
                 }
@@ -63,19 +66,7 @@ namespace BetterOtherRoles.Utilities {
         public static bool isEventDate => DateTime.Today.Date == enabled;
 
         public static bool canBeEnabled => DateTime.Today.Date > enabled && DateTime.Today.Date <= enabled.AddDays(7); // One Week after the EVENT
-
-        public static bool isEnabled
-        {
-            get
-            {
-                return false;
-                // Disable event date
-                /*
-                return isEventDate || canBeEnabled && CustomOptionHolder.enableCodenameHorsemode != null &&
-                    CustomOptionHolder.enableCodenameHorsemode.getBool();
-                */
-            }
-        }
+        public static bool isEnabled => isEventDate || canBeEnabled && CustomOptionHolder.enableCodenameHorsemode != null && CustomOptionHolder.enableCodenameHorsemode.getBool();
 
         public static void AddToQueue(EventTypes newEvent) {
             if (!isEnabled || eventQueue == null || eventQueue.Contains(newEvent)) return;
@@ -132,12 +123,12 @@ namespace BetterOtherRoles.Utilities {
                     })));
                     break;
                 case EventTypes.Communication:
-                    int index = RolesManager.Rnd.Next(relevantPlayers.Count);
+                    int index = BetterOtherRoles.Rnd.Next(relevantPlayers.Count);
                     CachedPlayer firstPlayer = relevantPlayers[index];
                     relevantPlayers.RemoveAt(index);
                     string msg = firstPlayer.Data.PlayerName + " ";
                     foreach (CachedPlayer pc in relevantPlayers.ToArray()) {
-                        if (RolesManager.Rnd.NextSingle() < 1f / relevantPlayers.Count) {
+                        if (BetterOtherRoles.Rnd.NextSingle() < 1f / relevantPlayers.Count) {
                             relevantPlayers.Remove(pc);
                             msg += pc.Data.PlayerName + " ";
                         }
@@ -145,7 +136,7 @@ namespace BetterOtherRoles.Utilities {
                     RoomTracker tracker = FastDestroyableSingleton<HudManager>.Instance.roomTracker;
                     string lastRoom = "";
                     try { lastRoom = FastDestroyableSingleton<TranslationController>.Instance.GetString(tracker.LastRoom.RoomId); } catch { }
-                    msg += lastRoom != ""? lastRoom : (RolesManager.Rnd.Next(2) > 0 ? "sus" : "safe");
+                    msg += lastRoom != ""? lastRoom : (BetterOtherRoles.Rnd.Next(2) > 0 ? "sus" : "safe");
 
                     FastDestroyableSingleton<HudManager>.Instance.Chat.AddChat(relevantPlayers[Rnd.Next(relevantPlayers.Count)], $"{msg}");
                     break;

@@ -1,13 +1,13 @@
+using Hazel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using BetterOtherRoles.EnoFw.Roles.Crewmate;
 using BetterOtherRoles.Players;
 using BetterOtherRoles.Utilities;
 using UnityEngine;
 
 namespace BetterOtherRoles.Objects {
-    public class Trap {
+    class Trap {
         public static List<Trap> traps = new List<Trap>();
         public static Dictionary<byte, Trap> trapPlayerIdMap = new Dictionary<byte, Trap>();
 
@@ -17,7 +17,7 @@ namespace BetterOtherRoles.Objects {
         public bool revealed = false;
         public bool triggerable = false;
         private int usedCount = 0;
-        private int neededCount;
+        private int neededCount = Trapper.trapCountToReveal;
         public List<PlayerControl> trappedPlayer = new List<PlayerControl>();
         private Arrow arrow = new Arrow(Color.blue);
 
@@ -28,17 +28,17 @@ namespace BetterOtherRoles.Objects {
             return trapSprite;
         }
 
-        public Trap(Vector3 p) {
+        public Trap(Vector2 p) {
             trap = new GameObject("Trap") { layer = 11 };
             trap.AddSubmergedComponent(SubmergedCompatibility.Classes.ElevatorMover);
-            Vector3 position = new Vector3(p.x, p.y, p.z + 0.005f); // just behind player
+            Vector3 position = new Vector3(p.x, p.y, p.y / 1000 + 0.001f); // just behind player
             trap.transform.position = position;
-            neededCount = Trapper.Instance.TrapNeededTriggerToReveal;
+            neededCount = Trapper.trapCountToReveal;
 
             var trapRenderer = trap.AddComponent<SpriteRenderer>();
             trapRenderer.sprite = getTrapSprite();
             trap.SetActive(false);
-            if (CachedPlayer.LocalPlayer.PlayerId == Trapper.Instance.Player.PlayerId) trap.SetActive(true);
+            if (CachedPlayer.LocalPlayer.PlayerId == Trapper.trapper.PlayerId) trap.SetActive(true);
             this.instanceId = ++instanceCounter;
             traps.Add(this);
             arrow.Update(position);
@@ -72,24 +72,24 @@ namespace BetterOtherRoles.Objects {
         public static void triggerTrap(byte playerId, byte trapId) {            
             Trap t = traps.FirstOrDefault(x => x.instanceId == (int)trapId);
             PlayerControl player = Helpers.playerById(playerId);
-            if (Trapper.Instance.Player == null || t == null || player == null) return;
-            bool localIsTrapper = CachedPlayer.LocalPlayer.PlayerId == Trapper.Instance.Player.PlayerId;
+            if (Trapper.trapper == null || t == null || player == null) return;
+            bool localIsTrapper = CachedPlayer.LocalPlayer.PlayerId == Trapper.trapper.PlayerId;
             if (!trapPlayerIdMap.ContainsKey(playerId)) trapPlayerIdMap.Add(playerId, t);
             t.usedCount ++;
             t.triggerable = false;
-            if (playerId == CachedPlayer.LocalPlayer.PlayerId || playerId == Trapper.Instance.Player.PlayerId) {
+            if (playerId == CachedPlayer.LocalPlayer.PlayerId || playerId == Trapper.trapper.PlayerId) {
                 t.trap.SetActive(true);
                 SoundEffectsManager.play("trapperTrap");
             }
             player.moveable = false;
             player.NetTransform.Halt();
-            Trapper.Instance.PlayersOnMap.Add(player); 
+            Trapper.playersOnMap.Add(player); 
             if (localIsTrapper) t.arrow.arrow.SetActive(true);
 
-            FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Trapper.Instance.TrapDuration, new Action<float>((p) => { 
+            FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Trapper.trapDuration, new Action<float>((p) => { 
                 if (p == 1f) {
                     player.moveable = true;
-                    Trapper.Instance.PlayersOnMap.RemoveAll(x => x == player);
+                    Trapper.playersOnMap.RemoveAll(x => x == player);
                     if (trapPlayerIdMap.ContainsKey(playerId)) trapPlayerIdMap.Remove(playerId);
                     t.arrow.arrow.SetActive(false);
                 }
@@ -105,7 +105,7 @@ namespace BetterOtherRoles.Objects {
         }
 
         public static void Update() {
-            if (Trapper.Instance.Player == null) return;
+            if (Trapper.trapper == null) return;
             CachedPlayer player = CachedPlayer.LocalPlayer;
             Vent vent = MapUtilities.CachedShipStatus.AllVents[0];
             float closestDistance = float.MaxValue;
@@ -123,12 +123,16 @@ namespace BetterOtherRoles.Objects {
                     target = trap;
                 }
             }
-            if (target != null && player.PlayerId != Trapper.Instance.Player.PlayerId && !player.Data.IsDead) {
-                Trapper.TriggerTrap(player.PlayerId,(byte)target.instanceId);
+            if (target != null && player.PlayerId != Trapper.trapper.PlayerId && !player.Data.IsDead) {
+                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.TriggerTrap, Hazel.SendOption.Reliable, -1);
+                writer.Write(player.PlayerId);
+                writer.Write(target.instanceId);
+                AmongUsClient.Instance.FinishRpcImmediately(writer);
+                RPCProcedure.triggerTrap(player.PlayerId,(byte)target.instanceId);
             }
 
 
-            if (!player.Data.IsDead || player.PlayerId == Trapper.Instance.Player.PlayerId) return;
+            if (!player.Data.IsDead || player.PlayerId == Trapper.trapper.PlayerId) return;
             foreach (Trap trap in traps) {
                 if (!trap.trap.active) trap.trap.SetActive(true);
             }

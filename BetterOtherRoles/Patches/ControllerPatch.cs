@@ -1,9 +1,9 @@
-using BetterOtherRoles.Modules;
 using HarmonyLib;
 using Rewired;
 using Rewired.Data;
+using TheOtherRoles.Modules;
 
-namespace BetterOtherRoles.Patches;
+namespace TheOtherRoles.Patches;
 
 [HarmonyPatch(typeof(InputManager_Base), nameof(InputManager_Base.Awake))]
 public static class ControllerPatch
@@ -38,8 +38,8 @@ public static class ControllerPatch
             _modifierKey2 = ModifierKey.None,
             _modifierKey3 = ModifierKey.None
         };
-        self.keyboardMaps._items[0].actionElementMaps.Add(a);
-        self.joystickMaps._items[0].actionElementMaps.Add(a);
+        self.keyboardMaps[0].actionElementMaps.Add(a);
+        self.joystickMaps[0].actionElementMaps.Add(a);
             
         return action.id;
     }

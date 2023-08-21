@@ -28,7 +28,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using BetterOtherRoles.Utilities;
-using BetterOtherRoles.EnoFw.Modules;
 using UnityEngine.Events;
 
 namespace BetterOtherRoles.Patches {

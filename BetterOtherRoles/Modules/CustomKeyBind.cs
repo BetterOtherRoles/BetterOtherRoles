@@ -1,6 +1,6 @@
 ﻿using Rewired;
 
-namespace BetterOtherRoles.Modules;
+namespace TheOtherRoles.Modules;
 
 public class CustomKeyBind
 {

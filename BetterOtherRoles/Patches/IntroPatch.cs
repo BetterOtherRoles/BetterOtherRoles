@@ -1,19 +1,14 @@
 using HarmonyLib;
 using System;
-using static BetterOtherRoles.RolesManager;
+using static BetterOtherRoles.BetterOtherRoles;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
-using BetterOtherRoles.CustomGameModes;
-using BetterOtherRoles.EnoFw;
-using BetterOtherRoles.EnoFw.Modules;
-using BetterOtherRoles.EnoFw.Roles.Crewmate;
-using BetterOtherRoles.EnoFw.Roles.Impostor;
-using BetterOtherRoles.EnoFw.Roles.Modifiers;
-using BetterOtherRoles.EnoFw.Roles.Neutral;
-using BetterOtherRoles.Modules;
+using Hazel;
 using BetterOtherRoles.Players;
 using BetterOtherRoles.Utilities;
+using BetterOtherRoles.CustomGameModes;
+using BetterOtherRoles.Modules;
 
 namespace BetterOtherRoles.Patches {
     [HarmonyPatch(typeof(IntroCutscene), nameof(IntroCutscene.OnDestroy))]
@@ -45,7 +40,7 @@ namespace BetterOtherRoles.Patches {
                     TORMapOptions.playerIcons[p.PlayerId] = player;
                     player.gameObject.SetActive(false);
 
-                    if (CachedPlayer.LocalPlayer.PlayerControl == Arsonist.Instance.Player && p != Arsonist.Instance.Player) {
+                    if (CachedPlayer.LocalPlayer.PlayerControl == Arsonist.arsonist && p != Arsonist.arsonist) {
                         player.transform.localPosition = bottomLeft + new Vector3(-0.25f, -0.25f, 0) + Vector3.right * playerCounter++ * 0.35f;
                         player.transform.localScale = Vector3.one * 0.2f;
                         player.setSemiTransparent(true);
@@ -72,14 +67,14 @@ namespace BetterOtherRoles.Patches {
             }
 
             // Force Bounty Hunter to load a new Bounty when the Intro is over
-            if (BountyHunter.Instance.Bounty != null && CachedPlayer.LocalPlayer.PlayerControl == BountyHunter.Instance.Player) {
-                BountyHunter.Instance.BountyUpdateTimer = 0f;
+            if (BountyHunter.bounty != null && CachedPlayer.LocalPlayer.PlayerControl == BountyHunter.bountyHunter) {
+                BountyHunter.bountyUpdateTimer = 0f;
                 if (FastDestroyableSingleton<HudManager>.Instance != null) {
-                    BountyHunter.Instance.CooldownText = UnityEngine.Object.Instantiate<TMPro.TextMeshPro>(FastDestroyableSingleton<HudManager>.Instance.KillButton.cooldownTimerText, FastDestroyableSingleton<HudManager>.Instance.transform);
-                    BountyHunter.Instance.CooldownText.alignment = TMPro.TextAlignmentOptions.Center;
-                    BountyHunter.Instance.CooldownText.transform.localPosition = bottomLeft + new Vector3(0f, -0.35f, -62f);
-                    BountyHunter.Instance.CooldownText.transform.localScale = Vector3.one * 0.4f;
-                    BountyHunter.Instance.CooldownText.gameObject.SetActive(true);
+                    BountyHunter.cooldownText = UnityEngine.Object.Instantiate<TMPro.TextMeshPro>(FastDestroyableSingleton<HudManager>.Instance.KillButton.cooldownTimerText, FastDestroyableSingleton<HudManager>.Instance.transform);
+                    BountyHunter.cooldownText.alignment = TMPro.TextAlignmentOptions.Center;
+                    BountyHunter.cooldownText.transform.localPosition = bottomLeft + new Vector3(0f, -0.35f, -62f);
+                    BountyHunter.cooldownText.transform.localScale = Vector3.one * 0.4f;
+                    BountyHunter.cooldownText.gameObject.SetActive(true);
                 }
             }
 
@@ -87,13 +82,16 @@ namespace BetterOtherRoles.Patches {
             SoundEffectsManager.Load();
 
             // First kill
-            if (AmongUsClient.Instance.AmHost && TORMapOptions.shieldFirstKill && TORMapOptions.firstKillName != "" && !HideNSeek.isHideNSeekGM) {
-                PlayerControl target = PlayerControl.AllPlayerControls.ToArray().ToList().FirstOrDefault(x => x.Data.PlayerName.Equals(TORMapOptions.firstKillName));
+            if (AmongUsClient.Instance.AmHost && FirstKillShield.Enabled && FirstKillShield.FirstKilledPlayerName != string.Empty && !HideNSeek.isHideNSeekGM) {
+                PlayerControl target = PlayerControl.AllPlayerControls.ToArray().ToList().FirstOrDefault(x => x.Data.PlayerName.Equals(FirstKillShield.FirstKilledPlayerName));
                 if (target != null) {
-                    FirstKillShield.SetFirstKill(target.PlayerId);
+                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SetFirstKill, Hazel.SendOption.Reliable, -1);
+                    writer.Write(target.PlayerId);
+                    AmongUsClient.Instance.FinishRpcImmediately(writer);
+                    RPCProcedure.setFirstKill(target.PlayerId);
                 }
             }
-            TORMapOptions.firstKillName = "";
+            FirstKillShield.FirstKilledPlayerName = string.Empty;
 
             EventUtility.gameStartsUpdate();
 
@@ -105,7 +103,7 @@ namespace BetterOtherRoles.Patches {
                     FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(HideNSeek.hunterWaitingTime, new Action<float>((p) => {
                         if (p == 1f) {
                             player.moveable = true;
-                            HideNSeek.timer = CustomOptions.HideNSeekTimer * 60f;
+                            HideNSeek.timer = CustomOptionHolder.hideNSeekTimer.getFloat() * 60;
                             HideNSeek.isWaitingTimer = false;
                         }
                     })));
@@ -137,9 +135,9 @@ namespace BetterOtherRoles.Patches {
                 ShipStatusPatch.originalNumImpVisionOption = GameOptionsManager.Instance.currentNormalGameOptions.ImpostorLightMod;
                 ShipStatusPatch.originalNumKillCooldownOption = GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown;
 
-                GameOptionsManager.Instance.currentNormalGameOptions.ImpostorLightMod = CustomOptions.HideNSeekHunterVision;
-                GameOptionsManager.Instance.currentNormalGameOptions.CrewLightMod = CustomOptions.HideNSeekHuntedVision;
-                GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown = CustomOptions.HideNSeekKillCooldown;
+                GameOptionsManager.Instance.currentNormalGameOptions.ImpostorLightMod = CustomOptionHolder.hideNSeekHunterVision.getFloat();
+                GameOptionsManager.Instance.currentNormalGameOptions.CrewLightMod = CustomOptionHolder.hideNSeekHuntedVision.getFloat();
+                GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown = CustomOptionHolder.hideNSeekKillCooldown.getFloat();
             }
         }
     }
@@ -155,12 +153,12 @@ namespace BetterOtherRoles.Patches {
             }
 
             // Add the Spy to the Impostor team (for the Impostors)
-            if (Spy.Instance.Player != null && CachedPlayer.LocalPlayer.Data.Role.IsImpostor) {
+            if (Spy.spy != null && CachedPlayer.LocalPlayer.Data.Role.IsImpostor) {
                 List<PlayerControl> players = PlayerControl.AllPlayerControls.ToArray().ToList().OrderBy(x => Guid.NewGuid()).ToList();
                 var fakeImpostorTeam = new Il2CppSystem.Collections.Generic.List<PlayerControl>(); // The local player always has to be the first one in the list (to be displayed in the center)
                 fakeImpostorTeam.Add(CachedPlayer.LocalPlayer.PlayerControl);
                 foreach (PlayerControl p in players) {
-                    if (CachedPlayer.LocalPlayer.PlayerControl != p && (p == Spy.Instance.Player || p.Data.Role.IsImpostor))
+                    if (CachedPlayer.LocalPlayer.PlayerControl != p && (p == Spy.spy || p.Data.Role.IsImpostor))
                         fakeImpostorTeam.Add(p);
                 }
                 yourTeam = fakeImpostorTeam;
@@ -185,7 +183,6 @@ namespace BetterOtherRoles.Patches {
             __instance.RoleText.gameObject.SetActive(false);
             __instance.RoleBlurbText.gameObject.SetActive(false);
             __instance.ourCrewmate.gameObject.SetActive(false);
-            
            
         }
 
@@ -226,21 +223,19 @@ namespace BetterOtherRoles.Patches {
                     if (modifierInfo.roleId != RoleId.Lover)
                         __instance.RoleBlurbText.text += Helpers.cs(modifierInfo.color, $"\n{modifierInfo.introDescription}");
                     else {
-                        PlayerControl otherLover = CachedPlayer.LocalPlayer.PlayerControl == Lovers.Instance.Lover1 ? Lovers.Instance.Lover2 : Lovers.Instance.Lover1;
-                        __instance.RoleBlurbText.text += Helpers.cs(Lovers.Instance.Color, $"\n♥ You are in love with {otherLover?.Data?.PlayerName ?? ""} ♥");
+                        PlayerControl otherLover = CachedPlayer.LocalPlayer.PlayerControl == Lovers.lover1 ? Lovers.lover2 : Lovers.lover1;
+                        __instance.RoleBlurbText.text += Helpers.cs(Lovers.color, $"\n♥ You are in love with {otherLover?.Data?.PlayerName ?? ""} ♥");
                     }
                 }
-                if (Deputy.Instance.KnowsSheriff && Deputy.Instance.Player != null && Sheriff.Instance.Player != null) {
+                if (Deputy.knowsSheriff && Deputy.deputy != null && Sheriff.sheriff != null) {
                     if (infos.Any(info => info.roleId == RoleId.Sheriff))
-                        __instance.RoleBlurbText.text += Helpers.cs(Sheriff.Instance.Color, Deputy.Instance.IntroTextForSheriff);
+                        __instance.RoleBlurbText.text += Helpers.cs(Sheriff.color, $"\nYour Deputy is {Deputy.deputy?.Data?.PlayerName ?? ""}");
                     else if (infos.Any(info => info.roleId == RoleId.Deputy))
-                        __instance.RoleBlurbText.text += Sheriff.Instance.IntroTextForDeputy;
+                        __instance.RoleBlurbText.text += Helpers.cs(Sheriff.color, $"\nYour Sheriff is {Sheriff.sheriff?.Data?.PlayerName ?? ""}");
                 }
             }
             public static bool Prefix(IntroCutscene __instance) {
-                // Create RandomSeed
-                RandomSeed.GenerateSeed();
-                if (!CustomOptions.EnableRoles) return true;
+                if (!CustomOptionHolder.activateRoles.getBool()) return true;
                 seed = Rnd.Next(5000);
                 FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(1f, new Action<float>((p) => {
                     SetRoleTexts(__instance);

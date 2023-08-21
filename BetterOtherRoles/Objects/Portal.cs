@@ -1,10 +1,9 @@
 using System;
 using UnityEngine;
 using System.Collections.Generic;
-using BetterOtherRoles.EnoFw.Roles.Crewmate;
-using BetterOtherRoles.EnoFw.Roles.Impostor;
 using BetterOtherRoles.Players;
 using BetterOtherRoles.Utilities;
+using static BetterOtherRoles.BetterOtherRoles;
 
 namespace BetterOtherRoles.Objects {
 
@@ -48,12 +47,12 @@ namespace BetterOtherRoles.Objects {
             bool flip = playerControl.cosmetics.currentBodySprite.BodySprite.flipX; // use the original player control here, not the morhpTarget.
             firstPortal.animationFgRenderer.flipX = flip;
             secondPortal.animationFgRenderer.flipX = flip;
-            if (Morphling.Instance.Player != null && Morphling.Instance.MorphTimer > 0) playerControl = Morphling.Instance.MorphTarget;  // Will output info of morph-target instead
-            string playerNameDisplay = Portalmaker.Instance.LogOnlyColorType ? "A player (" + (Helpers.isLighterColor(playerControl.Data.DefaultOutfit.ColorId) ? "L" : "D") + ")" : playerControl.Data.PlayerName;
+            if (Morphling.morphling != null && Morphling.morphTimer > 0) playerControl = Morphling.morphTarget;  // Will output info of morph-target instead
+            string playerNameDisplay = Portalmaker.logOnlyHasColors ? "A player (" + (Helpers.isLighterColor(playerControl.Data.DefaultOutfit.ColorId) ? "L" : "D") + ")" : playerControl.Data.PlayerName;
 
             int colorId = playerControl.Data.DefaultOutfit.ColorId;
 
-            if (Camouflager.Instance.CamouflageTimer > 0) {
+            if (Camouflager.camouflageTimer > 0) {
                 playerNameDisplay = "A camouflaged player";
                 colorId = 6;
             }
@@ -81,10 +80,10 @@ namespace BetterOtherRoles.Objects {
         private SpriteRenderer animationFgRenderer;
         private SpriteRenderer portalRenderer;
 
-        public Portal(Vector3 p) {
+        public Portal(Vector2 p) {
             portalGameObject = new GameObject("Portal"){ layer = 11 };
             //Vector3 position = new Vector3(p.x, p.y, CachedPlayer.LocalPlayer.transform.position.z + 1f);
-            Vector3 position = new Vector3(p.x, p.y, p.z + 0.005f);
+            Vector3 position = new Vector3(p.x, p.y, p.y / 1000f + 0.01f);
 
             // Create the portal            
             portalGameObject.transform.position = position;
@@ -101,7 +100,7 @@ namespace BetterOtherRoles.Objects {
             animationFgRenderer.material = FastDestroyableSingleton<HatManager>.Instance.PlayerMaterial;
 
             // Only render the inactive portals for the Portalmaker
-            bool playerIsPortalmaker = CachedPlayer.LocalPlayer.PlayerControl == Portalmaker.Instance.Player;
+            bool playerIsPortalmaker = CachedPlayer.LocalPlayer.PlayerControl == BetterOtherRoles.Portalmaker.portalmaker;
             portalGameObject.SetActive(playerIsPortalmaker);
             portalFgAnimationGameObject.SetActive(true);
 

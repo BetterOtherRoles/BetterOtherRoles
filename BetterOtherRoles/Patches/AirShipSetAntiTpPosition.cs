@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using System;
-using BetterOtherRoles.EnoFw.Roles.Modifiers;
 
 namespace BetterOtherRoles.Patches {
     [HarmonyPatch]
@@ -10,13 +9,13 @@ namespace BetterOtherRoles.Patches {
         [HarmonyPrefix]
         [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.ClimbLadder))]
         public static void prefix() {
-            AntiTeleport.Instance.Position = Players.CachedPlayer.LocalPlayer.transform.position;
+            AntiTeleport.position = Players.CachedPlayer.LocalPlayer.transform.position;
         }
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(MovingPlatformBehaviour), nameof(MovingPlatformBehaviour.UsePlatform))]
         public static void prefix2() {
-            AntiTeleport.Instance.Position = Players.CachedPlayer.LocalPlayer.transform.position;
+            AntiTeleport.position = Players.CachedPlayer.LocalPlayer.transform.position;
         }
     }
 }

@@ -22,12 +22,12 @@ namespace BetterOtherRoles.Objects {
             return backgroundSprite;
         }
 
-        public Garlic(Vector3 p) {
+        public Garlic(Vector2 p) {
             garlic = new GameObject("Garlic"){layer = 11};
             garlic.AddSubmergedComponent(SubmergedCompatibility.Classes.ElevatorMover);
             background = new GameObject("Background"){layer = 11};
             background.transform.SetParent(garlic.transform);
-            Vector3 position = new Vector3(p.x, p.y, p.z + 0.005f); // just behind player
+            Vector3 position = new Vector3(p.x, p.y, p.y / 1000 + 0.001f); // just behind player
             garlic.transform.position = position;
             background.transform.localPosition = new Vector3(0 , 0, -1f); // before player
 

@@ -32,7 +32,7 @@ namespace BetterOtherRoles
         public static AudioClip get(string path)
         {
             // Convenience: As as SoundEffects are stored in the same folder, allow using just the name as well
-            if (!path.Contains('.')) path = "BetterOtherRoles.Resources.SoundEffects." + path + ".raw";
+            if (!path.Contains(".")) path = "BetterOtherRoles.Resources.SoundEffects." + path + ".raw";
             AudioClip returnValue;
             return soundEffects.TryGetValue(path, out returnValue) ? returnValue : null;
         }
@@ -69,11 +69,7 @@ namespace BetterOtherRoles
         }
 
         public static void stop(string path) {
-            if (SoundManager.Instance == null) return;
-            var clip = get(path);
-            if (clip == null) return;
-            if (Constants.ShouldPlaySfx()) SoundManager.Instance.StopSound(clip);
-            
+            if (Constants.ShouldPlaySfx()) SoundManager.Instance.StopSound(get(path));
         }
 
         public static void stopAll() {

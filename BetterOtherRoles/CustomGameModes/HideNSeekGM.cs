@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using BetterOtherRoles.EnoFw;
 using BetterOtherRoles.Objects;
 using BetterOtherRoles.Players;
 using UnityEngine;
@@ -45,15 +44,15 @@ namespace BetterOtherRoles.CustomGameModes {
             isWaitingTimer = true;
             startTime = DateTime.UtcNow;
 
-            timer = CustomOptions.HideNSeekTimer * 60f;
-            hunterVision = CustomOptions.HideNSeekHunterVision;
-            huntedVision = CustomOptions.HideNSeekHuntedVision;
-            taskWinPossible = CustomOptions.HideNSeekTaskWin;
-            taskPunish = CustomOptions.HideNSeekTaskPunish;
-            impNumber = Mathf.RoundToInt(CustomOptions.HideNSeekHunterCount);
-            canSabotage = CustomOptions.HideNSeekCanSabotage;
-            killCooldown = CustomOptions.HideNSeekKillCooldown;
-            hunterWaitingTime = CustomOptions.HideNSeekHunterWaiting;
+            timer = CustomOptionHolder.hideNSeekTimer.getFloat() * 60;
+            hunterVision = CustomOptionHolder.hideNSeekHunterVision.getFloat();
+            huntedVision = CustomOptionHolder.hideNSeekHuntedVision.getFloat();
+            taskWinPossible = CustomOptionHolder.hideNSeekTaskWin.getBool();
+            taskPunish = CustomOptionHolder.hideNSeekTaskPunish.getFloat();
+            impNumber = Mathf.RoundToInt(CustomOptionHolder.hideNSeekHunterCount.getFloat());
+            canSabotage = CustomOptionHolder.hideNSeekCanSabotage.getBool();
+            killCooldown = CustomOptionHolder.hideNSeekKillCooldown.getFloat();
+            hunterWaitingTime = CustomOptionHolder.hideNSeekHunterWaiting.getFloat();
 
             Hunter.clearAndReload();
             Hunted.clearAndReload();
@@ -105,16 +104,16 @@ namespace BetterOtherRoles.CustomGameModes {
             lightActive = new List<byte>();
             arrowActive = false;
 
-            lightCooldown = CustomOptions.HunterLightCooldown;
-            lightDuration = CustomOptions.HunterLightDuration;
-            lightVision = CustomOptions.HunterLightVision;
-            lightPunish = CustomOptions.HunterLightPunish;
-            AdminCooldown = CustomOptions.HunterAdminCooldown;
-            AdminDuration = CustomOptions.HunterAdminDuration;
-            AdminPunish = CustomOptions.HunterAdminPunish;
-            ArrowCooldown = CustomOptions.HunterArrowCooldown;
-            ArrowDuration = CustomOptions.HunterArrowDuration;
-            ArrowPunish = CustomOptions.HunterArrowPunish;
+            lightCooldown = CustomOptionHolder.hunterLightCooldown.getFloat();
+            lightDuration = CustomOptionHolder.hunterLightDuration.getFloat();
+            lightVision = CustomOptionHolder.hunterLightVision.getFloat();
+            lightPunish = CustomOptionHolder.hunterLightPunish.getFloat();
+            AdminCooldown = CustomOptionHolder.hunterAdminCooldown.getFloat();
+            AdminDuration = CustomOptionHolder.hunterAdminDuration.getFloat();
+            AdminPunish = CustomOptionHolder.hunterAdminPunish.getFloat();
+            ArrowCooldown = CustomOptionHolder.hunterArrowCooldown.getFloat();
+            ArrowDuration = CustomOptionHolder.hunterArrowDuration.getFloat();
+            ArrowPunish = CustomOptionHolder.hunterArrowPunish.getFloat();
         }
     }
 
@@ -130,10 +129,10 @@ namespace BetterOtherRoles.CustomGameModes {
             timeshieldActive = new List<byte>();
             taskPunish = false;
 
-            shieldCount = Mathf.RoundToInt(CustomOptions.HuntedShieldNumber);
-            shieldCooldown = CustomOptions.HuntedShieldCooldown;
-            shieldDuration = CustomOptions.HuntedShieldDuration;
-            shieldRewindTime = CustomOptions.HuntedShieldRewindTime;
+            shieldCount = Mathf.RoundToInt(CustomOptionHolder.huntedShieldNumber.getFloat());
+            shieldCooldown = CustomOptionHolder.huntedShieldCooldown.getFloat();
+            shieldDuration = CustomOptionHolder.huntedShieldDuration.getFloat();
+            shieldRewindTime = CustomOptionHolder.huntedShieldRewindTime.getFloat();
         }
     }
 }

@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using BetterOtherRoles.EnoFw.Roles.Crewmate;
-using BetterOtherRoles.EnoFw.Roles.Impostor;
-using Il2CppInterop.Runtime.Attributes;
-using Il2CppInterop.Runtime.Injection;
 using BetterOtherRoles.Utilities;
 using UnityEngine;
 
@@ -27,8 +23,8 @@ namespace BetterOtherRoles.Objects
         private static Sprite _footprintSprite;
         private static Sprite FootprintSprite => _footprintSprite ??= Helpers.loadSpriteFromResources("BetterOtherRoles.Resources.Footprint.png", 600f);
 
-        private static bool AnonymousFootprints => Detective.Instance.AnonymousFootprint;
-        private static float FootprintDuration => Detective.Instance.FootprintDuration;
+        private static bool AnonymousFootprints => BetterOtherRoles.Detective.anonymousFootprints;
+        private static float FootprintDuration => BetterOtherRoles.Detective.footprintDuration;
         
         private class Footprint
         {
@@ -65,9 +61,9 @@ namespace BetterOtherRoles.Objects
             }
 
             print.Lifetime = FootprintDuration;
-
-            var p = player.transform.position;
-            var pos = new Vector3(p.x, p.y, p.z + 0.005f);
+            
+            var pos = player.transform.position;
+            pos.z = pos.y / 1000f + 0.001f;
             print.Transform.SetPositionAndRotation(pos, Quaternion.EulerRotation(0, 0, UnityEngine.Random.Range(0.0f, 360.0f)));
             print.GameObject.SetActive(true);
             print.Owner = player;
@@ -90,13 +86,13 @@ namespace BetterOtherRoles.Objects
                 }
                 
                 Color color;
-                if (AnonymousFootprints || Camouflager.Instance.CamouflageTimer > 0)
+                if (AnonymousFootprints || Camouflager.camouflageTimer > 0)
                 {
                     color = Palette.PlayerColors[6];
                 }
-                else if (activeFootprint.Owner == Morphling.Instance.Player && Morphling.Instance.MorphTimer > 0 && Morphling.Instance.MorphTarget && Morphling.Instance.MorphTarget.Data != null)
+                else if (activeFootprint.Owner == Morphling.morphling && Morphling.morphTimer > 0 && Morphling.morphTarget && Morphling.morphTarget.Data != null)
                 {
-                    color = Palette.PlayerColors[Morphling.Instance.MorphTarget.Data.DefaultOutfit.ColorId];
+                    color = Palette.PlayerColors[Morphling.morphTarget.Data.DefaultOutfit.ColorId];
                 }
                 else
                 {

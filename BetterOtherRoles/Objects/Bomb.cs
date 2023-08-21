@@ -1,5 +1,7 @@
+using Hazel;
 using System;
-using BetterOtherRoles.EnoFw.Roles.Impostor;
+using System.Collections.Generic;
+using System.Linq;
 using BetterOtherRoles.Players;
 using BetterOtherRoles.Utilities;
 using UnityEngine;
@@ -21,7 +23,7 @@ namespace BetterOtherRoles.Objects {
         }
         public static Sprite getBackgroundSprite() {
             if (backgroundSprite) return backgroundSprite;
-            backgroundSprite = Helpers.loadSpriteFromResources("BetterOtherRoles.Resources.BombBackground.png", 110f / (Bomber.Instance.BombHearRange / 10f));
+            backgroundSprite = Helpers.loadSpriteFromResources("BetterOtherRoles.Resources.BombBackground.png", 110f / Bomber.hearRange);
             return backgroundSprite;
         }
 
@@ -31,10 +33,10 @@ namespace BetterOtherRoles.Objects {
             return defuseSprite;
         }
 
-        public Bomb(Vector3 p) {
+        public Bomb(Vector2 p) {
             bomb = new GameObject("Bomb") { layer = 11 };
             bomb.AddSubmergedComponent(SubmergedCompatibility.Classes.ElevatorMover);
-            Vector3 position = new Vector3(p.x, p.y, p.z + 0.005f); // just behind player
+            Vector3 position = new Vector3(p.x, p.y, p.y / 1000 + 0.001f); // just behind player
             bomb.transform.position = position;
 
             background = new GameObject("Background") { layer = 11 };
@@ -49,23 +51,23 @@ namespace BetterOtherRoles.Objects {
 
             bomb.SetActive(false);
             background.SetActive(false);
-            if (CachedPlayer.LocalPlayer.PlayerControl == Bomber.Instance.Player) {
+            if (CachedPlayer.LocalPlayer.PlayerControl == Bomber.bomber) {
                 bomb.SetActive(true);
             }
-            Bomber.Instance.Bomb = this;
+            Bomber.bomb = this;
             Color c = Color.white;
             Color g = Color.red;
             backgroundRenderer.color = Color.white;
-            Bomber.Instance.IsActive = false;
+            Bomber.isActive = false;
 
-            FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Bomber.Instance.BombActivationTime, new Action<float>((x) => {
+            FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Bomber.bombActiveAfter, new Action<float>((x) => {
                 if (x == 1f && this != null) {
                     bomb.SetActive(true);
                     background.SetActive(true);
-                    SoundEffectsManager.playAtPosition("bombFuseBurning", p, Bomber.Instance.BombDestructionTime, Bomber.Instance.BombHearRange / 10f, true);
-                    Bomber.Instance.IsActive = true;
+                    SoundEffectsManager.playAtPosition("bombFuseBurning", p, Bomber.destructionTime, Bomber.hearRange, true);
+                    Bomber.isActive = true;
 
-                    FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Bomber.Instance.BombDestructionTime, new Action<float>((x) => { // can you feel the pain?
+                    FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(Bomber.destructionTime, new Action<float>((x) => { // can you feel the pain?
                         Color combinedColor = Mathf.Clamp01(x) * g + Mathf.Clamp01(1 - x) * c;
                         if (backgroundRenderer) backgroundRenderer.color = combinedColor;
                         if (x == 1f && this != null) {
@@ -78,27 +80,40 @@ namespace BetterOtherRoles.Objects {
         }
         public static void explode(Bomb b) {
             if (b == null) return;
-            if (Bomber.Instance.Player != null) {
+            if (Bomber.bomber != null) {
                 var position = b.bomb.transform.position;
                 var distance = Vector2.Distance(position, CachedPlayer.LocalPlayer.transform.position);  // every player only checks that for their own client (desynct with positions sucks)
-                if (distance < Bomber.Instance.BombDestructionRange / 10f && !CachedPlayer.LocalPlayer.Data.IsDead) {
-                    Helpers.checkMurderAttemptAndKill(Bomber.Instance.Player, CachedPlayer.LocalPlayer.PlayerControl, false, false, true, true);
+                if (distance < Bomber.destructionRange && !CachedPlayer.LocalPlayer.Data.IsDead) {
+                    Helpers.checkMurderAttemptAndKill(Bomber.bomber, CachedPlayer.LocalPlayer.PlayerControl, false, false, true, true);
+                    
+                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShareGhostInfo, Hazel.SendOption.Reliable, -1);
+                    writer.Write(CachedPlayer.LocalPlayer.PlayerId);
+                    writer.Write((byte)RPCProcedure.GhostInfoTypes.DeathReasonAndKiller);
+                    writer.Write(CachedPlayer.LocalPlayer.PlayerId);
+                    writer.Write((byte)DeadPlayer.CustomDeathReason.Bomb);
+                    writer.Write(Bomber.bomber.PlayerId);
+                    AmongUsClient.Instance.FinishRpcImmediately(writer);
+                    GameHistory.overrideDeathReasonAndKiller(CachedPlayer.LocalPlayer, DeadPlayer.CustomDeathReason.Bomb, killer: Bomber.bomber);
                 }
-                SoundEffectsManager.playAtPosition("bombExplosion", position, range: Bomber.Instance.BombHearRange / 10f) ;
+                SoundEffectsManager.playAtPosition("bombExplosion", position, range: Bomber.hearRange) ;
             }
-            Bomber.Instance.ClearBomb();
+            Bomber.clearBomb();
             canDefuse = false;
-            Bomber.Instance.IsActive = false;
+            Bomber.isActive = false;
         }
 
         public static void update() {
-            if (Bomber.Instance.Bomb == null || !Bomber.Instance.IsActive) {
+            if (Bomber.bomb == null || !Bomber.isActive) {
                 canDefuse = false;
                 return;
             }
-            Bomber.Instance.Bomb.background.transform.Rotate(Vector3.forward * 50 * Time.fixedDeltaTime);
+            Bomber.bomb.background.transform.Rotate(Vector3.forward * 50 * Time.fixedDeltaTime);
 
-            if (Vector2.Distance(CachedPlayer.LocalPlayer.PlayerControl.GetTruePosition(), Bomber.Instance.Bomb.bomb.transform.position) > 1f) canDefuse = false;
+            if (MeetingHud.Instance && Bomber.bomb != null) {
+                Bomber.clearBomb();
+            }
+
+            if (Vector2.Distance(CachedPlayer.LocalPlayer.PlayerControl.GetTruePosition(), Bomber.bomb.bomb.transform.position) > 1f) canDefuse = false;
             else canDefuse = true;
         }
 

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using BetterOtherRoles.EnoFw.Roles.Impostor;
 using BetterOtherRoles.Utilities;
 using UnityEngine;
 
@@ -18,11 +17,11 @@ namespace BetterOtherRoles.Objects {
             return TraceSprite;
         }
 
-        public NinjaTrace(Vector3 p, float duration=1f) {
+        public NinjaTrace(Vector2 p, float duration=1f) {
             trace = new GameObject("NinjaTrace");
             trace.AddSubmergedComponent(SubmergedCompatibility.Classes.ElevatorMover);
             //Vector3 position = new Vector3(p.x, p.y, CachedPlayer.LocalPlayer.transform.localPosition.z + 0.001f); // just behind player
-            Vector3 position = new Vector3(p.x, p.y, p.z + 0.005f);
+            Vector3 position = new Vector3(p.x, p.y, p.y / 1000f + 0.01f);
             trace.transform.position = position;
             trace.transform.localPosition = position;
             
@@ -32,12 +31,12 @@ namespace BetterOtherRoles.Objects {
             timeRemaining = duration;
 
             // display the ninjas color in the trace
-            float colorDuration = Ninja.Instance.TraceColorDuration;
+            float colorDuration = CustomOptionHolder.ninjaTraceColorTime.getFloat();
             FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(colorDuration, new Action<float>((p) => {
-                Color c = Palette.PlayerColors[(int)Ninja.Instance.Player.Data.DefaultOutfit.ColorId];
-                if (Helpers.isLighterColor(Ninja.Instance.Player.Data.DefaultOutfit.ColorId)) c = Color.white;
+                Color c = Palette.PlayerColors[(int)Ninja.ninja.Data.DefaultOutfit.ColorId];
+                if (Helpers.isLighterColor(Ninja.ninja.Data.DefaultOutfit.ColorId)) c = Color.white;
                 else c = Palette.PlayerColors[6];
-                //if (Camouflager.Instance.CamouflageTimer > 0) {
+                //if (Camouflager.camouflageTimer > 0) {
                 //    c = Palette.PlayerColors[6];
                 //}
 

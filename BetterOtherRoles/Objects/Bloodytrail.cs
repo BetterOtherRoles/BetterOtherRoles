@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using BetterOtherRoles.EnoFw.Roles.Impostor;
 using BetterOtherRoles.Utilities;
 using UnityEngine;
-using static BetterOtherRoles.RolesManager;
+using static BetterOtherRoles.BetterOtherRoles;
 
 namespace BetterOtherRoles.Objects {
     class Bloodytrail {
@@ -22,13 +21,13 @@ namespace BetterOtherRoles.Objects {
         }
 
         public Bloodytrail(PlayerControl player, PlayerControl bloodyPlayer) {
-            this.color = Palette.PlayerColors[bloodyPlayer.Data.DefaultOutfit.ColorId];
+            this.color = Palette.PlayerColors[(int)bloodyPlayer.Data.DefaultOutfit.ColorId];
             var sp = getBloodySprites();
             var index = Rnd.Next(0, sp.Count);
 
 
             blood = new GameObject("Blood" + index);
-            Vector3 position = new Vector3(player.transform.position.x, player.transform.position.y, player.transform.position.z + 0.01f);
+            Vector3 position = new Vector3(player.transform.position.x, player.transform.position.y, player.transform.position.y / 1000 + 0.001f);
             blood.AddSubmergedComponent(SubmergedCompatibility.Classes.ElevatorMover);
             blood.transform.position = position;
             blood.transform.localPosition = position;
@@ -47,7 +46,7 @@ namespace BetterOtherRoles.Objects {
 
             FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(10f, new Action<float>((p) => {
             Color c = color;
-            if (Camouflager.Instance.CamouflageTimer > 0) c = Palette.PlayerColors[6];
+            if (Camouflager.camouflageTimer > 0) c = Palette.PlayerColors[6];
             if (spriteRenderer) spriteRenderer.color = new Color(c.r, c.g, c.b, Mathf.Clamp01(1 - p));
 
             if (p == 1f && blood != null) {

@@ -1,102 +1,64 @@
 ﻿using System;
-using System.Linq;
-using AmongUs.Data;
-using Assets.InnerNet;
-using BetterOtherRoles.Modules;
+using System.Collections.Generic;
 using HarmonyLib;
-using Il2CppSystem.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using static UnityEngine.UI.Button;
 using Object = UnityEngine.Object;
+using BetterOtherRoles.Patches;
+using UnityEngine.SceneManagement;
+using BetterOtherRoles.Utilities;
+using AmongUs.Data;
+using Assets.InnerNet;
+using System.Linq;
+using BetterOtherRoles.UI;
 
-namespace BetterOtherRoles.Patches {
+namespace BetterOtherRoles.Modules {
     [HarmonyPatch(typeof(MainMenuManager), nameof(MainMenuManager.Start))]
     public class MainMenuPatch {
-        private static GameObject bottomTemplate;
+        private static bool horseButtonState = TORMapOptions.enableHorseMode;
+        //private static Sprite horseModeOffSprite = null;
+        //private static Sprite horseModeOnSprite = null;
         private static AnnouncementPopUp popUp;
 
         private static void Prefix(MainMenuManager __instance) {
             CustomHatLoader.LaunchHatFetcher();
             var template = GameObject.Find("ExitGameButton");
-            if (template == null) return;
+            var template2 = GameObject.Find("CreditsButton");
+            if (template == null || template2 == null) return;
+            template.transform.localScale = new Vector3(0.42f, 0.84f, 0.84f);
+            template.GetComponent<AspectPosition>().anchorPoint = new Vector2(0.625f, 0.5f);
+            template.transform.FindChild("FontPlacer").transform.localScale = new Vector3(1.8f, 0.9f, 0.9f);
+            template.transform.FindChild("FontPlacer").transform.localPosition = new Vector3(-1.1f, 0f, 0f);
 
-            var buttonGithub = Object.Instantiate(template, null);
-            var localPosition = buttonGithub.transform.localPosition;
-            localPosition = new Vector3(localPosition.x, localPosition.y + 0.6f, localPosition.z);
-            buttonGithub.transform.localPosition = localPosition;
-
-            var textGithub = buttonGithub.transform.GetChild(0).GetComponent<TMPro.TMP_Text>();
-            __instance.StartCoroutine(Effects.Lerp(0.1f, new System.Action<float>((p) => {
-                textGithub.SetText("Github");
-            })));
-
-            var passiveButtonGithub = buttonGithub.GetComponent<PassiveButton>();
-            var passiveSpriteGithub = buttonGithub.GetComponent<SpriteRenderer>();
-
-            passiveButtonGithub.OnClick = new Button.ButtonClickedEvent();
-            passiveButtonGithub.OnClick.AddListener((System.Action)(() => Application.OpenURL("https://github.com/BetterOtherRoles/BetterOtherRoles")));
-
-            Color discordColor = new Color32(115, 115, 115, byte.MaxValue);
-            passiveSpriteGithub.color = textGithub.color = discordColor;
-            passiveButtonGithub.OnMouseOut.AddListener((System.Action)delegate {
-                passiveSpriteGithub.color = textGithub.color = discordColor;
-            });
+            template2.transform.localScale = new Vector3(0.42f, 0.84f, 0.84f);
+            template2.GetComponent<AspectPosition>().anchorPoint = new Vector2(0.378f, 0.5f);
+            template2.transform.FindChild("FontPlacer").transform.localScale = new Vector3(1.8f, 0.9f, 0.9f);
+            template2.transform.FindChild("FontPlacer").transform.localPosition = new Vector3(-1.1f, 0f, 0f);
 
 
-            bottomTemplate = GameObject.Find("InventoryButton");
 
             // TOR credits button
-            if (bottomTemplate == null) return;
-            var creditsButton = Object.Instantiate(bottomTemplate, bottomTemplate.transform.parent);
-            var passiveCreditsButton = creditsButton.GetComponent<PassiveButton>();
-            var spriteCreditsButton = creditsButton.GetComponent<SpriteRenderer>();
+            if (template == null) return;
+            var creditsButton = Object.Instantiate(template, template.transform.parent);
 
-            spriteCreditsButton.sprite = Helpers.loadSpriteFromResources("BetterOtherRoles.Resources.CreditsButton.png", 75f);
+            creditsButton.transform.localScale = new Vector3(0.42f, 0.84f, 0.84f);
+            creditsButton.GetComponent<AspectPosition>().anchorPoint = new Vector2(0.462f, 0.5f);
+            creditsButton.transform.FindChild("FontPlacer").transform.localScale = new Vector3(1.7f, 0.9f, 0.9f);
+            creditsButton.transform.FindChild("FontPlacer").transform.localPosition = new Vector3(-0.65f, 0f, 0f);
 
-            passiveCreditsButton.OnClick = new ButtonClickedEvent();
+            var textCreditsButton = creditsButton.transform.GetComponentInChildren<TMPro.TMP_Text>();
+            __instance.StartCoroutine(Effects.Lerp(0.5f, new System.Action<float>((p) => {
+                textCreditsButton.SetText("<align=\"center\">BOR Credits</align>");
+            })));
+            PassiveButton passiveCreditsButton = creditsButton.GetComponent<PassiveButton>();
 
-            passiveCreditsButton.OnClick.AddListener((Action)delegate {
-                // do stuff
-                if (popUp != null) Object.Destroy(popUp);
-                popUp = Object.Instantiate(Object.FindObjectOfType<AnnouncementPopUp>(true));
-                popUp.gameObject.SetActive(true);
-                
-                __instance.StartCoroutine(Effects.Lerp(0.01f, new Action<float>((p) =>
-                {
-                    if (p != 1) return;
-                    var backup = DataManager.Player.Announcements.allAnnouncements;
-                    popUp.Init(false);
-                    DataManager.Player.Announcements.allAnnouncements = new List<Announcement>();
-                    DataManager.Player.Announcements.allAnnouncements.Insert(0, ModCredits.GetBetterOtherRolesCredits());
-                    foreach (var item in popUp.visibleAnnouncements) Object.Destroy(item);
-                    foreach (var item in Object.FindObjectsOfType<AnnouncementPanel>()) {
-                        if (item != popUp.ErrorPanel) Object.Destroy(item.gameObject);
-                    }
-                    popUp.CreateAnnouncementList();
-                    popUp.visibleAnnouncements._items[0].PassiveButton.OnClick.RemoveAllListeners();
-                    DataManager.Player.Announcements.allAnnouncements = backup;
-                    var titleText = GameObject.Find("Title_Text").GetComponent<TMPro.TextMeshPro>();
-                    if (titleText != null) titleText.text = "";
-                })));
+            passiveCreditsButton.OnClick = new Button.ButtonClickedEvent();
+
+            passiveCreditsButton.OnClick.AddListener((System.Action)delegate {
+                UIManager.CreditsPanel?.Toggle();
             });
             
-        }
-
-        public static void Postfix(MainMenuManager __instance) {
-            __instance.StartCoroutine(Effects.Lerp(0.01f, new Action<float>((p) =>
-            {
-                if (p != 1) return;
-                bottomTemplate = GameObject.Find("InventoryButton");
-                foreach (Transform tf in bottomTemplate.transform.parent.GetComponentsInChildren<Transform>())
-                {
-                    var localPosition = tf.localPosition;
-                    localPosition = new Vector2(localPosition.x * 0.8f, localPosition.y);
-                    tf.localPosition = localPosition;
-                }
-            })));
-
         }
 
         public static void addSceneChangeCallbacks() {
@@ -120,20 +82,20 @@ namespace BetterOtherRoles.Patches {
                     template.OnClick();
                 }));
 
-                var hideNSeekButton = GameObject.Instantiate(gameButton, gameButton.parent);
-                hideNSeekButton.transform.localPosition += new Vector3(1.7f, -0.5f);
-                var hideNSeekButtonText = hideNSeekButton.GetComponentInChildren<TMPro.TextMeshPro>();
-                var hideNSeekButtonPassiveButton = hideNSeekButton.GetComponentInChildren<PassiveButton>();
+                var HideNSeekButton = GameObject.Instantiate<Transform>(gameButton, gameButton.parent);
+                HideNSeekButton.transform.localPosition += new Vector3(1.7f, -0.5f);
+                var HideNSeekButtonText = HideNSeekButton.GetComponentInChildren<TMPro.TextMeshPro>();
+                var HideNSeekButtonPassiveButton = HideNSeekButton.GetComponentInChildren<PassiveButton>();
                 
-                hideNSeekButtonPassiveButton.OnClick = new Button.ButtonClickedEvent();
-                hideNSeekButtonPassiveButton.OnClick.AddListener((System.Action)(() => {
+                HideNSeekButtonPassiveButton.OnClick = new Button.ButtonClickedEvent();
+                HideNSeekButtonPassiveButton.OnClick.AddListener((System.Action)(() => {
                     TORMapOptions.gameMode = CustomGamemodes.HideNSeek;
                     template.OnClick();
                 }));
 
-                template.StartCoroutine(Effects.Lerp(0.1f, new Action<float>(_ => {
+                template.StartCoroutine(Effects.Lerp(0.1f, new System.Action<float>((p) => {
                     guesserButtonText.SetText("TOR Guesser");
-                    hideNSeekButtonText.SetText("TOR Hide N Seek");
+                    HideNSeekButtonText.SetText("TOR Hide N Seek");
                  })));
             }));
         }
